@@ -1,4 +1,4 @@
-# KulüpRadar (Pano) — çalışma kuralları
+# KulüpRadar (KulüpOS) — çalışma kuralları
 
 Kaynaklar: `OZELLIKLER.md` (katalog), `DURUM.md` (mevcut durum), `PLAN.md` (görev sırası). Yerel Gemma 4 (Ollama, `gemma4:e4b`), FastAPI + SQLite + sade JS.
 

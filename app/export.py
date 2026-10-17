@@ -78,7 +78,7 @@ def _filter_line(f: dict) -> str:
 def to_csv(rows: list[dict], filters: dict, today: str) -> str:
     buf = io.StringIO()
     w = csv.writer(buf, lineterminator="\r\n")
-    w.writerow([f"# Pano export {filters['what']} {today}"])
+    w.writerow([f"# KulüpOS export {filters['what']} {today}"])
     w.writerow([_filter_line(filters)])
     w.writerow(COLUMNS)
     for r in rows:
@@ -114,7 +114,7 @@ def summary_md(chat_id: int, status: str | None, owner: str | None, unit: str | 
     flt = ", ".join(f"{k}={v}" for k, v in (("status(tasks)", status or "all"), ("owner", owner or "all"),
                                             ("unit", unit or "all"), ("date_from", date_from or "-"),
                                             ("date_to", date_to or "-")))
-    out = [f"# {chat['name']} — {s['title']}", "", f"_Pano · {today}_", "",
+    out = [f"# {chat['name']} — {s['title']}", "", f"_KulüpOS · {today}_", "",
            f"- **{s['period']}:** {first} – {last}",
            f"- **{s['filt']}:** {flt} (date: tasks→due, others→source date)",
            f"- {s['note']}", "", f"## {s['counts']}", "",

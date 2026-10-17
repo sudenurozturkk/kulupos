@@ -1,6 +1,6 @@
-# 📌 Pano
+# KulüpOS
 
-[![tests](https://github.com/sudenurozturkk/kulupradar/actions/workflows/test.yml/badge.svg)](https://github.com/sudenurozturkk/kulupradar/actions/workflows/test.yml)
+[![tests](https://github.com/sudenurozturkk/kulupos/actions/workflows/test.yml/badge.svg)](https://github.com/sudenurozturkk/kulupos/actions/workflows/test.yml)
 
 **[English](#english) · [Türkçe](#türkçe)**
 
@@ -8,13 +8,13 @@
 
 ## English
 
-**Pano keeps all of a student club's work in one place: chat, meeting notes and event data, all analysed locally with Gemma 4 on the club lead's own laptop. WhatsApp is just one of the input sources. Every AI item is a proposal with a source (a chat message or a note line), and nothing reaches the board until a human approves it.**
+**KulüpOS is a free, local-first workspace for student clubs. Tasks, events, meetings, people and committees live in one place; you enter information any time (during a meeting, at an event), it stays on your computer, and a local Gemma 4 model analyses it: what got done, how an event went, what is behind, what to plan next. A WhatsApp chat is just one more source you can import. Every AI item is a proposal with a source, and nothing becomes final until a human approves it.**
 
 Started at **Hacktoberfest Elazığ Fest 2026** (Week 2: *Side Hustle*).
 
 ### The problem
 
-Student clubs run on WhatsApp. Tasks are handed out during a 200-message evening, the event date changes twice, someone asks "who has the sponsor file?" and nobody answers for two weeks. The information exists, but it is buried in the chat.
+A club's information is scattered: tasks in chats, decisions in someone's notes, event data in spreadsheets, and nobody knows what lives where. With more than ten people, many committees and busy festivals, conferences and events, things get mixed up, deadlines slip and nobody can say how last month's event actually went.
 
 ### What it does
 
@@ -30,7 +30,7 @@ Student clubs run on WhatsApp. Tasks are handed out during a 200-message evening
 
 ### How it works
 
-**How Gemma 4 is used.** Pano calls the open-weight model `gemma4:e4b` through a local Ollama server (`OLLAMA_URL`, default `localhost:11434`) with JSON-schema constrained output. Jobs: finding proposals in chat windows and in meeting notes, the meeting summary, the event report and period comment, the weekly recap and ask-the-chat. Each answer is checked in code (source, owners, dates, figures, quotations, names) before it is shown or saved. No hosted AI API is ever called.
+**How Gemma 4 is used.** KulüpOS calls the open-weight model `gemma4:e4b` through a local Ollama server (`OLLAMA_URL`, default `localhost:11434`) with JSON-schema constrained output. Jobs: finding proposals in chat windows and in meeting notes, the meeting summary, the event report and period comment, the weekly recap and ask-the-chat. Each answer is checked in code (source, owners, dates, figures, quotations, names) before it is shown or saved. No hosted AI API is ever called.
 
 ```
 WhatsApp export (.txt / .zip)
@@ -70,7 +70,7 @@ Images are added by the author in [docs/screenshots/](docs/screenshots/README.md
 
 ### Why an open model, run locally
 
-| | Pano (Gemma 4 + Ollama) | A hosted API |
+| | KulüpOS (Gemma 4 + Ollama) | A hosted API |
 |---|---|---|
 | **Privacy** | Names, phone numbers and private messages of dozens of students stay on the laptop. This reduces exposure; it is not legal advice or a compliance guarantee (KVKK/GDPR) | The whole chat is sent to a third party |
 | **Cost** | No per-use fees; re-analyse as often as you like | Needs a budget and a payment method that clubs rarely have |
@@ -85,7 +85,7 @@ Requirements: [Ollama](https://ollama.com/download), Python 3.10+, roughly 8 GB 
 
 ```bash
 ollama pull gemma4:e4b          # tested tag
-git clone https://github.com/sudenurozturkk/kulupradar && cd kulupradar
+git clone https://github.com/sudenurozturkk/kulupos && cd kulupos
 pip install -r requirements.txt
 python -m app                   # http://127.0.0.1:8000  (PANO_PORT=8010 if 8000 is taken)
 ```
@@ -183,7 +183,7 @@ MIT License, © 2026 Sudenur Öztürk. See [LICENSE](LICENSE).
 
 ## Türkçe
 
-**Pano, kulübün tüm işlerini tek yerde toplar: sohbet, toplantı notu ve etkinlik verisi, hepsi yerelde Gemma ile.** Açık model **Gemma 4 (`gemma4:e4b`, Ollama)** bilgisayarda çalışır; WhatsApp yönetim grubunu, toplantı notlarını ve etkinlik kayıtlarını görev, karar, açık soru ve etkinlik panosuna çevirir. WhatsApp yalnızca girdi kaynaklarından biridir.
+**KulüpOS, kulübün tüm işlerini tek yerde toplar: sohbet, toplantı notu ve etkinlik verisi, hepsi yerelde Gemma ile.** Açık model **Gemma 4 (`gemma4:e4b`, Ollama)** bilgisayarda çalışır; WhatsApp yönetim grubunu, toplantı notlarını ve etkinlik kayıtlarını görev, karar, açık soru ve etkinlik panosuna çevirir. WhatsApp yalnızca girdi kaynaklarından biridir.
 
 **Sorun:** Kulüpler WhatsApp'ta yürüyor. Görevler 200 mesajlık bir akşamda dağıtılıyor, etkinlik tarihi iki kez değişiyor, "sponsor dosyası kimde?" sorusu iki hafta cevapsız kalıyor.
 

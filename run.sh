@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Pano - macOS / Linux quick start
+# KulüpOS - macOS / Linux quick start
 set -e
 command -v ollama >/dev/null || { echo "Ollama is not installed: https://ollama.com/download"; exit 1; }
 ollama list | grep -q "gemma4:e4b" || ollama pull gemma4:e4b

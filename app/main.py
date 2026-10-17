@@ -1,4 +1,4 @@
-"""Pano HTTP API + static UI. Binds to localhost only."""
+"""KulüpOS HTTP API + static UI. Binds to localhost only."""
 from __future__ import annotations
 
 import asyncio
@@ -33,7 +33,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Pano", docs_url="/api/docs", lifespan=lifespan)
+app = FastAPI(title="KulüpOS", docs_url="/api/docs", lifespan=lifespan)
 _tasks: set[asyncio.Task] = set()
 
 
@@ -210,9 +210,9 @@ async def demo(lang: str):
         try:
             chat_id = await asyncio.wait_for(asyncio.to_thread(seed.ensure_sample, today()), SEED_TIMEOUT)
         except asyncio.TimeoutError:
-            raise HTTPException(504, f"Demo {SEED_TIMEOUT:g} saniyede açılamadı; veritabanı meşgul olabilir. Başka bir Pano "
+            raise HTTPException(504, f"Demo {SEED_TIMEOUT:g} saniyede açılamadı; veritabanı meşgul olabilir. Başka bir KulüpOS "
                                      "penceresi/süreci açıksa kapatıp tekrar deneyin / the demo did not open in time; "
-                                     "the database may be busy, close any other Pano process and retry")
+                                     "the database may be busy, close any other KulüpOS process and retry")
         except sqlite3.Error as e:
             raise HTTPException(503, f"Veritabanı hatası / database error: {type(e).__name__}")
         return db.get_chat(chat_id)
@@ -369,7 +369,7 @@ def plan_accept(chat_id: int, body: PlanAccept):
 def export_md(chat_id: int):
     """The whole board as Markdown, with source references, for Notion/GitHub/Docs."""
     b = board(chat_id)
-    out = [f"# {b['chat']['name']}", "", f"_Pano · {b['today']}_", "", "## Tasks", ""]
+    out = [f"# {b['chat']['name']}", "", f"_KulüpOS · {b['today']}_", "", "## Tasks", ""]
     for unit in [*b["chat"]["units"], None]:
         rows = [t for t in b["tasks"] if (t["unit"] or None) == unit]
         if not rows:

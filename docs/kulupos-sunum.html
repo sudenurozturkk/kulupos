@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><title>Pano · Sunum</title>
+<html lang="tr"><head><meta charset="utf-8"><title>KulüpOS · Sunum</title>
 <style>
 @page { size: 1280px 720px; margin: 0; }
 * { box-sizing: border-box; }
@@ -32,22 +32,22 @@ th { color: #4f46e5; }
 
 <section class="s dark">
   <div class="k">Hacktoberfest Elazığ Fest 2026 · Side Hustle</div>
-  <h1>Pano</h1>
-  <p style="font-size:34px;color:#fff;margin-bottom:26px">Kulübün tüm işleri, tek yerde.</p>
-  <p>WhatsApp sohbeti, toplantı notu ve etkinlik verisi → görev, karar ve etkinlik panosu.<br>Yerel <b style="color:#fff">Gemma 4</b> ile, bilgisayardan çıkmadan.</p>
+  <h1>KulüpOS</h1>
+  <p style="font-size:34px;color:#fff;margin-bottom:26px">Kulübün işleri tek yerde, yapay zekâyla düzende.</p>
+  <p>Toplantıda ya da etkinlikte istediğin an bilgi gir, yerelde kalsın;<br>yerel <b style="color:#fff">Gemma 4</b> analiz etsin, rapor ve öneri versin. Öğrenciler için ücretsiz.</p>
   <div style="margin-top:24px"><span class="tag" style="background:rgba(255,255,255,.15);color:#fff">Açık kaynak · MIT</span><span class="tag" style="background:rgba(255,255,255,.15);color:#fff">Best Use of Gemma</span></div>
-  <div class="foot"><span>github.com/sudenurozturkk/kulupradar</span><span>1 / 8</span></div>
+  <div class="foot"><span>github.com/sudenurozturkk/kulupos</span><span>1 / 8</span></div>
 </section>
 
 <section class="s">
   <div class="k">Problem</div>
-  <h2>Kulüpler WhatsApp'ta yürüyor, işler mesajların arasında kayboluyor.</h2>
+  <h2>Kulübün bilgisi dağınık: kim neyi yapıyor, neyin nerede olduğu belli değil.</h2>
   <div class="grid">
-    <div class="card"><h3>Görevler kayboluyor</h3><p>200 mesajlık bir akşamda dağıtılan iş, ertesi hafta kimsenin aklında yok.</p></div>
-    <div class="card"><h3>Tarih değişiyor</h3><p>Etkinlik tarihi iki kez değişiyor, yarısı eskisini hatırlıyor.</p></div>
-    <div class="card"><h3>Sorular cevapsız</h3><p>"Sponsor dosyası kimde?" iki hafta cevapsız kalıyor.</p></div>
+    <div class="card"><h3>Her şey farklı yerde</h3><p>Görev sohbette, karar notta, etkinlik verisi tabloda. 10+ kişi ve çok komiteyle karışıyor.</p></div>
+    <div class="card"><h3>Yoğun dönemler</h3><p>Festival, konferans ve etkinlikler üst üste; geciken ve sahipsiz iş fark edilmiyor.</p></div>
+    <div class="card"><h3>Öğrenilmeyen dersler</h3><p>Etkinlik nasıl geçti, neyi düzeltmeli? Sonuçlar analiz edilmeden unutuluyor.</p></div>
   </div>
-  <div class="foot"><span>Pano</span><span>2 / 8</span></div>
+  <div class="foot"><span>KulüpOS</span><span>2 / 8</span></div>
 </section>
 
 <section class="s">
@@ -55,23 +55,23 @@ th { color: #4f46e5; }
   <h2>Kim için? Hangi sıkıcı iş? Neden açık model?</h2>
   <div class="grid">
     <div class="card"><h3>Kim?</h3><p>Kulüp başkanları ve komite sorumluları. Her üniversitede onlarca kulüp, hepsi WhatsApp'ta çalışıyor.</p></div>
-    <div class="card"><h3>Hangi sıkıcı iş?</h3><p>Geriye kaydırıp "kim neyi üstlenmişti, ne karar almıştık?" diye aramak.</p></div>
+    <div class="card"><h3>Hangi sıkıcı iş?</h3><p>"Kim neyi üstlenmişti, ne karar almıştık, geçen etkinlik nasıl geçti?" diye aramak ve rapor yazmak.</p></div>
     <div class="card"><h3>Neden açık model?</h3><p>Sohbette onlarca öğrencinin adı ve özel mesajı var. Buluta gitmez, kullanım ücreti yok, internetsiz çalışır.</p></div>
   </div>
-  <div class="foot"><span>Pano</span><span>3 / 8</span></div>
+  <div class="foot"><span>KulüpOS</span><span>3 / 8</span></div>
 </section>
 
 <section class="s">
   <div class="k">Çözüm ve Gemma 4 kullanımı</div>
-  <h2>WhatsApp'ı değiştirmiyoruz, düzenini geri veriyoruz.</h2>
+  <h2>Bilgiyi bir kez gir, yapay zekâ düzenlesin ve analiz etsin.</h2>
   <div class="flow">
-    <div><b>1 · İçe aktar</b>WhatsApp .txt/.zip, toplantı notu, etkinlik kaydı</div><div class="arrow">→</div>
-    <div><b>2 · Gemma 4 okur</b>gemma4:e4b, yerel Ollama, JSON şemalı çıktı</div><div class="arrow">→</div>
-    <div><b>3 · Öneri</b>her kayıt kaynak mesaja/not satırına bağlı</div><div class="arrow">→</div>
-    <div><b>4 · Sen onaylarsın</b>onaylanan pano, görev, karar, etkinlik olur</div>
+    <div><b>1 · Gir</b>toplantıda elle; istersen WhatsApp/not yükle</div><div class="arrow">→</div>
+    <div><b>2 · Yerelde saklanır</b>tek SQLite dosyası, internetsiz</div><div class="arrow">→</div>
+    <div><b>3 · Gemma 4 analiz</b>özet, etkinlik analizi, rapor, plan önerisi</div><div class="arrow">→</div>
+    <div><b>4 · Sen onaylarsın</b>AI önerileri kaynaklı, onaysız kesinleşmez</div>
   </div>
-  <p style="margin-top:26px">Gemma, panonun güncel halini de görür: "bitirdim" görevi kapatır, "31'ine alalım" etkinliği taşır, yinelenen kayıt açmaz.</p>
-  <div class="foot"><span>Pano</span><span>4 / 8</span></div>
+  <p style="margin-top:26px">Gemma kulübün güncel verisini görür: haftalık özet yazar, etkinlik sonuçlarını karşılaştırır, geciken işleri ve gelecek plan önerilerini sunar. Hepsi gemma4:e4b ile, yerel Ollama üzerinden.</p>
+  <div class="foot"><span>KulüpOS</span><span>4 / 8</span></div>
 </section>
 
 <section class="s">
@@ -83,7 +83,7 @@ th { color: #4f46e5; }
     <div class="card"><h3>Uydurma yok</h3><p>Bilinmeyen sorumlu/tarih boş kalır. Rapordaki sayı, isim ve alıntı veride yoksa metin reddedilir.</p></div>
     <div class="card"><h3>Notlar veridir, komut değil</h3><p>Not içindeki "önceki talimatları unut" Gemma'ya emir olmaz.</p></div>
   </div>
-  <div class="foot"><span>Pano</span><span>5 / 8</span></div>
+  <div class="foot"><span>KulüpOS</span><span>5 / 8</span></div>
 </section>
 
 <section class="s">
@@ -95,7 +95,7 @@ th { color: #4f46e5; }
     <div class="card"><h3>3 · AI incelemesi</h3><p>Öneriyi onayla / reddet.</p></div>
     <div class="card"><h3>4 · Etkinlik ve toplantı</h3><p>Katılım, geri bildirim, rapor, toplantı özeti.</p></div>
   </div>
-  <div class="foot"><span>Pano</span><span>6 / 8</span></div>
+  <div class="foot"><span>KulüpOS</span><span>6 / 8</span></div>
 </section>
 
 <section class="s">
@@ -107,7 +107,7 @@ th { color: #4f46e5; }
     <div class="card"><div class="big">12/12</div><p>toplantı önerisinin alıntısı notta gerçekten var (2 kısa toplantı).</p></div>
   </div>
   <p class="warn">Sınırlar: görev devirlerini ve bazı sorumluları kaçırıyor, sorumlusuz işleri yakalamakta zayıf; iki toplantı doğruluk oranı değil. Bu yüzden otomatik onay yok.</p>
-  <div class="foot"><span>Pano</span><span>7 / 8</span></div>
+  <div class="foot"><span>KulüpOS</span><span>7 / 8</span></div>
 </section>
 
 <section class="s dark">
@@ -116,6 +116,6 @@ th { color: #4f46e5; }
   <p><b style="color:#fff">Çalışıyor:</b> sohbet/toplantı/etkinlik analizi, onay kuyruğu, görev panosu, etkinlik raporu, haftalık özet, kişi ve komite sayfaları, giriş/kayıt, TR/EN, 114 otomatik test.</p>
   <p><b style="color:#fff">Planlı (henüz yok):</b> roller ve çok kullanıcılı veri ayrımı, sistem içi mesajlaşma, toplantı ses kaydı, bütçe/sponsor takibi, dış entegrasyonlar.</p>
   <p style="margin-top:26px;font-size:30px;color:#fff">Kulüplere ücretsiz, veri kulübün bilgisayarında.</p>
-  <div class="foot"><span>github.com/sudenurozturkk/kulupradar · MIT</span><span>8 / 8</span></div>
+  <div class="foot"><span>github.com/sudenurozturkk/kulupos · MIT</span><span>8 / 8</span></div>
 </section>
 </body></html>

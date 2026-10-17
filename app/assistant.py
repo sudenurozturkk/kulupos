@@ -11,11 +11,11 @@ LABELS = {
     "tr": {"title": "Haftalık Özet", "done": "✅ Tamamlananlar", "open": "📌 Açık görevler",
            "orphan": "🙋 Sahibi olmayan görevler", "questions": "❓ Cevap bekleyen sorular",
            "events": "📅 Yaklaşan", "decisions": "🧭 Alınan kararlar", "nobody": "sahibi yok",
-           "footer": "_Pano ile bu bilgisayarda hazırlandı · Gemma 4 · veri dışarı çıkmadı_"},
+           "footer": "_KulüpOS ile bu bilgisayarda hazırlandı · Gemma 4 · veri dışarı çıkmadı_"},
     "en": {"title": "Weekly Recap", "done": "✅ Done", "open": "📌 Open tasks",
            "orphan": "🙋 Tasks nobody owns", "questions": "❓ Waiting for an answer",
            "events": "📅 Coming up", "decisions": "🧭 Decisions", "nobody": "no owner",
-           "footer": "_Made on this laptop with Pano · Gemma 4 · no data left the device_"},
+           "footer": "_Made on this laptop with KulüpOS · Gemma 4 · no data left the device_"},
 }
 MONTHS = {"tr": ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"],
           "en": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}

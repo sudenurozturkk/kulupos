@@ -4,9 +4,9 @@
 const I18N = {
   tr: {
     eyebrow: "Gemma 4 · tamamen yerel · açık kaynak",
-    hero_h1: ["Kulübün tüm işleri tek yerde:", "sohbet, toplantı notu, etkinlik verisi."],
-    hero_lead: "Hepsi yerelde Gemma ile. Görevler mesajların ve toplantı notlarının arasında kayboluyor, etkinlik tarihi iki kez değişiyor, \"sponsor dosyası kimde?\" sorusu iki hafta cevapsız kalıyor. Pano WhatsApp sohbetini, toplantı notlarını ve etkinlik kayıtlarını bu bilgisayarda okur ve tek panoda toplar. WhatsApp yalnızca girdi kaynaklarından biridir.",
-    cta_demo: "Demo kulübü aç", demo_timeout: "Sunucu yanıt vermedi. Eski bir Pano süreci açık olabilir; kapatıp `python -m app` ile yeniden başlatın.", cta_upload: "Kendi grubumu yükle",
+    hero_h1: ["Kulübün dağınık işleri,", "tek yerde ve yapay zekâyla düzende."],
+    hero_lead: "Toplantıda, etkinlikte, istediğin an görev, karar, etkinlik ve not gir; hepsi bu bilgisayarda kalır. Yerel Gemma yapay zekâsı kulübünü analiz eder: neler yapıldı, neler geride, etkinlik nasıl geçti, sırada ne var. Öğrenciler için ücretsiz. WhatsApp sohbeti yalnızca içe aktarılabilen kaynaklardan biridir.",
+    cta_demo: "Demo kulübü aç", demo_timeout: "Sunucu yanıt vermedi. Eski bir KulüpOS süreci açık olabilir; kapatıp `python -m app` ile yeniden başlatın.", cta_upload: "Kendi grubumu yükle",
     trust: ["İnternetsiz çalışır", "API anahtarı yok", "Her kart kaynağına bağlı (mesaj veya not)"],
     mock_chat: [["Elif", "Salon dilekçesini kim verir?"], ["Deniz", "Ben perşembe veririm"], ["Mert", "Ahmet Bey 24'ünde yok, 31 Ekim olur diyor"], ["Elif", "Tamam karar: söyleşi 31 Ekim 14:00", true]],
     mock_cards: [["Salon dilekçesi", "Deniz", "Per 8 Eki"], ["Söyleşi 31 Eki", "Etkinlik", "taşındı"], ["Projeksiyon dilekçesi", "sahibi yok", ""]],
@@ -83,9 +83,9 @@ const I18N = {
     sample_confirm: "Örnek kulüp ve içindeki tüm kayıtlar silinsin mi? Gerçek verilerine dokunulmaz.",
     flt_label: "Filtre", flt_clear: "Temizle", flt_open: "Açık görevler", flt_soon: "Yaklaşan işler", flt_overdue: "Gecikmiş görevler",
     flt_orphans: "Atanmamış görevler", flt_questions: "Açık sorular", dec_final: "Kesinleşti", help_btn: "Nasıl çalışır?", exp_btn: "Dışa aktar", exp_title: "Dışa aktar", exp_what: "Ne aktarılsın?", exp_tasks: "Görevler (CSV)", exp_decisions: "Kararlar", exp_questions: "Açık sorular", exp_summary: "Analiz özeti (Markdown)", exp_format: "Biçim", exp_status: "Durum", exp_all: "Hepsi", exp_open: "Açık", exp_done: "Tamamlandı", exp_owner: "Sorumlu", exp_from: "Başlangıç tarihi", exp_to: "Bitiş tarihi", exp_note: "Yalnızca onaylı kayıtlar aktarılır. Görevlerde tarih aralığı son tarihe, kararlarda ve sorularda kaynak mesaj tarihine uygulanır; seçilen filtreler dosyanın başında yazar.", exp_go: "İndir", exp_bad: "Başlangıç tarihi bitişten sonra olamaz.",
-    wl_title: "Pano’ya hoş geldin", wl_ok: "Anladım",
+    wl_title: "KulüpOS’a hoş geldin", wl_ok: "Anladım",
     wl: [
-      ["Pano ne yapıyor?", "Kulüp WhatsApp grubunu okur; görev, karar, açık soru ve etkinlikleri kaynak mesajlarıyla birlikte düzenli bir panoya çevirir."],
+      ["KulüpOS ne yapıyor?", "Kulübün görev, karar, etkinlik ve toplantılarını tek yerde tutar. Bilgiyi istediğin an elle girersin; istersen WhatsApp sohbetini ya da toplantı notunu da yüklersin, Gemma öneri çıkarır, sen onaylarsın."],
       ["Hangi dosyayı yüklemeliyim?", "WhatsApp’ta grup Sohbeti dışa aktar medyasız. Çıkan .txt (ya da .zip) dosyası. Yüklemeden önce bir ön izleme görürsün."],
       ["Verilerim nereye gidiyor?", "Hiçbir yere. Dosya yalnızca bu bilgisayarda işlenir; analiz yerel Gemma ile yapılır, uzak servise veri gitmez."],
       ["Analiz başladı mı?", "Dosyayı yüklediğinde analiz kendiliğinden başlar; sayfanın üstünde ilerleme çubuğu ve bulunanlar görünür. Bu örnek zaten hazır."],
@@ -127,7 +127,7 @@ const I18N = {
     confirm_delete: "Bu grubun panosu silinsin mi? (WhatsApp'taki sohbet etkilenmez)",
     added_msgs: n => `${n} yeni mesaj eklendi, analiz ediliyor`,
     no_new: "Yeni mesaj yok",
-    summary_intro: "Son 7 günün özeti: Gemma kısa bir değerlendirme yazar, Pano açık görevleri, cevapsız soruları ve yaklaşan tarihleri ekler. Tek tıkla gruba yapıştırın.",
+    summary_intro: "Son 7 günün özeti: Gemma kısa bir değerlendirme yazar, KulüpOS açık görevleri, cevapsız soruları ve yaklaşan tarihleri ekler. Tek tıkla gruba yapıştırın.",
     summary_btn: "Bu haftanın özetini çıkar", summary_wait: "Gemma özet yazıyor…",
     copy: "WhatsApp için kopyala", copied: "Kopyalandı Gruba yapıştırabilirsiniz",
     ask_intro: "Sohbette kaybolan bir bilgiyi sorun. Cevap, kaynak mesajlarıyla gelir.",
@@ -139,9 +139,9 @@ const I18N = {
   },
   en: {
     eyebrow: "Gemma 4 · fully local · open source",
-    hero_h1: ["All of your club's work in one place:", "chat, meeting notes and event data."],
-    hero_lead: "All of it local, with Gemma. Tasks get lost between messages and meeting notes, the event date changes twice, and \"who has the sponsor file?\" goes unanswered for two weeks. Pano reads your WhatsApp chat, meeting notes and event records on this computer and gathers them on one board. WhatsApp is just one of the input sources.",
-    cta_demo: "Open the demo club", demo_timeout: "The server did not respond. An old Pano process may still be running; close it and restart with `python -m app`.", cta_upload: "Upload my group",
+    hero_h1: ["All of your club's scattered work,", "in one place and in order with AI."],
+    hero_lead: "Enter tasks, decisions, events and notes any time, during a meeting or an event; everything stays on this computer. A local Gemma AI analyses your club: what was done, what is behind, how an event went, what comes next. Free for students. A WhatsApp chat is just one source you can import.",
+    cta_demo: "Open the demo club", demo_timeout: "The server did not respond. An old KulüpOS process may still be running; close it and restart with `python -m app`.", cta_upload: "Upload my group",
     trust: ["Works offline", "No API keys", "Every card links to its source (message or note)"],
     mock_chat: [["Maya", "Who can book the lab?"], ["Leo", "I'll book it today"], ["Noah", "They moved our booth to Oct 30"], ["Maya", "Decision: booth on Friday Oct 30", true]],
     mock_cards: [["Book the lab", "Leo", "Thu 8 Oct"], ["Fair Oct 30", "Events", "moved"], ["Print the banner", "no owner", ""]],
@@ -218,9 +218,9 @@ const I18N = {
     sample_confirm: "Delete the sample club and everything in it? Your own data is not touched.",
     flt_label: "Filter", flt_clear: "Clear", flt_open: "Open tasks", flt_soon: "Coming up", flt_overdue: "Overdue tasks",
     flt_orphans: "Unassigned tasks", flt_questions: "Open questions", dec_final: "Final", help_btn: "How it works", exp_btn: "Export", exp_title: "Export", exp_what: "What to export?", exp_tasks: "Tasks (CSV)", exp_decisions: "Decisions", exp_questions: "Open questions", exp_summary: "Analysis summary (Markdown)", exp_format: "Format", exp_status: "Status", exp_all: "All", exp_open: "Open", exp_done: "Done", exp_owner: "Owner", exp_from: "From date", exp_to: "To date", exp_note: "Only approved records are exported. The date range applies to the due date for tasks and to the source message date for decisions and questions; the chosen filters are written at the top of the file.", exp_go: "Download", exp_bad: "The start date cannot be after the end date.",
-    wl_title: "Welcome to Pano", wl_ok: "Got it",
+    wl_title: "Welcome to KulüpOS", wl_ok: "Got it",
     wl: [
-      ["What does Pano do?", "It reads your club’s WhatsApp group and turns tasks, decisions, open questions and events into one clear board, each linked to its source message."],
+      ["What does KulüpOS do?", "It keeps your club’s tasks, decisions, events and meetings in one place. You enter information any time; you can also upload a WhatsApp chat or meeting notes and Gemma suggests records for you to approve. Previously: it turns tasks, decisions, open questions and events into one clear board, each linked to its source message."],
       ["Which file do I upload?", "In WhatsApp: group Export chat without media. Upload the .txt (or .zip) file. You see a preview before anything is imported."],
       ["Where does my data go?", "Nowhere. The file is processed on this computer only; analysis runs on local Gemma and nothing is sent to a remote service."],
       ["Has the analysis started?", "It starts by itself after you upload; a progress bar and the items found so far show at the top of the page. This sample is already done."],
@@ -262,7 +262,7 @@ const I18N = {
     confirm_delete: "Delete this group's board? (The WhatsApp chat itself is not affected)",
     added_msgs: n => `${n} new messages added, analysing`,
     no_new: "No new messages",
-    summary_intro: "A recap of the last 7 days: Gemma writes a short overview, Pano adds open tasks, unanswered questions and upcoming dates. Paste it into the group in one click.",
+    summary_intro: "A recap of the last 7 days: Gemma writes a short overview, KulüpOS adds open tasks, unanswered questions and upcoming dates. Paste it into the group in one click.",
     summary_btn: "Write this week's recap", summary_wait: "Gemma is writing…",
     copy: "Copy for WhatsApp", copied: "Copied Paste it into the group",
     ask_intro: "Ask about something that got buried in the chat. The answer comes with its source messages.",
@@ -556,7 +556,7 @@ function renderHome() {
         <div class="phone"><div class="hd">WhatsApp</div>${t("mock_chat").map(([w, m, me]) =>
           `<div class="b ${me ? "me" : ""}"><b style="color:hsl(${hue(w)} 55% 42%)">${w}</b>${m}</div>`).join("")}</div>
         <div class="arrow"></div>
-        <div class="board"><div class="hd"><span>Pano</span><span class="muted">Gemma 4</span></div>${t("mock_cards").map(([ti, o, d], i) =>
+        <div class="board"><div class="hd"><span>KulüpOS</span><span class="muted">Gemma 4</span></div>${t("mock_cards").map(([ti, o, d], i) =>
           `<div class="mc"><b>${ti}</b><div class="m"><span class="chip ${i === 2 ? "none" : ""}">${o}</span><span class="chip ${i === 2 ? "overdue" : i === 1 ? "ai" : ""}">${d}</span></div></div>`).join("")}</div>
       </div>
     </div>
@@ -1337,7 +1337,7 @@ function memberMessage(name) {
   const mine = b.tasks.filter(x => x.owner === name && x.status === "open")
     .sort((a, c) => (a.due || "9999").localeCompare(c.due || "9999"));
   const lines = mine.map(x => `• ${x.title}${x.due ? ` (${fmtDate(x.due)})` : ""}`);
-  return [t("member_msg_head")(firstName(name)), "", ...(lines.length ? lines : [t("member_msg_empty")]), "", `_${b.chat.name} · Pano_`].join("\n");
+  return [t("member_msg_head")(firstName(name)), "", ...(lines.length ? lines : [t("member_msg_empty")]), "", `_${b.chat.name} · KulüpOS_`].join("\n");
 }
 
 // WhatsApp markup preview: *bold* and _italic_
@@ -2008,12 +2008,12 @@ window.addEventListener("hashchange", render);
 
 // ---- public landing + sign-in --------------------------------------------------
 const PUB = {
-  tr: { tag: "Kulüp yönetim platformu", h1: "Kulübün tüm işleri, tek yerde.", lead: "WhatsApp sohbeti, toplantı notu ve etkinlik verisini görev, karar ve etkinlik panosuna çevirir. Yapay zekâ yerelde çalışır; hiçbir şey sen onaylamadan kesinleşmez.",
-        login: "Giriş yap", signup: "Kayıt ol", demo: "Demo kulübünü dene", demoNote: "Hesap gerekmez · örnek veri: FUB3V Yönetim 2026",
-        f: [["Görevler", "Sohbetten çıkan görevleri sahibi ve tarihiyle tek panoda gör."], ["Etkinlikler", "Hazırlık, katılım, bütçe ve geri bildirim tek sayfada."], ["Toplantılar", "Notlardan karar ve görev önerisi, kaynak alıntısıyla."], ["Güvenli yapay zekâ", "Kaynak şart, otomatik onay yok, veri bilgisayarından çıkmaz."]] },
-  en: { tag: "Club management platform", h1: "All of your club's work, in one place.", lead: "Turns WhatsApp chats, meeting notes and event data into a board of tasks, decisions and events. AI runs locally; nothing becomes final until you approve it.",
+  tr: { tag: "Öğrenci kulüpleri için · ücretsiz", h1: "Kulübün işleri dağılmasın.", lead: "Görev, etkinlik ve toplantı bilgilerini tek yerde tut, istediğin an gir. Yapay zekâ kulübünü analiz etsin: neler yapıldı, etkinlik nasıl geçti, sırada ne var. Veriler bu bilgisayarda kalır.",
+        login: "Giriş yap", signup: "Kayıt ol", demo: "Demo kulübünü dene", demoNote: "Hesap gerekmez · örnek kulüp: FUB3V Yönetim 2026",
+        f: [["Her şey tek yerde", "Görevler, etkinlikler, toplantılar, kişiler ve komiteler birbirine bağlı."], ["İstediğin an gir", "Toplantı sırasında not, görev veya karar ekle; yerelde kalıcı olur."], ["Yapay zekâ analizi", "Etkinlik sonuçları, haftalık özet, rapor ve gelecek plan önerisi."], ["Güvenli ve ücretsiz", "Kaynak şart, otomatik onay yok, veri bilgisayarından çıkmaz."]] },
+  en: { tag: "For student clubs · free", h1: "Keep your club's work from scattering.", lead: "Keep tasks, events and meeting notes in one place and enter them any time. Let AI analyse your club: what was done, how an event went, what is next. Data stays on this computer.",
         login: "Sign in", signup: "Sign up", demo: "Try the demo club", demoNote: "No account needed · sample data: FUB3V Management 2026",
-        f: [["Tasks", "See tasks found in the chat with owner and date on one board."], ["Events", "Preparation, attendance, budget and feedback on one page."], ["Meetings", "Decision and task suggestions from notes, with source quotes."], ["Safe AI", "Source required, no auto-approval, data never leaves your computer."]] },
+        f: [["Everything in one place", "Tasks, events, meetings, people and committees are linked."], ["Enter it any time", "Add a note, task or decision during a meeting; it is stored locally."], ["AI analysis", "Event results, weekly recap, reports and suggestions for what to plan next."], ["Safe and free", "Source required, no auto-approval, data never leaves your computer."]] },
 };
 const AUTH_TXT = {
   tr: { login: "Giriş yap", signup: "Kayıt ol", user: "Kullanıcı adı", pass: "Parola", back: "← Ana sayfa", logout: "Çıkış yap",
@@ -2027,7 +2027,7 @@ function showPublic() {
   document.body.classList.add("public");
   const p = PUB[lang];
   $("#app").innerHTML = `<div class="pub">
-    <header class="pub-nav"><span class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></span>Pano</span>
+    <header class="pub-nav"><span class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></span>KulüpOS</span>
       <span class="pub-actions"><button class="ghost" id="pub-lang" type="button">${lang === "tr" ? "EN" : "TR"}</button><button class="ghost" id="pub-login" type="button">${p.login}</button><button class="primary" id="pub-signup" type="button">${p.signup}</button></span></header>
     <section class="pub-hero"><span class="pub-tag">${p.tag}</span><h1>${p.h1}</h1><p>${p.lead}</p>
       <div class="pub-cta"><button class="primary big" id="pub-demo" type="button">${p.demo}</button><button class="ghost big" id="pub-login2" type="button">${p.login}</button></div>

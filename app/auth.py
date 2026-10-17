@@ -1,4 +1,4 @@
-"""Local account: one sign-in for the person running Pano. No roles, no per-record permissions.
+"""Local account: one sign-in for the person running KulüpOS. No roles, no per-record permissions.
 
 Anyone can create an account (all accounts share the same club data: there are no roles or per-user data). A demo
 visitor gets a guest session that sees only the sample club. Passwords are stored as

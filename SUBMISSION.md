@@ -1,4 +1,4 @@
-# Pano: submission texts
+# KulüpOS: submission texts
 
 Every sentence below describes something that exists in the repository today. Things that are only planned are labelled as planned. Numbers come from `README.md` and `DURUM.md`.
 
@@ -8,11 +8,11 @@ Every sentence below describes something that exists in the repository today. Th
 
 ### Inspiration
 
-Student clubs run on WhatsApp. Tasks get handed out during a 200-message evening, an event date changes twice, and "who has the sponsor file?" stays unanswered for two weeks. The information exists, but it is buried in a chat. We wanted the club lead to get one place for all of it (chat, meeting notes and event data) without sending dozens of students' names, phone numbers and private messages to a cloud service.
+Student clubs lose track of their own work. Tasks sit in chats, decisions in someone's notes, event data in spreadsheets, and with more than ten people, many committees and busy festivals nobody knows what is where. We wanted one free place where a club enters everything any time, during a meeting or an event, keeps it on its own computer, and lets a local AI analyse it and suggest what to do next, without sending students' names and messages to a cloud service.
 
 ### What it does
 
-Pano turns a WhatsApp export, meeting notes and hand-entered event records into a board of tasks, decisions, open questions and events.
+KulüpOS is one workspace for a club's tasks, decisions, open questions, events and meetings. Information is entered by hand at any time (stored locally), and WhatsApp exports and meeting notes can be imported too.
 
 - You import a WhatsApp export (`.txt` or `.zip`); a preview shows what was read before anything is saved.
 - A local Gemma 4 model proposes tasks, decisions, open questions and events. Every proposal is linked to the message (or note line) it came from.
@@ -49,7 +49,7 @@ Gemma 4 (`gemma4:e4b`), Ollama, Python, FastAPI, Uvicorn, httpx, SQLite, vanilla
 
 ## (b) Short description and tagline
 
-**Three sentences.** Pano is a local-first tool that turns a student club's WhatsApp export, meeting notes and event records into a board of tasks, decisions, open questions and events. An open Gemma 4 model running on the user's own computer proposes the items, each with a source quote, and nothing counts until a human approves it. Reports and summaries are written only from entered data, and anything unsupported is rejected.
+**Three sentences.** KulüpOS is a local-first tool that turns a student club's WhatsApp export, meeting notes and event records into a board of tasks, decisions, open questions and events. An open Gemma 4 model running on the user's own computer proposes the items, each with a source quote, and nothing counts until a human approves it. Reports and summaries are written only from entered data, and anything unsupported is rejected.
 
 **Tagline.** Your club's work in one place, found by Gemma on your own laptop and approved by you.
 
@@ -61,11 +61,11 @@ Gemma 4 (`gemma4:e4b`), Ollama, Python, FastAPI, Uvicorn, httpx, SQLite, vanilla
 
 Student clubs run on WhatsApp. During one 200-message evening, five tasks are handed out, the event date changes twice, and someone asks "who has the sponsor file?" The answer arrives two weeks later, or never. The information exists; it is just buried.
 
-For Hacktoberfest Elazığ Fest 2026 I built **Pano**, a tool that reads a club's WhatsApp export, meeting notes and event records and turns them into a board of tasks, decisions, open questions and events.
+For Hacktoberfest Elazığ Fest 2026 I built **KulüpOS**, a tool that reads a club's WhatsApp export, meeting notes and event records and turns them into a board of tasks, decisions, open questions and events.
 
 **How it works.** You import an export (`.txt` or `.zip`). A parser handles Android and iOS formats and Turkish and English dates. Then an analyzer sends the model windows of about 30 messages together with the current board, so it can close a task ("dilekçeyi verdim ✅") or reassign one instead of creating duplicates. The model is **Gemma 4 `gemma4:e4b`**, running through a local Ollama server with JSON-schema constrained output. The backend is FastAPI with one SQLite file, and the interface is plain JavaScript with no CDN.
 
-**Why local.** A club chat contains dozens of students' names, numbers and private messages. In Pano the server listens only on `127.0.0.1`, the UI loads nothing external, and there is no API key. It also costs nothing per use and works offline once the model is pulled. That reduces exposure; it is not legal advice or a compliance guarantee.
+**Why local.** A club chat contains dozens of students' names, numbers and private messages. In KulüpOS the server listens only on `127.0.0.1`, the UI loads nothing external, and there is no API key. It also costs nothing per use and works offline once the model is pulled. That reduces exposure; it is not legal advice or a compliance guarantee.
 
 **Safety by design.**
 1. *A source is required.* Every proposal links to the message or note line it came from. A proposal without a source cannot be approved.
@@ -84,7 +84,7 @@ Code, tests and the fictional demo club are in the repository (MIT licence). Mos
 
 ## (d) 2-minute demo script (Turkish)
 
-**0:00–0:15 · Giriş ekranı.** "Kulüpler WhatsApp'ta yürüyor. İki yüz mesajlık bir akşamda görevler dağılıyor, etkinlik tarihi iki kez değişiyor, kimin ne yaptığı kayboluyor. Pano bunu tek yerde topluyor ve her şey bilgisayarınızda, yerel Gemma 4 ile çalışıyor." *"Demo kulübü aç"* düğmesine bas.
+**0:00–0:15 · Giriş ekranı.** "Kulüpler WhatsApp'ta yürüyor. İki yüz mesajlık bir akşamda görevler dağılıyor, etkinlik tarihi iki kez değişiyor, kimin ne yaptığı kayboluyor. KulüpOS bunu tek yerde topluyor ve her şey bilgisayarınızda, yerel Gemma 4 ile çalışıyor." *"Demo kulübü aç"* düğmesine bas.
 
 **0:15–0:40 · Panel.** "Bu örnek kulüp tamamen sahte veri, üstünde 'Örnek veri' yazıyor. Panel bugün ilgilenilecekleri gösteriyor: geciken görevler, sorumlusu olmayanlar, yaklaşan etkinlik ve toplantılar. Yapay zekâ önerileri gerçek görev sayısından ayrı tutuluyor; verisi olmayan yerde sıfır değil çizgi görüyorsunuz."
 
@@ -94,6 +94,6 @@ Code, tests and the fictional demo club are in the repository (MIT licence). Mos
 
 **1:30–1:50 · Etkinlik sayfası.** "Python Atölyesi: bağlı görevler, katılım oranı, elle girilen geri bildirim ve rapor tek sayfada. Rapor yalnızca girilen veriden yazıldı; bir konuya 'ortak' diyebilmesi için en az iki farklı yorumdan alıntı gerekiyor. Veri olmayan alanlar raporda hiç yer almıyor."
 
-**1:50–2:00 · Kapanış.** "Ölçülen sonuç dürüst: Türkçe demo sohbette 14 kontrolün 10'u geçti, yaklaşık 230 saniye sürdü; model bazı devirleri kaçırıyor, o yüzden otomatik onay yok. Pano: kulübün işleri tek yerde, veriniz sizde."
+**1:50–2:00 · Kapanış.** "Ölçülen sonuç dürüst: Türkçe demo sohbette 14 kontrolün 10'u geçti, yaklaşık 230 saniye sürdü; model bazı devirleri kaçırıyor, o yüzden otomatik onay yok. KulüpOS: kulübün işleri tek yerde, veriniz sizde."
 
 *Sunum notları:* canlı analiz yaklaşık 4 dakika sürer, bu yüzden demoda analiz beklenmez, hazır örnek kulüp kullanılır. Hesap/rol, mesajlaşma, ses kaydı ve entegrasyonlar henüz yok; sahnede varmış gibi anlatılmaz.

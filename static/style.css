@@ -599,3 +599,21 @@ button.stat .lbl { display: flex; align-items: center; gap: 8px; margin-top: 4px
 .sample-banner span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sample-banner b { font-weight: 600; }
 .sample-actions { display: flex; gap: 8px; flex: none; }
+
+/* events list + comparison */
+.ev-list { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 24px; }
+.ev-row {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+  min-height: 48px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface); color: inherit;
+}
+.ev-row:hover { border-color: var(--gray-300); background: var(--gray-50); }
+.ev-title { flex: 1 1 180px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmp { margin-top: 8px; }
+.cmp .tscroll { max-height: 70vh; overflow: auto; border: 1px solid var(--border); border-radius: 12px; }
+.cmp-table { background: var(--surface); }
+.cmp-table thead th { position: sticky; top: 0; background: var(--gray-50); z-index: 1; }
+.metric { display: inline-flex; align-items: center; gap: 8px; }
+.meter { display: inline-block; width: 56px; height: 6px; border-radius: 999px; background: var(--gray-100); overflow: hidden; }
+.meter > span { display: block; height: 100%; background: var(--accent); }
+td.num-late { background: var(--danger-soft); color: var(--danger); }

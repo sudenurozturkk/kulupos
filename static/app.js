@@ -680,8 +680,10 @@ function segmentHtml(view) {
     `<a href="#/c/${id}/${v}" class="${v === cur ? "on" : ""}" role="tab">${t(k)}</a>`).join("")}</div>`;
 }
 
-function pageActionsHtml() {
-  return `<div class="page-actions"><div class="more">
+function pageActionsHtml(view) {
+  const primary = view === "events"
+    ? `<button type="button" class="primary" id="btn-ev-add">${t("ev_add")}</button>` : "";
+  return `<div class="page-actions">${primary}<div class="more">
     <button type="button" class="ghost icon-btn" id="btn-more" aria-haspopup="menu" aria-expanded="false" aria-label="${esc(t("more"))}">${icon("dots")}</button>
     <div class="more-menu" id="more-menu" role="menu" hidden>
       <button type="button" role="menuitem" id="menu-export">${t("exp_btn")}</button>
@@ -706,7 +708,7 @@ function shell(view) {
       <h2>${esc(t(TITLE[view] || "tab_overview"))}</h2>
       <p class="meta">${c.message_count} ${t("messages")}${range ? " · " + range : ""} · ${b.members.length}</p>
     </div>
-    ${pageActionsHtml()}
+    ${pageActionsHtml(view)}
   </header>
   ${segmentHtml(view)}
   <div id="progress-slot">${progressHtml(b.progress)}</div>
@@ -1550,24 +1552,34 @@ async function renderEventsView() {
   const b = S.board, id = b.chat.id, cmp = b.event_compare || [];
   const link = e => `#/c/${id}/event/${e.id}`;
   const linked = e => b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
-  const list = b.events.length ? `<ul class="list">${b.events.map(e => `<li><span class="grow"><a href="${link(e)}"><b>${esc(e.title)}</b></a>
-      <small>${e.due ? fmtDate(e.due) : "—"}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.phase ? " · " + esc(t("ph")[e.phase] || e.phase) : ""}${linked(e) ? " · " + t("ev_linked")(linked(e)) : ""}</small></span>
-      <a class="btn ghost small" href="${link(e)}">${t("evp_open")}</a></li>`).join("")}</ul>`
-    : `<p class="muted">${t("none_yet")}</p><p><button class="ghost small" data-ev-sample>${t("ev_sample")}</button></p>`;
+  const list = b.events.length ? `<div class="ev-list">${b.events.map(e => {
+    const n = linked(e);
+    return `<a class="ev-row" href="${link(e)}">
+      <span class="ev-title">${esc(e.title)}</span>
+      <span class="chip">${esc(e.phase ? (t("ph")[e.phase] || e.phase) : "—")}</span>
+      <span class="muted">${e.due ? fmtDate(e.due) : "—"}</span>
+      <span class="muted">${e.place ? esc(e.place) : "—"}</span>
+      <span class="muted">${n ? t("ev_linked")(n) : "—"}</span>
+    </a>`;
+  }).join("")}</div>`
+    : `<div class="empty-quiet">${icon("calendar")}<p>${t("ev_none")}</p><button type="button" class="ghost" data-ev-sample>${t("ev_sample")}</button></div>`;
+  const bar = pct => `<span class="meter" aria-hidden="true"><span style="width:${Math.max(0, Math.min(100, pct))}%"></span></span>`;
   const rows = cmp.map(r => `<tr><th scope="row"><a href="${link(r)}">${esc(r.title)}</a><div class="muted small">${esc(t("ph")[r.phase] || "")}${r.date ? " · " + fmtDate(r.date, false) : ""}</div></th>
-    <td>${r.attendance_pct != null ? `<b>${r.attendance_pct}%</b>` : dash}</td>
-    <td>${r.late_tasks != null ? `<b>${r.late_tasks}</b> <span class="muted small">/ ${r.tasks}</span>` : dash}</td>
-    <td>${r.feedback_score != null ? `<b>${r.feedback_score}</b>/5` : dash}</td></tr>`).join("");
-  $("#view").innerHTML = `<div class="narrow wide">
+    <td>${r.attendance_pct != null ? `<span class="metric"><b>${r.attendance_pct}%</b>${bar(r.attendance_pct)}</span>` : dash}</td>
+    <td class="${r.late_tasks > 0 ? "num-late" : ""}">${r.late_tasks != null ? `<b>${r.late_tasks}</b> <span class="muted small">/ ${r.tasks}</span>` : dash}</td>
+    <td>${r.feedback_score != null ? `<span class="chip">${r.feedback_score}/5</span>` : dash}</td></tr>`).join("");
+  $("#view").innerHTML = `
     <p class="muted">${t("evs_intro")}</p>
-    <div class="row-actions"><button class="primary" data-ev-add>${t("ev_add")}</button></div>
     ${list}
-    <h3>${t("cmp_title")}</h3>
-    ${cmp.length ? `<p class="muted small">${t("cmp_note")}</p>
-      <div class="tscroll"><table class="atable"><thead><tr><th>${t("an_c_event")}</th><th>${t("cmp_att")}</th><th>${t("cmp_late")}</th><th>${t("cmp_score")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
-      : `<p class="muted">${t("none_yet")}</p>`}</div>`;
+    <section class="cmp">
+      <h3>${t("cmp_title")}</h3>
+      ${cmp.length ? `<p class="muted small">${t("cmp_note")}</p>
+        <div class="tscroll"><table class="atable cmp-table"><thead><tr><th>${t("an_c_event")}</th><th>${t("cmp_att")}</th><th>${t("cmp_late")}</th><th>${t("cmp_score")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
+        : `<div class="empty-quiet">${icon("chart")}<p>${t("none_yet")}</p></div>`}
+    </section>`;
+  const add = $("#btn-ev-add");
+  if (add) add.onclick = () => editEvent({});
   const view = $("#view");
-  view.querySelectorAll("[data-ev-add]").forEach(el => (el.onclick = () => editEvent({})));
   view.querySelectorAll("[data-ev-sample]").forEach(el => (el.onclick = async () => {
     try { const r = await post(`/api/chats/${id}/sample-event`); location.hash = `#/c/${id}/event/${r.event_id}`; }
     catch (e) { toast(e.message); }

@@ -377,7 +377,7 @@ function renderHome() {
         <label for="units">${t("units_label")}</label>
         <input type="text" id="units" value="${esc(t("units_default"))}">
         <label for="gname">${t("name_label")}</label>
-        <input type="text" id="gname" placeholder="FÜBET Yönetim">
+        <input type="text" id="gname" placeholder="FUB3V Yönetim">
         <div class="demo-row">
           <button class="primary" data-demo="${lang}">✨ ${t("try_demo")}</button>
           <button class="ghost" data-demo="${lang === "tr" ? "en" : "tr"}">${lang === "tr" ? "English demo" : "Türkçe demo"}</button>

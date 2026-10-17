@@ -72,5 +72,7 @@ Toplantı: tekrarlayan toplantı, toplantıdan etkinliğe bağlama, katılım yo
 
 - 18 Ekim: “Demo kulübü aç” eski örnek kulübü (toplantı/geri bildirim/rapor eksik) silip yeniden kurar; `is_sample=0` kulüplere dokunmaz (testli, sunucuda doğrulandı). README İngilizce üstte, Türkçe altta; `SUBMISSION.md` ve `docs/screenshots/` (görseller kullanıcıdan) eklendi. `ui-redesign` dalı (başka oturum: tokenlar, kenar çubuğu, SVG ikonlar, kanban, genel bakış kartları) ve `demo-submission` main'e birleştirildi; UI değişikliği ekranda **görülmedi** (yalnızca `node --check` + testler). Rol/giriş sistemi, kanban sürükle-bırak kalıcılığı, görev detay paneli, AI sohbetin yetkili sorgusu bu oturumda yapılmadı.
 
+- 18 Ekim (2): tek yerel hesap + giriş/çıkış (`app/auth.py`, PBKDF2 parola, HttpOnly çerez, ilk kurulumda hesap açılır, sonrası kapalı; PANO_AUTH=0 kapatır; testli). Roller yok. Demo kulübü adı FUB3V Yönetim 2026; örnekte 6 etkinlik, 27 görev, 9 karar, 6 açık soru (yeni kayıtlar elle girilmiş sayılır, sohbet kaynağı yok); dönem içgörüsü yeniden üretildi. Kenar çubuğu, kartlar, giriş ekranı için CSS cilası eklendi: **ekranda görülmedi**.
+
 ## Sıradaki
 Toplantıdan etkinliğe doğrudan bağlama · G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)

@@ -12,11 +12,11 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import PlainTextResponse, Response
+from fastapi.responses import JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analysis, analyzer, assistant, db, export, insights, llm, meetings, people, report, seed
+from . import analysis, analyzer, assistant, auth, db, export, insights, llm, meetings, people, report, seed
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -35,6 +35,58 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="Pano", docs_url="/api/docs", lifespan=lifespan)
 _tasks: set[asyncio.Task] = set()
+
+
+@app.middleware("http")
+async def require_sign_in(request: Request, call_next):
+    """Every API call except sign-in itself and the health check needs a valid session (unless PANO_AUTH=0)."""
+    path = request.url.path
+    if auth.enabled() and path.startswith("/api/") and not path.startswith(auth.OPEN)             and not auth.user_of(request.cookies.get(auth.COOKIE)):
+        return JSONResponse({"detail": "Giriş gerekli / sign-in required"}, status_code=401)
+    return await call_next(request)
+
+
+class Credentials(BaseModel):
+    username: str
+    password: str
+
+
+def _session_response(token: str, username: str) -> JSONResponse:
+    r = JSONResponse({"user": username})
+    r.set_cookie(auth.COOKIE, token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 7)
+    return r
+
+
+@app.get("/api/auth/me")
+def auth_me(request: Request):
+    user = auth.user_of(request.cookies.get(auth.COOKIE))
+    return {"user": user, "auth": auth.enabled(), "can_register": auth.enabled() and not auth.has_users()}
+
+
+@app.post("/api/auth/register")
+def auth_register(body: Credentials):
+    try:
+        return _session_response(auth.register(body.username, body.password), body.username.strip())
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except PermissionError as e:
+        raise HTTPException(403, str(e))
+
+
+@app.post("/api/auth/login")
+def auth_login(body: Credentials):
+    try:
+        return _session_response(auth.login(body.username, body.password), body.username.strip())
+    except PermissionError as e:
+        raise HTTPException(401, str(e))
+
+
+@app.post("/api/auth/logout")
+def auth_logout(request: Request):
+    auth.logout(request.cookies.get(auth.COOKIE))
+    r = JSONResponse({"ok": True})
+    r.delete_cookie(auth.COOKIE)
+    return r
 
 
 def today() -> date:

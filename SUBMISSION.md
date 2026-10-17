@@ -39,7 +39,7 @@ Structured output plus checks in code matter more than prompt wording for a smal
 
 ### What's next
 
-Planned, **not built**: multi-user accounts and roles (there is no login on purpose, so there is no fake permission system), in-app messaging, meeting audio recording, budget and sponsor tracking, integrations with outside platforms. Also open: the English demo evaluation has never been run, duplicate/conflict suggestions are not shown to the user, and the interface has no automated UI tests.
+Planned, **not built**: multi-user accounts and roles (today there is a single local account with sign-in and sign-out, and no roles), in-app messaging, meeting audio recording, budget and sponsor tracking, integrations with outside platforms. Also open: the English demo evaluation has never been run, duplicate/conflict suggestions are not shown to the user, and the interface has no automated UI tests.
 
 ### Built with
 

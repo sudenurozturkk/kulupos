@@ -13,7 +13,7 @@ Kaynaklar: `OZELLIKLER.md` (katalog), `DURUM.md` (mevcut durum), `PLAN.md` (gör
 8. Gizlilik: veri uzak servise gitmez, günlüğe mesaj metni yazılmaz, sahte demo verisi dışında gerçek sohbet repoya girmez.
 9. Çalışmayan düğme, sahte istatistik yok. 10. Test edilmeyen şey "hazır" denmez; eksikler açıkça yazılır.
 11. Mevcut yapı korunur. 12. Görev/karar/etkinlik/birim aynı veriyi tutarlı gösterir.
-Giriş/rol sistemi kurma (sahte yetki yok).
+Rol/yetki sistemi kurma (sahte yetki yok). İstisna: kullanıcının isteğiyle tek yerel hesap + giriş/çıkış (`app/auth.py`, PANO_AUTH=0 kapatır) var; roller yok.
 
 ## Token kuralları
 - Tek seferde tek görev (PLAN.md'deki G numarası). Büyük refactor ve baştan yazım yok.

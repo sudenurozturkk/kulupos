@@ -130,8 +130,8 @@ def test_sample_club_has_filled_held_event_and_fresh_precomputed_insight(tmp_pat
     from app import report, seed
     cid = seed.seed_sample(date(2026, 10, 17))
     stats = analysis.compute(db.get_items(cid))
-    held = [r for r in stats["events"] if r["phase"] == "held"]
-    assert len(held) == 1 and "örnek veri" in held[0]["title"].lower()
+    held = [r for r in stats["events"] if r["phase"] == "held" and "örnek veri" in r["title"].lower()]
+    assert len(held) == 1
     assert None not in (held[0]["attendance_pct"], held[0]["conversion_pct"], held[0]["budget_dev"], held[0]["feedback_score"])
     row = db.get_insight(cid)
     view = analysis.insight_view(stats, row)

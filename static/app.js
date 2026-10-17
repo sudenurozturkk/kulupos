@@ -452,6 +452,7 @@ async function api(path, opts = {}) {
   });
   if (!res.ok) {
     let detail = res.statusText;
+    if (res.status === 401 && !path.startsWith("/api/auth/")) { showLogin(); throw new Error(lang === "tr" ? "Oturum gerekli" : "Sign-in required"); }
     try { detail = (await res.json()).detail || detail; } catch {}
     if (detail && typeof detail === "object") {  // 422 from report/insight checks: {message, unsupported}
       detail = (detail.message || res.statusText) + (detail.unsupported?.length ? " — " + detail.unsupported.join(", ") : "");
@@ -1992,6 +1993,57 @@ document.addEventListener("click", e => {
   if (side && side.classList.contains("open") && !e.target.closest("#sidebar") && !e.target.closest("#nav-toggle")) side.classList.remove("open");
 });
 window.addEventListener("hashchange", render);
-refreshHealth();
-setInterval(refreshHealth, 15000);
-render();
+
+// ---- sign-in -------------------------------------------------------------------
+const AUTH_TXT = {
+  tr: { title: "Pano'ya giriş", sub: "Kulübün tüm işleri tek yerde.", user: "Kullanıcı adı", pass: "Parola", login: "Giriş yap",
+        create: "Hesap oluştur", first: "İlk kurulum: bir hesap oluşturun (bu bilgisayardaki tek hesap olur).",
+        logout: "Çıkış yap", note: "Veriler bu bilgisayarda kalır; yapay zekâ yerel Gemma ile çalışır." },
+  en: { title: "Sign in to Pano", sub: "All of your club's work in one place.", user: "Username", pass: "Password", login: "Sign in",
+        create: "Create account", first: "First run: create an account (the only account on this computer).",
+        logout: "Sign out", note: "Data stays on this computer; AI runs locally with Gemma." },
+};
+let started = false;
+function showLogin(canRegister) {
+  let box = $("#login");
+  if (!box) { box = document.createElement("div"); box.id = "login"; box.className = "login"; document.body.appendChild(box); }
+  const a = AUTH_TXT[lang];
+  box.hidden = false;
+  document.body.classList.add("locked");
+  box.innerHTML = `<form class="login-card" id="login-form">
+    <span class="logo big" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></span>
+    <h1>${a.title}</h1><p class="muted">${canRegister ? a.first : a.sub}</p>
+    <label>${a.user}<input name="u" autocomplete="username" required minlength="3" autofocus></label>
+    <label>${a.pass}<input name="p" type="password" autocomplete="${canRegister ? "new-password" : "current-password"}" required minlength="6"></label>
+    <div class="login-err" id="login-err" role="alert"></div>
+    <button class="primary" type="submit">${canRegister ? a.create : a.login}</button>
+    <p class="login-note">${a.note}</p></form>`;
+  $("#login-form").onsubmit = async e => {
+    e.preventDefault();
+    const f = e.target;
+    try {
+      await post(canRegister ? "/api/auth/register" : "/api/auth/login", { username: f.u.value, password: f.p.value });
+      box.hidden = true;
+      document.body.classList.remove("locked");
+      boot();
+    } catch (err) { $("#login-err").textContent = err.message; }
+  };
+}
+
+async function boot() {
+  let me = { auth: false, user: null };
+  try { me = await (await fetch("/api/auth/me")).json(); } catch {}
+  if (me.auth && !me.user) return showLogin(me.can_register);
+  const out = $("#btn-logout");
+  if (out) {
+    out.hidden = !me.auth;
+    out.textContent = (me.user ? me.user + " · " : "") + AUTH_TXT[lang].logout;
+    out.onclick = async () => { await post("/api/auth/logout"); location.hash = "#/"; location.reload(); };
+  }
+  if (started) return render();
+  started = true;
+  refreshHealth();
+  setInterval(refreshHealth, 15000);
+  render();
+}
+boot();

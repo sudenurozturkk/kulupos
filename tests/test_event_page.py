@@ -109,7 +109,7 @@ def test_sample_club_has_held_event_with_feedback(env):
     from datetime import date
     from app import seed
     sid = seed.seed_sample(date.today(), force=True)
-    ev = next(e for e in c.get(f"/api/chats/{sid}/board").json()["events"] if e["phase"] == "held")
+    ev = next(e for e in c.get(f"/api/chats/{sid}/board").json()["events"] if e["phase"] == "held" and e["feedback_comments"])
     assert ev["feedback_comments"] and ev["due"] == "2026-09-26"
     page = c.get(f"/api/events/{ev['id']}/page").json()
     assert page["report"] and page["source"] == "sample" and page["stale"] is False

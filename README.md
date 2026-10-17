@@ -139,7 +139,7 @@ Results vary by one or two checks between runs. The latest run produced 17 propo
 
 **None of the following exists today; all of it is planned.** It is not presented as working.
 
-- Multi-user accounts and roles (there is no login on purpose, so there is no fake permission system)
+- Multi-user accounts and roles (today there is one local account with sign-in / sign-out and no roles, so there is no fake permission system)
 - In-app messaging
 - Meeting audio recording
 - Budget / sponsor tracking
@@ -207,6 +207,6 @@ MIT License, © 2026 Sudenur Öztürk. See [LICENSE](LICENSE).
 
 Kodun büyük kısmı **Claude Code** ile yazıldı; insan incelemesi ve otomatik testlerle ilerledi (aşağıya bakın). Lisans: MIT.
 
-**Yol haritası (hiçbiri şu an yok, hepsi planlı):** çok kullanıcılı hesaplar ve roller (giriş sistemi bilerek yok), sistem içi mesajlaşma, toplantı ses kaydı, bütçe / sponsor takibi, dış platform entegrasyonları.
+**Yol haritası (hiçbiri şu an yok, hepsi planlı):** çok kullanıcılı hesaplar ve roller (şu an bu bilgisayar için tek yerel hesap ve giriş/çıkış var, roller yok), sistem içi mesajlaşma, toplantı ses kaydı, bütçe / sponsor takibi, dış platform entegrasyonları.
 
 Lisans: MIT, © 2026 Sudenur Öztürk. Ekran görüntüleri için [docs/screenshots/](docs/screenshots/README.md).

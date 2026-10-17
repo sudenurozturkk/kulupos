@@ -78,5 +78,7 @@ Toplantı: tekrarlayan toplantı, toplantıdan etkinliğe bağlama, katılım yo
 
 - 18 Ekim (4): ürün adı KulüpOS (repo `kulupos`); anlatım “WhatsApp odaklı” değil: bilgi istendiği an elle girilir, yerelde kalır, Gemma analiz/rapor/öneri verir; WhatsApp/not yalnızca içe aktarma kaynağı. Landing, hoş geldin, README, SUBMISSION, PDF güncellendi. Ortam değişkenleri hâlâ `PANO_*` (uyumluluk için değiştirilmedi); ekranda görülmedi.
 
+- 18 Ekim (5): Kulüp durumu, Etkinlikler (kart ızgarası), Etkinlik sayfası (başlık kartı, sayı karoları, AI raporu paneli, geri bildirim alıntıları), Kişiler (kartlar), Kişi sayfası yeniden tasarlandı; tablolar ve paneller cilalandı. Ekranda bakılanlar: landing, demo geçişi, Kulüp durumu, Etkinlikler, Etkinlik sayfası. **Bakılmayanlar:** Toplantılar, Toplantı sayfası, Kişi sayfası, Komiteler, İçe/Dışa aktar, AI incelemesi, Etkinlik analizi/planla, Haftalık özet, Sohbete sor (yalnızca ortak CSS cilası aldı). Demo: 10 etkinlik (6'sı gerçekleşti, 5'inde geri bildirim), 35 görev, 11 karar; dönem içgörüsü yeniden üretildi.
+
 ## Sıradaki
 Toplantıdan etkinliğe doğrudan bağlama · G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)

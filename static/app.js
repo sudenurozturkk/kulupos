@@ -331,6 +331,10 @@ const HUB_I18N = {
   tr: {
     nav_main: "Ana menü", nav_panel: "Panel", nav_list: "Etkinlik listesi", nav_tasks: "Görevler", tab_units: "Komiteler", nav_data: "İçe/Dışa aktar",
     sec_work: "Çalışma", sec_people: "İnsanlar", sec_ai: "AI", sec_data: "Veri", more: "Diğer işlemler", menu: "Menü",
+    ov_hello: n => `${n} için bugünkü durum.`,
+    ov_clear: "Gecikmiş, sahipsiz, çelişkili kayıt veya açık karar yok.",
+    ov_ai: "Son AI önerileri", ov_empty_ai: "Onay bekleyen öneri yok.",
+    ov_see_board: "Görevlere git", ov_see_events: "Etkinliklere git", ov_see_review: "İncelemeye git",
     un_intro: "Komiteler, üye listeleri ve onlara bağlı işler. Sayılar yalnızca girilmiş görev ve etkinlik kayıtlarından gelir.", un_members: "Üyeler (serbest metin)",
     un_loose: n => `${n} görev komitesiz.`,
     da_intro: "Sohbeti içeri al, verini dışarı ver. Veri bilgisayardan çıkmaz.", da_import: "İçe aktar", da_new: "Başka sohbet / yeni kulüp",
@@ -354,6 +358,10 @@ const HUB_I18N = {
   en: {
     nav_main: "Main menu", nav_panel: "Dashboard", nav_list: "Event list", nav_tasks: "Tasks", tab_units: "Committees", nav_data: "Import / Export",
     sec_work: "Work", sec_people: "People", sec_ai: "AI", sec_data: "Data", more: "More actions", menu: "Menu",
+    ov_hello: n => `Today in ${n}.`,
+    ov_clear: "No overdue, unassigned or conflicting records, and no open decisions.",
+    ov_ai: "Recent AI suggestions", ov_empty_ai: "No proposals waiting for approval.",
+    ov_see_board: "Open tasks", ov_see_events: "Open events", ov_see_review: "Open review",
     un_intro: "Committees, their member lists and the work tied to them. Counts come only from entered task and event records.", un_members: "Members (free text)",
     un_loose: n => `${n} task(s) without a committee.`,
     da_intro: "Bring a chat in, take your data out. The data never leaves this computer.", da_import: "Import", da_new: "Another chat / new club",
@@ -672,7 +680,7 @@ function segmentHtml(view) {
 
 function pageActionsHtml() {
   return `<div class="page-actions"><div class="more">
-    <button type="button" class="ghost icon-btn" id="btn-more" aria-haspopup="menu" aria-expanded="false" aria-label="${esc(t("more"))}"></button>
+    <button type="button" class="ghost icon-btn" id="btn-more" aria-haspopup="menu" aria-expanded="false" aria-label="${esc(t("more"))}">${icon("dots")}</button>
     <div class="more-menu" id="more-menu" role="menu" hidden>
       <button type="button" role="menuitem" id="menu-export">${t("exp_btn")}</button>
       <button type="button" role="menuitem" id="menu-reanalyze">${t("reanalyze")}</button>
@@ -1331,114 +1339,70 @@ function bindAnswer() {
 
 // ---------------------------------------------------------------- overview (club status)
 function renderOverview() {
-  const b = S.board, o = b.overview, k = o.kpi;
-  const pct = k.total ? Math.round((k.done / k.total) * 100) : 0;
-  const missed = k.questions + k.orphans;
-  const escObj = a => Object.fromEntries(Object.entries(a).map(([key, v]) => [key, typeof v === "string" ? esc(v) : v]));
-  const alertIc = { event: "calendar", overdue: "clock", question: "help", load: "users" };
-  const maxLoad = Math.max(1, ...o.workload.map(w => w.open + w.done));
-  const health = { ok: t("h_ok"), warn: t("h_warn"), bad: t("h_bad"), idle: t("h_idle") };
-  const waiting = b.chat.status !== "ready";
-  const running = waiting || ["running", "queued"].includes(b.progress.state);
-  const cards = [
-    { f: "open", ic: "pin", lbl: t("c_tasks"), has: k.total > 0, v: k.open, note: t("c_tasks_note"),
-      sub: k.total ? `${k.done} ${t("k_done")} · ${k.total} ${t("c_approved_tasks")}` : t("no_data") },
-    { f: "soon", ic: "clock", lbl: t("c_soon"), has: k.dated > 0, v: k.upcoming_ids.length, note: t("c_soon_note"),
-      sub: k.dated ? t("c_soon_sub") : t("c_soon_none") },
-    { f: "questions", ic: "help", lbl: t("c_q"), has: k.questions_total > 0, v: k.questions, note: t("c_q_note"),
-      sub: k.questions_total ? `${k.questions_total} ${t("c_q_total")}` : t("c_q_none") },
-    { f: "review", ic: "search", lbl: t("c_ai"), has: !waiting || b.review_total > 0, v: b.review_total, note: t("c_ai_note"),
-      cls: b.review_total ? "warn" : "", sub: running ? t(waiting ? "c_ai_waiting" : "c_ai_running") : t("c_ai_sub") },
-  ];
-  const fo = o.focus;
+  const b = S.board, o = b.overview, fo = o.focus, id = b.chat.id;
   const whyTxt = c => c.why === "after_event" ? t("why_after_event")(esc(c.event)) : t("why_" + c.why);
-  const groups = [
-    ["overdue", t("f_overdue"), fo.overdue, x => `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${x.owner ? esc(firstName(x.owner)) : t("no_owner")} · ${fmtDate(x.due)}</small>`],
-    ["orphans", t("f_orphans"), fo.orphans, x => `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${x.due ? fmtDate(x.due) : t("no_due")}</small>`],
-    ["conflicts", t("f_conflicts"), fo.conflicts, x => `${esc(x.title)}<small>${whyTxt(x)}</small>`],
-    ["decisions", t("f_decisions"), fo.decisions, x => `${esc(x.title)}`],
+  const stats = [
+    ["overdue", fo.overdue.length, "bad", "f_overdue"],
+    ["orphans", fo.orphans.length, "warn", "f_orphans"],
+    ["conflicts", fo.conflicts.length, "info", "f_conflicts"],
+    ["decisions", fo.decisions.length, "accent", "f_decisions"],
   ];
-  const tags = { overdue: `${t("n_late")}`, orphans: `${t("n_orphan")}`, conflicts: ` ${t("tag_conflict")}`, decisions: `${t("tag_open")}` };
-  const allClear = groups.every(g => !g[2].length);
-  const focusHtml = allClear ? `<p class="all-clear" style="grid-column:1/-1">${t("all_clear")}</p>` : groups.map(([key, label, list, fmt]) => `<div class="focus-col">
-    <h4>${label} <span class="n ${list.length ? "" : "zero"}">${list.length}</span></h4>
-    ${list.length ? `<ul class="list">${list.slice(0, 4).map(x => `<li><span class="grow">${fmt(x)} <span class="chip ${key === "overdue" ? "overdue" : key === "orphans" ? "soon" : key === "conflicts" ? "overdue" : "ai"} tag">${tags[key]}</span></span></li>`).join("")}</ul>
-      ${list.length > 4 ? `<small class="muted">${t("f_more")(list.length - 4)}</small>` : ""}` : `<p class="muted">${t("f_none")}</p>`}
-    ${key === "decisions" && list.length ? `<small class="muted">${t("f_decisions_hint")}</small>` : ""}</div>`).join("");
-  const eventsHtml = o.events.length ? `<ul class="timeline">${o.events.map(e => `<li><span class="d">${fmtDate(e.date, false).replace(" ", "<br>")}</span>
-      <span class="pt event"></span><span><b>${esc(e.title)}</b><small>${t("k_days")(e.days)}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.tasks ? " · " + t("ev_open_n")(e.open_tasks, e.tasks) : ""}</small></span></li>`).join("")}</ul>`
-    : `<p class="muted">${t("none_yet")}</p>`;
-  const importsHtml = S.chats.length ? `<ul class="list">${S.chats.slice(0, 5).map(c => `<li><span class="grow"><a href="#/c/${c.id}/overview">${esc(c.source_name || c.name)}</a>
-      <small>${c.message_count} ${t("messages")} · ${t("imp_st")[c.status] || c.status}${c.review_count ? " · " + t("imp_review")(c.review_count) : ""} · ${fmtDate(c.imported_at, false)}</small></span>
-      ${c.is_sample ? `<span class="chip ai">${t("sample_tag")}</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`;
-
-  const mc = b.meetings || { upcoming: [], held_orphans: [] };
-  const mlink = m => `href="#/c/${b.chat.id}/meeting/${m.id}"`;
-  const meetUpcomingHtml = mc.upcoming.length ? `<ul class="list">${mc.upcoming.map(m => `<li><span class="grow"><a ${mlink(m)}>${esc(m.title)}</a>
-      <small>${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""} · ${t("k_days")(m.days)}${m.units.length ? " · " + m.units.map(esc).join(", ") : ""}</small></span></li>`).join("")}</ul>`
-    : `<p class="muted">${t("pc_upcoming_none")}</p>`;
-  const meetHeldHtml = mc.held_orphans.length ? `<ul class="list">${mc.held_orphans.map(m => `<li><span class="grow"><a ${mlink(m)}>${esc(m.title)}</a>
-      <small>${m.date ? fmtDate(m.date) : t("pc_nodate")} · ${t("pc_orphans")(m.orphans)}</small></span></li>`).join("")}</ul>`
-    : `<p class="muted">${t("pc_held_none")}</p>`;
+  const pri = [];
+  fo.overdue.slice(0, 3).forEach(x => pri.push({
+    html: `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${x.owner ? esc(firstName(x.owner)) : t("no_owner")} · ${fmtDate(x.due)}</small>`,
+    label: t("n_late"),
+  }));
+  fo.orphans.filter(x => !fo.overdue.some(o => o.id === x.id)).slice(0, 3).forEach(x => pri.push({
+    html: `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${x.due ? fmtDate(x.due) : t("no_due")}</small>`,
+    label: t("n_orphan"),
+  }));
+  fo.conflicts.slice(0, 3).forEach(x => pri.push({
+    html: x.kind === "task"
+      ? `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${whyTxt(x)}</small>`
+      : `<a href="#/c/${id}/event/${x.id}">${esc(x.title)}</a><small>${whyTxt(x)}</small>`,
+    label: t("tag_conflict"),
+  }));
+  fo.decisions.slice(0, 3).forEach(x => pri.push({ html: esc(x.title), label: t("tag_open") }));
+  const allClear = ![fo.overdue, fo.orphans, fo.conflicts, fo.decisions].some(list => list.length);
+  const priHtml = allClear
+    ? `<div class="empty-quiet">${icon("check")}<p>${t("ov_clear")}</p><button type="button" class="primary" id="ov-add">${t("add_task")}</button></div>`
+    : `<ul class="list">${pri.map(item => `<li><span class="grow">${item.html}<span class="chip">${esc(item.label)}</span></span></li>`).join("")}</ul>
+       ${fo.decisions.length ? `<p class="muted small">${t("f_decisions_hint")}</p>` : ""}
+       <p class="muted"><a href="#/c/${id}/board">${t("ov_see_board")}</a></p>`;
+  const eventsHtml = o.events.length
+    ? `<ul class="list">${o.events.map(e => `<li><span class="grow"><a href="#/c/${id}/event/${e.id}"><b>${esc(e.title)}</b></a>
+        <small>${fmtDate(e.date)}${e.place ? " · " + esc(e.place) : ""}${e.time ? " · " + esc(e.time) : ""}</small></span>
+        <span class="chip">${t("k_days")(e.days)}</span></li>`).join("")}</ul>`
+    : `<div class="empty-quiet">${icon("calendar")}<p>${t("none_yet")}</p><a class="btn" href="#/c/${id}/events">${t("ov_see_events")}</a></div>`;
+  const ai = (b.review || []).slice(0, 4);
+  const aiHtml = ai.length
+    ? `<ul class="list">${ai.map(i => `<li><span class="grow"><a href="#/c/${id}/review">${esc(i.title)}</a>
+        <small>${esc(t("k_" + i.kind))}</small></span><span class="chip ai">${icon("spark")} AI</span></li>`).join("")}</ul>`
+    : `<div class="empty-quiet">${icon("spark")}<p>${t("ov_empty_ai")}</p><a class="btn" href="#/c/${id}/review">${t("ov_see_review")}</a></div>`;
   $("#view").innerHTML = `
-  <div class="panel focus"><h3>${t("focus_title")}</h3><div class="focus-grid">${focusHtml}</div></div>
-  <div class="kpis cards4">${cards.map(c => `
-      <div class="kpi card-link ${c.cls || ""}" role="link" tabindex="0" data-card="${c.f}" title="${esc(c.note)}">
-        <div class="lbl">${icon(c.ic)} ${c.lbl}</div><div class="val">${c.has ? c.v : "—"}</div>
-        <div class="sub">${c.sub}</div><div class="sub note">${c.note}</div></div>`).join("")}</div>
-  <p class="muted cards-note">${t("cards_overlap")}</p>
-    <div class="ov-grid">
-    <div class="ov-col">
-      <div class="panel"><h3> ${t("units_title")}</h3>
-        <div class="units">${o.units.map(u => `
-          <div class="unit ${u.health}" data-unit="${esc(u.name || "")}">
-            <div class="nm"><span>${esc(u.name || t("no_unit"))}</span><span class="st">${health[u.health]}</span></div>
-            <div class="mini"><div style="width:${u.total ? Math.round(u.done / u.total * 100) : 0}%"></div></div>
-            <div class="nums"><span><b>${u.open}</b> ${t("n_open")}</span><span><b>${u.done}</b> ${t("n_done")}</span>
-              ${u.overdue ? `<span style="color:var(--danger)"><b>${u.overdue}</b> ${t("n_late")}</span>` : ""}
-              ${u.orphans ? `<span style="color:var(--warn)"><b>${u.orphans}</b> ${t("n_orphan")}</span>` : ""}</div>
-          </div>`).join("")}</div>
+    <p class="ov-hello">${t("ov_hello")(esc(b.chat.name))}</p>
+    <div class="stat-grid">${stats.map(([f, n, tone, key]) => `
+      <button type="button" class="stat" data-card="${f}">
+        <span class="num">${n}</span>
+        <span class="lbl"><i class="stat-dot ${tone}" aria-hidden="true"></i>${t(key)}</span>
+      </button>`).join("")}</div>
+    <div class="split">
+      <section class="panel"><h3>${t("focus_title")}</h3>${priHtml}</section>
+      <div class="stack">
+        <section class="panel"><h3>${t("up_events")}</h3>${eventsHtml}</section>
+        <section class="panel"><h3>${t("ov_ai")}</h3>${aiHtml}</section>
       </div>
-      <div class="panel"><h3>${t("alerts_title")}</h3>
-        ${o.alerts.length ? `<ul class="alerts">${o.alerts.slice(0, 8).map(a => {
-          const e = escObj(a);
-          return `<li class="${a.level}"><span class="ic">${icon(alertIc[a.type])}</span><span>${t("a_" + a.type)(e)}<small>${t("a_" + a.type + "_sub")(e)}</small></span></li>`;
-        }).join("")}</ul>` : `<p class="muted">${t("no_alerts")}</p>`}
-      </div>
-    </div>
-    <div class="ov-col">
-      <div class="panel"><h3> ${t("load_title")}</h3>
-        ${o.workload.length ? o.workload.map(w => `<div class="load-row"><span class="nm">${avatar(w.name)}${esc(firstName(w.name))}</span>
-          <div class="load-bar"><div class="o" style="width:${w.open / maxLoad * 100}%"></div><div class="d" style="width:${w.done / maxLoad * 100}%"></div></div>
-          <b>${w.open}</b></div>`).join("") + `<div class="legend"><span><i style="background:var(--brand)"></i>${t("l_open")}</span><span><i style="background:var(--ok)"></i>${t("l_done")}</span></div>`
-        : `<p class="muted">${t("none_yet")}</p>`}
-      </div>
-      <div class="panel"><h3>${t("up_events")}</h3>${eventsHtml}</div>
-      <div class="panel"><h3> ${t("pc_upcoming")}</h3>${meetUpcomingHtml}</div>
-      <div class="panel"><h3> ${t("pc_held")}</h3>${meetHeldHtml}</div>
-      <div class="panel"><h3>${t("imp_title")}</h3>${importsHtml}</div>
-      <div class="panel"><h3> ${t("timeline_title")}</h3>
-        ${o.timeline.length ? `<ul class="timeline">${o.timeline.map(r => `<li><span class="d">${fmtDate(r.date, false).replace(" ", "<br>")}</span>
-          <span class="pt ${r.kind}"></span><span>${r.kind === "event" ? "<b>" + esc(r.title) + "</b>" : esc(r.title)}<small>${r.owner ? esc(firstName(r.owner)) : r.kind === "event" ? icon("calendar") : t("no_owner")}</small></span></li>`).join("")}</ul>`
-        : `<p class="muted">${t("none_yet")}</p>`}
-      </div>
-      <div class="panel"><h3>${t("recent_decisions")}</h3>
-        ${b.decisions.length ? `<ul class="list">${b.decisions.slice(-5).reverse().map(d => `<li><span class="grow">${esc(d.title)}</span>${d.source_idx != null ? `<button class="src" data-src="${d.source_idx}" title="${t("source")}" aria-label="${t("source")}"></button>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}
-      </div>
-    </div>
-  </div>`;
-  $("#view").querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
+    </div>`;
   $("#view").querySelectorAll("[data-card]").forEach(el => {
-    const go = () => {
+    el.onclick = () => {
       const f = el.dataset.card;
-      if (f === "review") { location.hash = `#/c/${b.chat.id}/review`; return; }
-      S.taskFilter = f; location.hash = `#/c/${b.chat.id}/board`;
+      S.taskFilter = f === "overdue" || f === "orphans" ? f : null;
+      location.hash = `#/c/${id}/board`;
     };
-    el.onclick = go;
-    el.onkeydown = e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), go());
   });
   $("#view").querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(b.tasks.find(x => x.id === Number(el.dataset.edit)))));
-  $("#view").querySelectorAll("[data-unit]").forEach(el => (el.onclick = () => { location.hash = `#/c/${b.chat.id}/board`; }));
+  const add = $("#ov-add");
+  if (add) add.onclick = () => editTask({});
 }
 
 // ---------------------------------------------------------------- AI event planner

@@ -1,7 +1,7 @@
 # DURUM — KulüpRadar / Pano
 
 Güncelleme: 2026-10-17 · Kaynak: koddaki mevcut hal (`app/`, `static/`, `tests/`). Etiketler: YAPILDI · KISMEN · YOK · DOĞRULANMADI.
-Doğrulama: `python -m pytest tests -q` (107 test, sahte LLM, Ollama gerekmez) · `scripts/eval_demo.py` (TR demo, 127 mesaj: **10/14, ~230 sn**; önceki koşular 7/14 ve 11/14; EN demo hiç koşulmadı) · gerçek Gemma ile elle API denemesi (analiz → öneri kuyruğu → onay → yeniden başlatma sonrası kalıcılık).
+Doğrulama: `python -m pytest tests -q` (111 test, sahte LLM, Ollama gerekmez) · `scripts/eval_demo.py` (TR demo, 127 mesaj: **10/14, ~230 sn**; önceki koşular 7/14 ve 11/14; EN demo hiç koşulmadı) · gerçek Gemma ile elle API denemesi (analiz → öneri kuyruğu → onay → yeniden başlatma sonrası kalıcılık).
 Donanım notu: Gemma 4 e4b, RTX 3050 4 GB laptopta ~4 dk / 127 mesaj; bu yüzden örnek veri ve önceden hesaplanmış örnek rapor var.
 
 ## YAPILDI (testli)
@@ -62,13 +62,15 @@ Toplantı: tekrarlayan toplantı, toplantıdan etkinliğe bağlama, katılım yo
 - G10/G12 ekranları (düğmeler, Geçmiş penceresi, üstü çizili karar) gözle görülmedi; yalnızca `node --check`, API testleri ve HTTP duman testi. Yapay zekâ önerisi onaylanınca karar/soru başlığı değişirse (değişiklik önerisi) geçmişe yazılmaz.
 
 - G21–G23 ekranları (etkinlik sayfası, karşılaştırma tablosu, kişi sayfası, iki katmanlı menü, Komiteler ve İçe/Dışa aktar sayfaları) gözle görülmedi. Yapılan: `node --check`, API testleri (sahte LLM), ve her görünümü canlı sunucuya karşı sahte DOM ile çizip hata / “undefined” / “NaN” arayan bir betik (TR ve EN; yerleşim, taşma, dar ekran denenmedi).
-- Örnek etkinlik raporu (gerçek Gemma): alıntılar kod denetiminden geçti ama metin kusurlu: “Bağlı karar sayısı: Girilmedi” ve tek yorumlu bir konuyu da “ortak” diye anıyor. Elle düzeltilmedi. Geri bildirim özetinin doğruluğu tek örnekte denendi.
-- Rapordaki alıntı denetimi yalnızca tırnak içi (" “ «) parçalara bakar; tırnaksız yorum aktarımı denetlenmez. Konunun ‘en az iki yorumda geçtiği’ iddiası denetlenmez.
+- Örnek etkinlik raporu (gerçek Gemma, 18 Ekim yeniden üretildi, elle düzenlenmedi): verisi olmayan alan/bölüm prompt'tan ve metinden çıktı, “veri yok/girilmedi/Yok” diyen satır reddedilir, ‘ortak’ denen konu en az iki farklı yorumdan alıntı ister (satır düzeyinde denetim). Son rapor temiz ama yorumları ortak konu olarak gruplamadı, yalnızca listeledi. Tırnaksız aktarım ve para birimi eklenmesi koddan denetlenmez (yalnızca prompt'ta yasak).
+- Rapordaki alıntı denetimi yalnızca tırnak içi parçalara bakar; tırnaksız yorum aktarımı denetlenmez.
 - Kişi eşleşmesi tam ad eşitliğidir (“Ayşe” ≠ “Ayşe Yılmaz”); toplantı katılımı serbest metin listeden gelir, gerçek yoklama değildir.
 - Menü: sayfa başlığındaki eski düğmelerin yeni yerleri ve yeniden analiz / silme akışı tarayıcıda denenmedi.
 
 ## Değişmez kurallar (CLAUDE.md)
 1 kaynaksız → işaretli: UYUYOR · 2 otomatik onay yok: UYUYOR · 3 uydurma yok: UYUYOR (rapor sayı denetimi kaba) · 4 geçmiş ≠ güncel: UYUYOR (değişiklik önerisi) · 5 düzeltmeler ezilmez: UYUYOR (testli) · 6 yinelenen: KISMEN · 7 hata çökertmez: UYUYOR (testli) · 8 gizlilik: KISMEN (hata mesajı ≤200 karakter model çıktısı içerebilir, yalnızca yerel DB'de) · 9 çalışmayan düğme yok: KISMEN (tüm düğmeler tek tek denenmedi) · 10 test edilmeyen hazır değil: UYUYOR · 11 mevcut yapı: UYUYOR · 12 tutarlılık: UYUYOR (pano/panel yalnızca onaylı veriden).
+
+- 18 Ekim: “Demo kulübü aç” eski örnek kulübü (toplantı/geri bildirim/rapor eksik) silip yeniden kurar; `is_sample=0` kulüplere dokunmaz (testli, sunucuda doğrulandı). README İngilizce üstte, Türkçe altta; `SUBMISSION.md` ve `docs/screenshots/` (görseller kullanıcıdan) eklendi. `ui-redesign` dalı (başka oturum: tokenlar, kenar çubuğu, SVG ikonlar, kanban, genel bakış kartları) ve `demo-submission` main'e birleştirildi; UI değişikliği ekranda **görülmedi** (yalnızca `node --check` + testler). Rol/giriş sistemi, kanban sürükle-bırak kalıcılığı, görev detay paneli, AI sohbetin yetkili sorgusu bu oturumda yapılmadı.
 
 ## Sıradaki
 Toplantıdan etkinliğe doğrudan bağlama · G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)

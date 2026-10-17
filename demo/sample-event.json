@@ -1,0 +1,49 @@
+{
+  "_note": "Fake demo data. 'report' is produced by scripts/make_sample_report.py with the local model, then checked by tests/test_report.py.",
+  "lang": "tr",
+  "model": "gemma4:e4b",
+  "event": {
+    "title": "Tanıtım Günü (demo verisi)",
+    "due": "2026-03-12",
+    "time": "11:00",
+    "place": "Kampüs Meydanı",
+    "owner": "Ayşe Demir",
+    "event_type": "tanıtım standı",
+    "phase": "held",
+    "event_units": [
+      "Etkinlik",
+      "Sosyal Medya"
+    ],
+    "attendees_expected": 150,
+    "attendees_actual": 118,
+    "budget_est": 2500
+  },
+  "tasks": [
+    {
+      "title": "SKS'den stant masası iste",
+      "owner": "Ayşe Demir",
+      "due": "2026-03-04",
+      "unit": "Etkinlik",
+      "status": "done"
+    },
+    {
+      "title": "Broşürleri bastır",
+      "owner": "Can Yıldız",
+      "due": "2026-03-10",
+      "unit": "Sosyal Medya",
+      "status": "done"
+    },
+    {
+      "title": "Stantta priz ihtiyacını netleştir",
+      "owner": null,
+      "due": null,
+      "unit": "Etkinlik",
+      "status": "open"
+    }
+  ],
+  "decisions": [
+    "Tanıtım günü 12 Mart Perşembe yapılacak",
+    "Kayıtlar Google Forms ile alınacak"
+  ],
+  "report": "**Etkinlik Raporu: Tanıtım Günü (demo verisi)**\n\n**Özet**\nTanıtım Günü etkinliği, 2026-03-12 tarihinde saat 11:00'de Kampüs Meydanı'nda gerçekleştirilmiştir. Etkinliğin türü tanıtım standı olup, gerçekleşme durumu tamamlanmıştır. Beklenen katılımcı sayısı 150 iken, fiili katılım 118 olarak kaydedilmiştir. Bütçe tahmini 2500.0 olarak belirlenmiştir. Sorumlu kişi Ayşe Demir'dir ve Etkinlik ile Sosyal Medya ekipleri görev almıştır.\n\n**Görevler**\nTamamlanan Görevler:\n- SKS'den stant masası iste (Sahip: Ayşe Demir, Son Tarih: 2026-03-04)\n- Broşürleri bastır (Sahip: Can Yıldız, Son Tarih: 2026-03-10)\n\n**Kararlar**\n- Tanıtım günü 12 Mart Perşembe yapılacak.\n- Kayıtlar Google Forms ile alınacak.\n\n**Açık noktalar**\n- Stantta priz ihtiyacını netleştir (Sahip: Girilmedi, Son Tarih: Girilmedi)"
+}

@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import hashlib
+import json
 import os
 import re
 from datetime import date, timedelta
@@ -14,7 +15,7 @@ from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analyzer, assistant, db, insights, llm
+from . import analyzer, assistant, db, insights, llm, report
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -400,6 +401,68 @@ def create_item(chat_id: int, body: ItemCreate):
 def delete_item(item_id: int):
     db.delete_item(item_id)
     return {"ok": True}
+
+
+def _event_or_404(event_id: int) -> dict:
+    ev = db.get_item(event_id)
+    if not ev or ev["kind"] != "event":
+        raise HTTPException(404, "event not found")
+    return ev
+
+
+def _report_view(ev: dict, row: dict | None) -> dict:
+    if not row:
+        return {"report": None}
+    fresh = report.fingerprint(report.facts_text(ev, row["lang"])) == row["fingerprint"]
+    return {"report": row["body"], "stale": not fresh, "source": row["source"], "model": row["model"],
+            "created_at": row["created_at"]}
+
+
+@app.get("/api/events/{event_id}/report")
+def get_event_report(event_id: int):
+    """The saved report, if any. `stale` = the event or its tasks/decisions changed since it was written."""
+    ev = _event_or_404(event_id)
+    return _report_view(ev, db.get_report(event_id))
+
+
+@app.post("/api/events/{event_id}/report")
+async def make_event_report(event_id: int):
+    """Slow (local model): the UI shows elapsed time while this runs."""
+    ev = _event_or_404(event_id)
+    lang = report.language_of(ev["chat_id"])
+    try:
+        r = await report.generate(ev, lang)
+    except llm.LLMError as e:
+        raise HTTPException(503, str(e))
+    except report.ReportRejected as e:
+        raise HTTPException(422, {"message": "Rapor, kayıtlı veride olmayan sayılar içerdiği için reddedildi / "
+                                             "report rejected: it contained figures that are not in the recorded data",
+                                  "unsupported": e.unsupported})
+    db.save_report(event_id, r["report"], r["fingerprint"], lang, r["model"])
+    return _report_view(ev, db.get_report(event_id))
+
+
+SAMPLE_EVENT = ROOT / "demo" / "sample-event.json"
+
+
+@app.post("/api/chats/{chat_id}/sample-event")
+def sample_event(chat_id: int):
+    """Add the shipped demo event (fake data) with its precomputed report: instant, no model needed."""
+    _chat_or_404(chat_id)
+    spec = json.loads(SAMPLE_EVENT.read_text(encoding="utf-8"))
+    for e in db.get_items(chat_id, "event"):
+        if e["title"] == spec["event"]["title"]:
+            return {"event_id": e["id"], "created": False}
+    ev = spec["event"]
+    event_id = db.add_item(chat_id, "event", **ev)
+    db.update_item(event_id, user=True)
+    for t in spec["tasks"]:
+        db.update_item(db.add_item(chat_id, "task", event_id=event_id, **t), user=True)
+    for d in spec["decisions"]:
+        db.update_item(db.add_item(chat_id, "decision", event_id=event_id, title=d), user=True)
+    facts = report.facts_text(db.get_item(event_id), spec["lang"])
+    db.save_report(event_id, spec["report"], report.fingerprint(facts), spec["lang"], spec.get("model"), "sample")
+    return {"event_id": event_id, "created": True}
 
 
 class SummaryReq(BaseModel):

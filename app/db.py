@@ -70,6 +70,15 @@ CREATE TABLE IF NOT EXISTS changes (
     review     TEXT NOT NULL DEFAULT 'proposed',  -- proposed | approved | rejected
     created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS event_reports (
+    event_id    INTEGER PRIMARY KEY REFERENCES items(id) ON DELETE CASCADE,
+    body        TEXT NOT NULL,
+    fingerprint TEXT NOT NULL,   -- hash of the recorded data the report was written from
+    lang        TEXT NOT NULL,
+    model       TEXT,
+    source      TEXT NOT NULL DEFAULT 'ai',   -- ai | sample (shipped, precomputed)
+    created_at  TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS items_chat ON items(chat_id, kind);
 """
 
@@ -345,3 +354,16 @@ def recover_stale_analyses() -> int:
             "UPDATE chats SET status = 'error', error = ? WHERE status = 'analyzing'",
             ("Analiz yarıda kaldı (uygulama kapandı); 'Tekrar dene' kaldığı yerden devam eder / "
              "analysis was interrupted; retry resumes where it stopped",)).rowcount
+
+
+# ---- event reports ----------------------------------------------------------
+
+def save_report(event_id: int, body: str, fingerprint: str, lang: str, model: str | None, source: str = "ai") -> None:
+    with _lock, conn() as c:
+        c.execute("INSERT OR REPLACE INTO event_reports (event_id, body, fingerprint, lang, model, source, created_at) "
+                  "VALUES (?, ?, ?, ?, ?, ?, ?)", (event_id, body, fingerprint, lang, model, source, _now()))
+
+
+def get_report(event_id: int) -> dict | None:
+    rows = _rows("SELECT * FROM event_reports WHERE event_id = ?", (event_id,))
+    return rows[0] if rows else None

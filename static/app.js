@@ -54,7 +54,11 @@ const I18N = {
     tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", units_btn: "Komiteler", units_add: "Yeni komite adı", units_add_btn: "Ekle", units_note: "Silinen komitenin görevleri “Komitesiz” sütununa düşer.", ev_add: "Etkinlik ekle", ev_edit: "Etkinliği düzenle", ev_type: "Tür", ev_date: "Tarih", ev_time: "Saat", ev_place: "Mekân", ev_owner: "Sorumlu",
     ev_units: "Komiteler", ev_phase: "Durum", ev_exp: "Beklenen katılımcı", ev_act: "Gerçekleşen katılımcı", ev_bud_est: "Bütçe tahmini", ev_bud_act: "Gerçekleşen bütçe",
     ev_notes: "Notlar", ev_none: "Etkinlik yok", ev_linked: n => `${n} bağlı iş`, ev_link: "Etkinlik",
-    ph: { idea: "Fikir", planning: "Planlanıyor", confirmed: "Kesinleşti", held: "Gerçekleşti", cancelled: "İptal" }, approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    ph: { idea: "Fikir", planning: "Planlanıyor", confirmed: "Kesinleşti", held: "Gerçekleşti", cancelled: "İptal" }, rp_btn: "Rapor", rp_title: "Etkinlik raporu", rp_make: "Gemma ile rapor üret", rp_remake: "Yeniden üret", rp_none: "Henüz rapor yok.",
+    rp_wait: "Gemma yerelde yazıyor; bu birkaç dakika sürebilir", rp_elapsed: "geçen süre", rp_stale: "Etkinlik verisi bu rapordan sonra değişti; raporu yeniden üretin.",
+    rp_src_sample: "Önceden hesaplanmış örnek rapor (demo verisi)", rp_src_ai: "Gemma tarafından, yalnızca girilen veriden yazıldı", rp_rejected: "Rapor reddedildi",
+    rp_figs: "Veride olmayan sayılar", rp_note: "Rapor yalnızca bu etkinlik için girilen alanlardan, bağlı görevlerden ve kararlardan üretilir; boş alanlar “Girilmedi” kalır.",
+    rp_copy: "Kopyala", ev_sample: "Örnek etkinlik ekle", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -143,7 +147,11 @@ const I18N = {
     tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", units_btn: "Teams", units_add: "New team name", units_add_btn: "Add", units_note: "Tasks of a deleted team move to the “no team” column.", ev_add: "Add event", ev_edit: "Edit event", ev_type: "Type", ev_date: "Date", ev_time: "Time", ev_place: "Venue", ev_owner: "Owner",
     ev_units: "Teams", ev_phase: "Status", ev_exp: "Expected attendees", ev_act: "Actual attendees", ev_bud_est: "Budget estimate", ev_bud_act: "Actual budget",
     ev_notes: "Notes", ev_none: "No event", ev_linked: n => `${n} linked`, ev_link: "Event",
-    ph: { idea: "Idea", planning: "Planning", confirmed: "Confirmed", held: "Held", cancelled: "Cancelled" }, approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    ph: { idea: "Idea", planning: "Planning", confirmed: "Confirmed", held: "Held", cancelled: "Cancelled" }, rp_btn: "Report", rp_title: "Event report", rp_make: "Write report with Gemma", rp_remake: "Regenerate", rp_none: "No report yet.",
+    rp_wait: "Gemma is writing locally; this can take a few minutes", rp_elapsed: "elapsed", rp_stale: "The event data changed after this report; regenerate it.",
+    rp_src_sample: "Precomputed sample report (demo data)", rp_src_ai: "Written by Gemma from the entered data only", rp_rejected: "Report rejected",
+    rp_figs: "Figures not in the data", rp_note: "The report is built only from the fields entered for this event, its linked tasks and decisions; empty fields stay “Not entered”.",
+    rp_copy: "Copy", ev_sample: "Add sample event", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -529,7 +537,8 @@ function renderBoardView() {
     <div class="columns">${cols}</div>
     <aside class="side">
       <div class="panel missed"><h3>⚠️ ${t("missed")}</h3>${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}</div>
-      <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}">＋</button></h3>${b.events.length ? `<ul class="list">${b.events.map(e => {
+      <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}">＋</button></h3>
+        ${b.events.some(e => e.title.includes("(demo")) ? "" : `<p><button class="ghost small" data-ev-sample>${t("ev_sample")}</button></p>`}${b.events.length ? `<ul class="list">${b.events.map(e => {
         const n = b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
         return `<li><span class="grow"><a href="javascript:void 0" data-ev-edit="${e.id}"><b>${esc(e.title)}</b></a>
           <small>${e.due ? fmtDate(e.due) : "—"}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.phase ? " · " + esc(t("ph")[e.phase] || e.phase) : ""}${n ? " · " + t("ev_linked")(n) : ""}</small></span>${srcBtn(e)}</li>`;
@@ -554,6 +563,49 @@ function renderBoardView() {
   view.querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
   view.querySelectorAll("[data-ev-edit]").forEach(el => (el.onclick = () => editEvent(b.events.find(x => x.id === Number(el.dataset.evEdit)))));
   view.querySelectorAll("[data-ev-add]").forEach(el => (el.onclick = () => editEvent({})));
+  view.querySelectorAll("[data-ev-sample]").forEach(el => (el.onclick = async () => {
+    try { const r = await post(`/api/chats/${b.chat.id}/sample-event`); await reloadBoard(); showReport(r.event_id); }
+    catch (e) { toast(e.message); }
+  }));
+}
+
+// Event report. Generation is slow on a local model, so the modal shows the real elapsed time.
+async function showReport(eventId) {
+  const ev = S.board.events.find(x => x.id === eventId);
+  let timer = null;
+  const draw = (m, close, r, extra = "") => {
+    const has = r && r.report;
+    m.querySelector(".modal-box").innerHTML = `<h3>📝 ${t("rp_title")}: ${esc(ev ? ev.title : "")}</h3>
+      <p class="muted">${t("rp_note")}</p>
+      ${has ? `<p class="muted">${t(r.source === "sample" ? "rp_src_sample" : "rp_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
+        ${r.stale ? `<p>⚠️ ${t("rp_stale")}</p>` : ""}<pre class="report" style="white-space:pre-wrap">${esc(r.report)}</pre>` : `<p>${t("rp_none")}</p>`}
+      ${extra}
+      <div id="rp-wait"></div>
+      <div class="modal-actions">${has ? `<button class="ghost" id="rp-copy">${t("rp_copy")}</button>` : ""}
+        <button data-close>${t("close")}</button>
+        <button class="primary" id="rp-make">${has ? t("rp_remake") : t("rp_make")}</button></div>`;
+    m.querySelector("[data-close]").onclick = () => { clearInterval(timer); close(); };
+    const cp = m.querySelector("#rp-copy");
+    if (cp) cp.onclick = () => copyText(r.report);
+    m.querySelector("#rp-make").onclick = async () => {
+      const t0 = Date.now(), btn = m.querySelector("#rp-make");
+      btn.disabled = true;
+      const wait = m.querySelector("#rp-wait");
+      const tick = () => (wait.innerHTML = `<div class="progress"><div class="progress-top"><span><span class="spinner"></span> ${t("rp_wait")}</span>
+        <span class="muted">${t("rp_elapsed")}: ${Math.round((Date.now() - t0) / 1000)} s</span></div></div>`);
+      tick(); timer = setInterval(tick, 1000);
+      try {
+        const next = await post(`/api/events/${eventId}/report`);
+        clearInterval(timer); draw(m, close, next);
+      } catch (e) {
+        clearInterval(timer);
+        draw(m, close, r, `<div class="progress error"><b>${t("rp_rejected")}</b><br><small>${esc(e.message)}</small></div>`);
+      }
+    };
+  };
+  let saved = { report: null };
+  try { saved = await api(`/api/events/${eventId}/report`); } catch (e) { toast(e.message); }
+  modal("", (m, close) => draw(m, close, saved));
 }
 
 function editEvent(ev) {
@@ -578,7 +630,7 @@ function editEvent(ev) {
     <label>${t("ev_notes")}</label><textarea id="v-notes" rows="3">${esc(ev.notes || "")}</textarea>
     ${ev.source_idx != null ? `<p><button class="ghost small" id="v-src">💬 ${t("source")}</button></p>` : ""}
     <div class="modal-actions">
-      ${isNew ? "" : `<button class="danger ghost left" id="v-del">${t("del")}</button>`}
+      ${isNew ? "" : `<button class="danger ghost left" id="v-del">${t("del")}</button><button class="ghost" id="v-report">📝 ${t("rp_btn")}</button>`}
       <button data-close>${t("cancel")}</button><button class="primary" id="v-save">${t("save")}</button>
     </div>`, (m, close) => {
     const q = id => m.querySelector(id);
@@ -586,6 +638,8 @@ function editEvent(ev) {
     if (src) src.onclick = () => showSource(ev.source_idx);
     const del = q("#v-del");
     if (del) del.onclick = async () => { await api(`/api/items/${ev.id}`, { method: "DELETE" }); close(); reloadBoard(); };
+    const rp = q("#v-report");
+    if (rp) rp.onclick = () => { close(); showReport(ev.id); };
     const n = id => (q(id).value === "" ? null : Number(q(id).value));
     q("#v-save").onclick = async () => {
       const body = {

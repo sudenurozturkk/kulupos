@@ -155,6 +155,5 @@ def test_sample_meeting_summary_is_precomputed_fresh_and_passes_the_checks(clien
     m = db.get_meeting(held["id"])
     facts = meetings.facts_text(m, "tr")
     assert meetings.report.unsupported_figures(view["summary"], facts) == [] and meetings.unsupported_names(view["summary"], facts) == []
-    db.update_meeting(held["id"], notes=m["notes"] + "
-Yeni satır")   # editing the notes makes it outdated
+    db.update_meeting(held["id"], notes=m["notes"] + " Yeni satır")   # editing the notes makes it outdated
     assert client.get(f"/api/meetings/{held['id']}/summary").json()["stale"] is True

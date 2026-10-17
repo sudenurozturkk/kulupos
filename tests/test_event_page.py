@@ -135,6 +135,16 @@ def test_topic_with_one_comment_cannot_be_called_common(env, monkeypatch):
     assert c.post(f"/api/events/{eid}/report").status_code == 422
 
 
+def test_prompt_names_only_sections_that_have_data(env, monkeypatch):
+    c, cid, report = env
+    eid = make_event(c, cid, feedback_score=4, feedback_comments="Süre çok kısa kaldı.\nSüre yetmedi.")
+    calls = fake_llm(monkeypatch, report, "Özet\nAtölye yapıldı.")
+    assert c.post(f"/api/events/{eid}/report").status_code == 200
+    system = calls[0][0]["content"]
+    assert "Özet" in system and "Geri bildirim" in system
+    assert "Görevler" not in system and "Kararlar" not in system and "Açık noktalar" not in system
+
+
 def test_report_that_mentions_missing_data_is_rejected(env, monkeypatch):
     c, cid, report = env
     eid = make_event(c, cid)

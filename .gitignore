@@ -1,0 +1,15 @@
+# local data: real chats and the board database never go to git
+data/
+*.db
+chats/
+# event material / private notes
+*.pdf
+PLAN.md
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+# planning docs, not part of the product
+KulupRadar_Hacktoberfest/

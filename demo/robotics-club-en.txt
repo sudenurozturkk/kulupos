@@ -1,0 +1,58 @@
+[10/5/26, 6:01:12 PM] Robotics Club Board 🤖: ‎Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them.
+[10/5/26, 6:01:12 PM] Maya Chen: ‎Maya Chen created group "Robotics Club Board 🤖"
+[10/5/26, 6:03:40 PM] Maya Chen: Hi all! New board chat for this semester 🎉 Big one first: the Campus Tech Fair is on Saturday Oct 24, we have a booth
+[10/5/26, 6:04:02 PM] Leo Martins: Let's gooo
+[10/5/26, 6:05:31 PM] Maya Chen: We need: lab booking for prep nights, a banner, a sign-up form, sponsor for the booth snacks, and the robots actually working 😅
+[10/5/26, 6:06:10 PM] Noah Kim: I'll fix the line follower, the left motor driver is fried. Should be done by next Friday
+[10/5/26, 6:07:45 PM] Priya Shah: Banner is mine, I'll do a draft this weekend
+[10/5/26, 6:08:20 PM] Sam O'Connor: I can email Bolt & Nut hardware store about sponsoring snacks, they helped last year
+[10/5/26, 6:09:03 PM] Maya Chen: Amazing. Who can book the lab for Tue/Thu evenings?
+[10/5/26, 6:15:44 PM] Ava Rossi: ‎image omitted
+[10/5/26, 6:15:50 PM] Ava Rossi: me when the robot works on the first try
+[10/5/26, 6:16:02 PM] Leo Martins: 😂😂 never happened
+[10/6/26, 9:12:30 AM] Leo Martins: Morning! Do we want to show the robot arm too or only the line follower?
+[10/6/26, 9:30:11 AM] Noah Kim: Arm needs a new servo, maybe too much
+[10/6/26, 9:35:48 AM] Maya Chen: Let's show both if the servo arrives in time. Noah can you order it today?
+[10/6/26, 9:36:20 AM] Noah Kim: Yep ordering now, 4 day shipping
+[10/6/26, 1:20:05 PM] Ava Rossi: Anyone has the notes from Control Systems lecture 3?
+[10/6/26, 1:41:17 PM] Leo Martins: ‎document omitted
+[10/7/26, 5:02:33 PM] Sam O'Connor: Emailed Bolt & Nut ✅ waiting for their answer
+[10/7/26, 8:44:10 PM] Ava Rossi: Who has the key to the lab parts cabinet? I need the soldering iron
+[10/8/26, 11:15:00 AM] Maya Chen: Still need someone to book the lab btw
+[10/8/26, 11:40:27 AM] Leo Martins: Ugh sorry, I'll book it today, I'm near the department office
+[10/8/26, 2:05:52 PM] Leo Martins: Lab booked for Tue and Thu 6–9 PM until the fair 👍
+[10/8/26, 2:06:30 PM] Maya Chen: You're the best
+[10/9/26, 7:30:15 PM] Priya Shah: ‎image omitted
+[10/9/26, 7:30:40 PM] Priya Shah: Banner draft, thoughts?
+[10/9/26, 7:33:02 PM] Ava Rossi: Love it, maybe bigger QR code for the sign-up form?
+[10/9/26, 7:34:15 PM] Priya Shah: Good point. Which form are we using btw?
+[10/9/26, 7:40:28 PM] Maya Chen: Let's just use Google Forms, easiest
+[10/9/26, 7:41:00 PM] Noah Kim: I'll set up the form tonight
+[10/9/26, 10:55:42 PM] Noah Kim: Form is live: forms.gle/robotics-fair
+[10/10/26, 3:10:11 PM] Ava Rossi: Movie night at mine Saturday? 🍿
+[10/10/26, 3:12:40 PM] Leo Martins: In!
+[10/12/26, 10:05:33 AM] Sam O'Connor: Bolt & Nut said yes 🎉 snacks + drinks for 60 people, they want their logo on the banner and a shoutout on Instagram
+[10/12/26, 10:07:01 AM] Maya Chen: Perfect deal. Priya can you add their logo?
+[10/12/26, 10:15:20 AM] Priya Shah: Sure, Sam send me the logo file
+[10/12/26, 6:30:44 PM] Noah Kim: Bad news, the fair organisers moved our booth day. It's now Friday Oct 30 because of the career day
+[10/12/26, 6:35:12 PM] Maya Chen: Hmm ok, so Oct 30 it is. Gives us more time for the arm honestly
+[10/12/26, 6:35:50 PM] Leo Martins: I'll re-book the lab for the extra week
+[10/12/26, 6:36:22 PM] Maya Chen: Decision then: fair booth on Friday Oct 30, we show both the line follower and the arm
+[10/13/26, 9:02:18 AM] Sam O'Connor: ‎image omitted
+[10/13/26, 9:02:30 AM] Sam O'Connor: Bolt & Nut logo for the banner
+[10/13/26, 6:15:00 PM] Noah Kim: Servo arrived 🙌 line follower is fixed too, works on the test track
+[10/13/26, 6:16:10 PM] Ava Rossi: LETS GOOO
+[10/14/26, 4:20:51 PM] Priya Shah: Should we print stickers too? Kids at the fair love them
+[10/14/26, 4:45:33 PM] Maya Chen: Yes! Ava could you design and print 200 stickers? Budget is $40
+[10/14/26, 5:01:12 PM] Ava Rossi: Sure, I'll have them by the 28th
+[10/15/26, 8:10:02 PM] Leo Martins: Do we have enough extension cords for the booth? We'll have 3 laptops and 2 robots
+[10/15/26, 9:30:40 PM] Priya Shah: ‎image omitted
+[10/15/26, 9:30:55 PM] Priya Shah: Final banner with the sponsor logo ✨
+[10/15/26, 9:33:10 PM] Maya Chen: Gorgeous. Who's sending it to the print shop?
+[10/16/26, 12:00:15 PM] Sam O'Connor: Bolt & Nut asks what time they should deliver the snacks on the 30th
+[10/16/26, 5:45:30 PM] Maya Chen: Quick prep call Thursday Oct 22 at 7 PM? I'll send a Meet link
+[10/16/26, 5:46:02 PM] Noah Kim: 👍
+[10/16/26, 5:47:21 PM] Leo Martins: Works for me
+[10/16/26, 9:12:44 PM] Noah Kim: 38 sign-ups on the form already 🔥
+[10/17/26, 10:01:05 AM] Maya Chen: I'm at a hackathon today, ping me here if anything's urgent
+[10/17/26, 10:20:31 AM] Ava Rossi: Good luck prez 💪

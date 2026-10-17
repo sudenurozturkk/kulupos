@@ -70,3 +70,46 @@ def test_committee_rename_and_delete_follow_into_meetings(env):
     assert c.get(f"/api/meetings/{m['id']}").json()["meeting"]["units"] == ["Organizasyon", "Teknik"]
     c.patch(f"/api/chats/{cid}", json={"units": ["Organizasyon"]})
     assert c.get(f"/api/meetings/{m['id']}").json()["meeting"]["units"] == ["Organizasyon"]
+
+
+def _link(cid, mid, title, **kw):
+    from app import db
+    return db.add_item(cid, "task", title=title, meeting_id=mid, **kw)
+
+
+def test_owner_outside_committee_list_warns_but_does_not_block(env):
+    c, cid = env
+    c.patch(f"/api/chats/{cid}", json={"unit_members": {"Etkinlik": "Ayşe Demir, Mert Kaya"}})
+    m2 = c.post(f"/api/chats/{cid}/meetings", json={"title": "T", "units": ["Etkinlik"]}).json()["id"]
+    _link(cid, m2, "Salon", owner="Ayşe Demir")
+    _link(cid, m2, "Afiş", owner="Mert")             # first name of a listed member: fine
+    _link(cid, m2, "Sponsor", owner="Can Yıldız")    # not on the list
+    _link(cid, m2, "Bütçe")                          # no owner: counted, not a warning
+    d = c.get(f"/api/meetings/{m2}").json()
+    assert [w["owner"] for w in d["warnings"]] == ["Can Yıldız"] and d["orphan_tasks"] == 1
+    assert c.get(f"/api/chats/{cid}/meetings").json()[0]["orphan_tasks"] == 1
+
+
+def test_no_warning_without_committee_or_member_list(env):
+    c, cid = env
+    no_units = c.post(f"/api/chats/{cid}/meetings", json={"title": "A"}).json()["id"]
+    no_list = c.post(f"/api/chats/{cid}/meetings", json={"title": "B", "units": ["Etkinlik"]}).json()["id"]
+    for m in (no_units, no_list):
+        _link(cid, m, "İş", owner="Kim Bilir")
+        assert c.get(f"/api/meetings/{m}").json()["warnings"] == []
+
+
+def test_dashboard_cards_upcoming_and_held_with_orphans(env, monkeypatch):
+    c, cid = env
+    monkeypatch.setenv("PANO_TODAY", "2026-10-18")
+    c.post(f"/api/chats/{cid}/meetings", json={"title": "Yakın", "date": "2026-10-21", "time": "19:00", "status": "planned"}).json()["id"]
+    c.post(f"/api/chats/{cid}/meetings", json={"title": "Geçmiş planlı", "date": "2026-10-01", "status": "planned"})
+    c.post(f"/api/chats/{cid}/meetings", json={"title": "Tarihsiz", "status": "planned"})
+    c.post(f"/api/chats/{cid}/meetings", json={"title": "İptal", "date": "2026-10-25", "status": "cancelled"})
+    held = c.post(f"/api/chats/{cid}/meetings", json={"title": "Yapıldı", "date": "2026-10-10", "status": "held"}).json()["id"]
+    clean = c.post(f"/api/chats/{cid}/meetings", json={"title": "Temiz", "date": "2026-10-11", "status": "held"}).json()["id"]
+    _link(cid, held, "Sahipsiz 1"); _link(cid, held, "Sahipsiz 2"); _link(cid, held, "Sahipli", owner="Ayşe")
+    _link(cid, held, "Biten sahipsiz", status="done"); _link(cid, clean, "Sahipli", owner="Mert")
+    cards = c.get(f"/api/chats/{cid}/board").json()["meetings"]
+    assert [m["title"] for m in cards["upcoming"]] == ["Yakın"] and cards["upcoming"][0]["days"] == 3
+    assert cards["held_orphans"] == [{"id": held, "title": "Yapıldı", "date": "2026-10-10", "orphans": 2}]

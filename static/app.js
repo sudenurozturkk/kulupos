@@ -282,6 +282,10 @@ const MEET_I18N = {
     mt_sum_none: "Henüz özet yok.", mt_sum_stale: "⚠️ ESKİ: notlar, toplantı bilgileri veya onaylı kayıtlar özetten sonra değişti.",
     mt_sum_rejected: "Özet reddedildi", mt_sum_cut: "Notların yalnızca ilk 12.000 karakteri özete girdi.", mt_sum_copy: "Kopyala",
     mt_sum_src_sample: "Örnek veri · önceden hesaplanmış özet", mt_sum_src_ai: "Yerel Gemma ile yazıldı",
+    mt_orphans: n => `⚠️ Bu toplantıdan çıkan ${n} görevin sorumlusu yok`, mt_warn_title: "Bilgi: komite üye listesinde olmayan sorumlu",
+    mt_warn: w => `<b>${esc(w.owner)}</b> “${esc(w.title)}” görevinin sorumlusu, ama ${w.units.map(esc).join(", ")} komite üye listesinde yok. Engellenmedi; listeyi ya da sorumluyu gözden geçir.`,
+    pc_upcoming: "Yaklaşan toplantılar", pc_upcoming_none: "Planlanmış yaklaşan toplantı yok.", pc_held: "Yapıldı ama sorumlusuz görev var",
+    pc_held_none: "Yapılan toplantılarda sorumlusuz görev yok.", pc_orphans: n => `${n} sorumlusuz görev`, pc_all: "Tüm toplantılar", pc_nodate: "tarih belirsiz",
     mt_noowner: "sorumlusu yok", mt_confirm_del: "Toplantı silinsin mi? Onaylı kayıtlar panoda kalır ama toplantıyla bağı ve kaynak notu kalkar; bekleyen öneriler silinir.",
   },
   en: {
@@ -304,6 +308,10 @@ const MEET_I18N = {
     mt_sum_none: "No summary yet.", mt_sum_stale: "⚠️ OUTDATED: the notes, meeting details or approved records changed after this summary.",
     mt_sum_rejected: "Summary rejected", mt_sum_cut: "Only the first 12,000 characters of the notes went into the summary.", mt_sum_copy: "Copy",
     mt_sum_src_sample: "Sample data · precomputed summary", mt_sum_src_ai: "Written by local Gemma",
+    mt_orphans: n => `⚠️ ${n} task(s) from this meeting have no owner`, mt_warn_title: "Note: owner not on the committee's member list",
+    mt_warn: w => `<b>${esc(w.owner)}</b> owns “${esc(w.title)}” but is not on the member list of ${w.units.map(esc).join(", ")}. Not blocked; review the list or the owner.`,
+    pc_upcoming: "Upcoming meetings", pc_upcoming_none: "No upcoming planned meetings.", pc_held: "Held, but tasks without an owner",
+    pc_held_none: "No ownerless tasks from held meetings.", pc_orphans: n => `${n} task(s) without owner`, pc_all: "All meetings", pc_nodate: "date unclear",
     mt_noowner: "no owner", mt_confirm_del: "Delete this meeting? Approved records stay on the board but lose the meeting link and source note; pending suggestions are deleted.",
   },
 };
@@ -1154,6 +1162,14 @@ function renderOverview() {
       <small>${c.message_count} ${t("messages")} · ${t("imp_st")[c.status] || c.status}${c.review_count ? " · " + t("imp_review")(c.review_count) : ""} · ${fmtDate(c.imported_at, false)}</small></span>
       ${c.is_sample ? `<span class="chip ai">${t("sample_tag")}</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`;
 
+  const mc = b.meetings || { upcoming: [], held_orphans: [] };
+  const mlink = m => `href="#/c/${b.chat.id}/meeting/${m.id}"`;
+  const meetUpcomingHtml = mc.upcoming.length ? `<ul class="list">${mc.upcoming.map(m => `<li><span class="grow"><a ${mlink(m)}>${esc(m.title)}</a>
+      <small>${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""} · ${t("k_days")(m.days)}${m.units.length ? " · " + m.units.map(esc).join(", ") : ""}</small></span></li>`).join("")}</ul>`
+    : `<p class="muted">${t("pc_upcoming_none")}</p>`;
+  const meetHeldHtml = mc.held_orphans.length ? `<ul class="list">${mc.held_orphans.map(m => `<li><span class="grow"><a ${mlink(m)}>${esc(m.title)}</a>
+      <small>${m.date ? fmtDate(m.date) : t("pc_nodate")} · ${t("pc_orphans")(m.orphans)}</small></span></li>`).join("")}</ul>`
+    : `<p class="muted">${t("pc_held_none")}</p>`;
   $("#view").innerHTML = `
   <div class="panel focus"><h3>🎯 ${t("focus_title")}</h3><div class="focus-grid">${focusHtml}</div></div>
   <div class="kpis cards4">${cards.map(c => `
@@ -1188,6 +1204,8 @@ function renderOverview() {
         : `<p class="muted">${t("none_yet")}</p>`}
       </div>
       <div class="panel"><h3>📅 ${t("up_events")}</h3>${eventsHtml}</div>
+      <div class="panel"><h3>🗓️ ${t("pc_upcoming")}</h3>${meetUpcomingHtml}</div>
+      <div class="panel"><h3>⚠️ ${t("pc_held")}</h3>${meetHeldHtml}</div>
       <div class="panel"><h3>📥 ${t("imp_title")}</h3>${importsHtml}</div>
       <div class="panel"><h3>🗓️ ${t("timeline_title")}</h3>
         ${o.timeline.length ? `<ul class="timeline">${o.timeline.map(r => `<li><span class="d">${fmtDate(r.date, false).replace(" ", "<br>")}</span>
@@ -1497,6 +1515,8 @@ async function renderMeetingView() {
       ${d.lines ? `<button class="primary" id="mt-analyze">✨ ${t("mt_analyze")}</button>` : ""}
       <button class="danger ghost" id="mt-del">${t("del")}</button></div>
     <div id="mt-wait"></div>
+    ${d.orphan_tasks ? `<p><span class="chip overdue">${t("mt_orphans")(d.orphan_tasks)}</span></p>` : ""}
+    ${d.warnings.length ? `<div class="panel"><b>ℹ️ ${t("mt_warn_title")}</b><ul class="list">${d.warnings.map(w => `<li><span class="grow">${t("mt_warn")(w)}</span></li>`).join("")}</ul></div>` : ""}
     ${d.notes_changed ? `<p class="muted">⚠️ ${t("mt_an_stale")}</p>` : ""}
     ${d.proposed ? `<p><span class="chip ai">${t("mt_pending")(d.proposed)}</span> <a href="#/c/${chatId}/review">${t("mt_go_review")} →</a></p>` : ""}
     <h4>📝 ${t("mt_sum_title")}</h4><p class="muted">${t("mt_sum_note")}</p>

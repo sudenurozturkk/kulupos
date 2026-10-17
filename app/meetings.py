@@ -361,3 +361,41 @@ def summary_view(meeting: dict, row: dict | None) -> dict:
         return {"summary": None}
     return {"summary": row["body"], "stale": summary_fingerprint(meeting, row["lang"]) != row["fingerprint"],
             "source": row["source"], "model": row["model"], "created_at": row["created_at"]}
+
+
+# ---- checks (informational, never blocking) and panel cards ------------------------------------------
+
+def is_orphan(task: dict) -> bool:
+    return task["status"] == "open" and not task["owner"]
+
+
+def owner_warnings(meeting: dict, chat: dict, tasks: list[dict]) -> list[dict]:
+    """Approved linked tasks whose owner is not on the member list of the meeting's committees.
+    Silent when the meeting has no committee or those committees have no member list (nothing to compare with)."""
+    members = [n.strip() for u in meeting["units"] for n in (chat.get("unit_members", {}).get(u) or "").split(",")
+               if n.strip()]
+    if not members:
+        return []
+    full = {analyzer.norm(m) for m in members}
+    first = {analyzer.norm(m).split()[0] for m in members if analyzer.norm(m)}
+
+    def listed(owner: str) -> bool:
+        n = analyzer.norm(owner)
+        return n in full or (len(n.split()) == 1 and n in first)
+
+    return [{"id": t["id"], "title": t["title"], "owner": t["owner"], "units": meeting["units"]}
+            for t in tasks if t["owner"] and not listed(t["owner"])]
+
+
+def panel_cards(meetings: list[dict], items: list[dict], today: str) -> dict:
+    """Dashboard cards computed from stored data: upcoming planned meetings, held meetings with ownerless tasks."""
+    def tasks_of(m):
+        return [i for i in items if i["kind"] == "task" and i["meeting_id"] == m["id"]]
+
+    upcoming = [{"id": m["id"], "title": m["title"], "date": m["date"], "time": m["time"], "units": m["units"],
+                 "days": (date.fromisoformat(m["date"]) - date.fromisoformat(today)).days}
+                for m in sorted((m for m in meetings if m["status"] == "planned" and m["date"] and m["date"] >= today),
+                                key=lambda m: (m["date"], m["time"] or ""))][:5]
+    held = [{"id": m["id"], "title": m["title"], "date": m["date"], "orphans": n}
+            for m in meetings if m["status"] == "held" and (n := sum(1 for t in tasks_of(m) if is_orphan(t)))]
+    return {"upcoming": upcoming, "held_orphans": held, "total": len(meetings)}

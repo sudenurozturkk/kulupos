@@ -263,6 +263,7 @@ def board(chat_id: int):
         "changes": _with_source(chat_id, db.get_changes(chat_id)),  # AI edits to approved items awaiting approval
         "review_total": len(db.get_items(chat_id, review="proposed")) + len(db.get_changes(chat_id)),
         "overview": insights.overview(chat, items, db.senders(chat_id), t),
+        "meetings": meetings.panel_cards(db.get_meetings(chat_id), items, t.isoformat()),
         "progress": analyzer.progress(chat_id),
     }
 
@@ -650,6 +651,8 @@ def get_meeting(meeting_id: int):
             "questions": [i for i in approved if i["kind"] == "question"],
             "proposed": sum(1 for i in mine if i["review"] == "proposed"),
             "lines": len(meetings.note_lines(m["notes"])),
+            "orphan_tasks": sum(1 for t in approved if t["kind"] == "task" and meetings.is_orphan(t)),
+            "warnings": meetings.owner_warnings(m, db.get_chat(m["chat_id"]), [i for i in approved if i["kind"] == "task"]),
             "analyzed": m["analyzed_fp"] is not None,
             "notes_changed": m["analyzed_fp"] is not None and m["analyzed_fp"] != meetings.fingerprint(m["notes"])}
 

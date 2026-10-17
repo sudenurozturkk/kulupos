@@ -13,3 +13,6 @@ venv/
 .pytest_cache/
 # planning docs, not part of the product
 KulupRadar_Hacktoberfest/
+
+# unpublished pitch draft
+static/pitch.html

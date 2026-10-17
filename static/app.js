@@ -925,6 +925,7 @@ function renderSummaryView() {
       renderSummaryView();
     } catch (err) { $("#sum-out").innerHTML = `<p class="muted">⚠️ ${esc(err.message)}</p>`; e.target.disabled = false; }
   };
+  $("#sum-out").querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
   const copy = $("#btn-copy");
   if (copy) copy.onclick = () => copyText(cached.text);
 }
@@ -949,7 +950,7 @@ function memberMessage(name) {
 
 // WhatsApp markup preview: *bold* and _italic_
 function waFormat(text) {
-  return esc(text).replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/(^|\s)_([^_\n]+)_/g, "$1<i>$2</i>");
+  return esc(text).replace(/\[#(\d+)\]/g, '<button class="small srclink" data-src="$1" aria-label="Kaynak mesaj $1">💬 #$1</button>').replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/(^|\s)_([^_\n]+)_/g, "$1<i>$2</i>");
 }
 
 // ---------------------------------------------------------------- ask view

@@ -49,17 +49,30 @@ async def weekly_summary(chat_id: int, days: int = 7) -> dict:
     )
     recap = (await llm.chat([{"role": "user", "content": prompt}], temperature=0.4)).strip()
 
+    refs: list[int] = []
+
+    def ref(i):
+        if i.get("source_idx") is None:
+            return ""
+        if i["source_idx"] not in refs:
+            refs.append(i["source_idx"])
+        return f" [#{i['source_idx']}]"
+
     def line(i):
         bits = [i["title"]]
         if i["owner"]:
             bits.append(i["owner"].split()[0])
         if i["due"]:
             bits.append(f"📅 {short_date(i['due'], lang)}")
-        return "• " + " — ".join(bits)
+        return "• " + " — ".join(bits) + ref(i)
 
     tasks = [i for i in items if i["kind"] == "task"]
-    done = [t for t in tasks if t["status"] == "done" and (t["resolved_idx"] in recent_idx
-                                                           or t["resolved_idx"] is None)]
+    # done = resolved by a message in the window, or marked done by the user within the window (wall clock);
+    # a done task with no resolution info is not "this week's" and stays out
+    now_since = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
+    done = [t for t in tasks if t["status"] == "done" and (
+        t["resolved_idx"] in recent_idx
+        or (t["resolved_idx"] is None and t["user_edited"] and t["updated_at"] >= now_since))]
     open_ = [t for t in tasks if t["status"] == "open" and t["owner"]]
     orphan = [t for t in tasks if t["status"] == "open" and not t["owner"]]
     questions = [q for q in items if q["kind"] == "question" and q["status"] == "open"]
@@ -72,15 +85,17 @@ async def weekly_summary(chat_id: int, days: int = 7) -> dict:
              "", recap]
     for label, rows, fmt in (
         (L["done"], done, line), (L["open"], open_, line), (L["orphan"], orphan, line),
-        (L["questions"], questions, lambda q: f"• {q['title']}" + (f" — {q['owner'].split()[0]}" if q["owner"] else "")),
-        (L["decisions"], decisions, lambda d: f"• {d['title']}"),
+        (L["questions"], questions, lambda q: f"• {q['title']}" + (f" — {q['owner'].split()[0]}" if q["owner"] else "") + ref(q)),
+        (L["decisions"], decisions, lambda d: f"• {d['title']}" + ref(d)),
         (L["events"], upcoming, lambda e: f"• {e['title']} — {short_date(e['due'], lang)}"
-                                          + (f" {e['time']}" if e["time"] else "")),
+                                          + (f" {e['time']}" if e["time"] else "") + ref(e)),
     ):
         if rows:
             parts += ["", f"*{label}*", *map(fmt, rows)]
     parts += ["", L["footer"]]
-    return {"text": "\n".join(parts), "lang": lang}
+    by_idx = {m["idx"]: m for m in msgs}
+    return {"text": "\n".join(parts), "lang": lang,
+            "sources": [{"idx": i, "sender": by_idx[i]["sender"], "ts": by_idx[i]["ts"]} for i in refs if i in by_idx]}
 
 
 STOP = set("""ve veya ile bir bu şu o ne mi mı mu mü da de ki için gibi kadar daha en çok

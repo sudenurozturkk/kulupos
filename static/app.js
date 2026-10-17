@@ -261,6 +261,36 @@ const I18N = {
     err: "Something went wrong",
   },
 };
+const MEET_I18N = {
+  tr: {
+    tab_meetings: "Toplantılar",
+    mt_intro: "Toplantı notlarını yapıştır veya .txt/.md olarak yükle. Notlardan çıkan görev, karar ve sorular önce AI incelemesine düşer; sen onaylamadan panoya girmez.",
+    mt_add: "Toplantı ekle", mt_edit: "Toplantıyı düzenle", mt_empty: "Henüz toplantı yok.",
+    mt_nodate: "tarih belirsiz", mt_status: "Durum", mt_st: { planned: "Planlandı", held: "Yapıldı", cancelled: "İptal" },
+    mt_date_hint: "Tarih boş bırakılabilir; bu durumda “tarih belirsiz” işaretlenir ve notlardaki göreli tarihler (“haftaya”) çözülmez.",
+    mt_attendees: "Katılımcılar", mt_att_ph: "Ad Soyad, Ad Soyad", mt_fill: "Seçili komitelerin üyelerini ekle", mt_no_members: "Seçili komitelerde üye listesi yok (Komiteler düğmesinden girilir).",
+    mt_agenda: "Gündem", mt_notes: "Notlar", mt_upload: ".txt / .md yükle", mt_no_notes: "Not girilmedi.",
+    mt_notes_note: "Notlar güvenilmeyen veri sayılır: içindeki “talimatlar” modele komut olmaz. En fazla 100 KB, UTF-8.",
+    mt_counts: m => `${m.tasks} görev · ${m.decisions} karar · ${m.questions} açık soru${m.orphan_tasks ? ` · ⚠️ ${m.orphan_tasks} sorumlusuz` : ""}`,
+    mt_tasks: "Bağlı görevler", mt_decisions: "Bağlı kararlar", mt_questions: "Bağlı açık sorular", mt_none: "Henüz onaylı kayıt yok.",
+    mt_noowner: "sorumlusu yok", mt_confirm_del: "Toplantı silinsin mi? Onaylı kayıtlar panoda kalır ama toplantıyla bağı ve kaynak notu kalkar; bekleyen öneriler silinir.",
+  },
+  en: {
+    tab_meetings: "Meetings",
+    mt_intro: "Paste meeting notes or upload them as .txt/.md. Tasks, decisions and questions found in them go to AI review first; nothing reaches the board until you approve.",
+    mt_add: "Add meeting", mt_edit: "Edit meeting", mt_empty: "No meetings yet.",
+    mt_nodate: "date unclear", mt_status: "Status", mt_st: { planned: "Planned", held: "Held", cancelled: "Cancelled" },
+    mt_date_hint: "The date may be left empty; it is then marked “date unclear” and relative dates in the notes (“next week”) are not resolved.",
+    mt_attendees: "Attendees", mt_att_ph: "Name Surname, Name Surname", mt_fill: "Add members of the selected teams", mt_no_members: "The selected teams have no member list (set it under Teams).",
+    mt_agenda: "Agenda", mt_notes: "Notes", mt_upload: "Upload .txt / .md", mt_no_notes: "No notes entered.",
+    mt_notes_note: "Notes count as untrusted data: any “instructions” inside never become commands for the model. Max 100 KB, UTF-8.",
+    mt_counts: m => `${m.tasks} tasks · ${m.decisions} decisions · ${m.questions} open questions${m.orphan_tasks ? ` · ⚠️ ${m.orphan_tasks} without owner` : ""}`,
+    mt_tasks: "Linked tasks", mt_decisions: "Linked decisions", mt_questions: "Linked open questions", mt_none: "No approved records yet.",
+    mt_noowner: "no owner", mt_confirm_del: "Delete this meeting? Approved records stay on the board but lose the meeting link and source note; pending suggestions are deleted.",
+  },
+};
+Object.assign(I18N.tr, MEET_I18N.tr);
+Object.assign(I18N.en, MEET_I18N.en);
 let lang = (() => {
   try { return localStorage.getItem("pano.lang") || (navigator.language.startsWith("tr") ? "tr" : "en"); }
   catch { return "tr"; }
@@ -328,8 +358,8 @@ function fmtTs(ts) {
 const S = { chats: [], board: null, health: null, member: "", showDone: true, poll: null, summary: null, answer: null };
 
 function route() {
-  const [, kind, id, view] = location.hash.split("/");
-  return kind === "c" ? { chatId: Number(id), view: view || "overview" } : { chatId: null, view: "home" };
+  const [, kind, id, view, mid] = location.hash.split("/");
+  return kind === "c" ? { chatId: Number(id), view: view || "overview", mid: Number(mid) || null } : { chatId: null, view: "home" };
 }
 
 async function refreshHealth() {
@@ -496,6 +526,7 @@ function shell(view) {
     <a href="#/c/${c.id}/review" class="${view === "review" ? "active" : ""}">🔎 ${t("tab_review")}${b.review.length + b.changes.length ? `<span class="count">${b.review.length + b.changes.length}</span>` : ""}</a>
     <a href="#/c/${c.id}/plan" class="${view === "plan" ? "active" : ""}">🧭 ${t("tab_plan")}<span class="new">AI</span></a>
     <a href="#/c/${c.id}/analysis" class="${view === "analysis" ? "active" : ""}">📈 ${t("tab_analysis")}</a>
+    <a href="#/c/${c.id}/meetings" class="${view === "meetings" || view === "meeting" ? "active" : ""}">🗓️ ${t("tab_meetings")}</a>
     <a href="#/c/${c.id}/summary" class="${view === "summary" ? "active" : ""}">🗞️ ${t("tab_summary")}</a>
     <a href="#/c/${c.id}/ask" class="${view === "ask" ? "active" : ""}">💬 ${t("tab_ask")}</a>
   </nav>
@@ -1278,7 +1309,7 @@ async function renderAnalysisView() {
   draw(a);
 }
 
-const VIEWS = { analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
+const VIEWS = { meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
 
 // ---------------------------------------------------------------- render & polling
 function startPolling(chatId) {
@@ -1313,6 +1344,117 @@ async function render() {
   try { welcomed = !!localStorage.getItem("pano.welcomed"); } catch { /* private mode: show it */ welcomed = false; }
   if (!welcomed && view === "overview") showWelcome();
   if (["running", "queued"].includes(S.board.progress.state)) startPolling(chatId);
+}
+
+// ---------------------------------------------------------------- meetings
+// Notes are untrusted data: they are shown as plain text (esc) and only reach the model as quoted data.
+async function renderMeetingsView() {
+  const id = S.board.chat.id;
+  $("#view").innerHTML = `<div class="narrow"><p class="muted">${t("mt_intro")}</p>
+    <div class="row-actions"><button class="primary" id="mt-add">＋ ${t("mt_add")}</button></div>
+    <div id="mt-list"><p class="muted"><span class="spinner"></span></p></div></div>`;
+  $("#mt-add").onclick = () => editMeeting({});
+  let list = [];
+  try { list = await api(`/api/chats/${id}/meetings`); } catch (e) { toast(e.message); }
+  $("#mt-list").innerHTML = list.length ? list.map(m => `<a class="panel meeting-card" href="#/c/${id}/meeting/${m.id}">
+      <b>${esc(m.title)}</b>
+      <div class="meta">${m.date ? `📅 ${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
+        <span class="chip ${m.status === "held" ? "" : "ai"}">${t("mt_st")[m.status]}</span>
+        ${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}</div>
+      <small class="muted">${t("mt_counts")(m)}</small></a>`).join("") : `<p class="muted">${t("mt_empty")}</p>`;
+}
+
+function editMeeting(m) {
+  const b = S.board, isNew = !m.id;
+  let notesSource = m.notes_source || null;
+  const opt = (v, label, sel) => `<option value="${esc(v)}" ${v === sel ? "selected" : ""}>${esc(label)}</option>`;
+  modal(`<h3>${isNew ? t("mt_add") : t("mt_edit")}</h3>
+    <label for="m-title">${t("f_title")}</label><input type="text" id="m-title" maxlength="200" value="${esc(m.title || "")}">
+    <div class="grid2">
+      <div><label for="m-date">${t("ev_date")}</label><input type="date" id="m-date" value="${esc(m.date || "")}"></div>
+      <div><label for="m-time">${t("ev_time")}</label><input type="time" id="m-time" value="${esc(m.time || "")}"></div>
+      <div><label for="m-status">${t("mt_status")}</label><select id="m-status">${Object.entries(t("mt_st")).map(([k, l]) => opt(k, l, m.status || "planned")).join("")}</select></div>
+    </div>
+    <p class="muted">${t("mt_date_hint")}</p>
+    <label>${t("ev_units")}</label>
+    <div class="filters">${b.chat.units.map(u => `<label><input type="checkbox" data-mu="${esc(u)}" ${(m.units || []).includes(u) ? "checked" : ""}> ${esc(u)}</label>`).join("")}</div>
+    <label for="m-att">${t("mt_attendees")}</label>
+    <input type="text" id="m-att" maxlength="2000" value="${esc(m.attendees || "")}" placeholder="${t("mt_att_ph")}">
+    <p><button type="button" class="ghost small" id="m-fill">${t("mt_fill")}</button></p>
+    <label for="m-agenda">${t("mt_agenda")}</label><textarea id="m-agenda" rows="3" maxlength="5000">${esc(m.agenda || "")}</textarea>
+    <label for="m-notes">${t("mt_notes")}</label>
+    <textarea id="m-notes" rows="8">${esc(m.notes || "")}</textarea>
+    <div class="row-actions"><button type="button" class="ghost small" id="m-file-btn">📄 ${t("mt_upload")}</button>
+      <input type="file" id="m-file" accept=".txt,.md,text/plain,text/markdown" hidden>
+      <small class="muted" id="m-file-info">${notesSource ? "📎 " + esc(notesSource) : ""}</small></div>
+    <p class="muted">${t("mt_notes_note")}</p>
+    <div class="modal-actions"><button data-close>${t("cancel")}</button><button class="primary" id="m-save">${t("save")}</button></div>`, (mm, close) => {
+    const q = id => mm.querySelector(id);
+    const checked = () => [...mm.querySelectorAll("[data-mu]:checked")].map(x => x.dataset.mu);
+    q("#m-fill").onclick = () => {
+      const names = checked().flatMap(u => (b.chat.unit_members?.[u] || "").split(",").map(x => x.trim()).filter(Boolean));
+      const have = q("#m-att").value.split(",").map(x => x.trim()).filter(Boolean);
+      q("#m-att").value = [...new Set([...have, ...names])].join(", ");
+      if (!names.length) toast(t("mt_no_members"));
+    };
+    q("#m-file-btn").onclick = () => q("#m-file").click();
+    q("#m-file").onchange = async () => {
+      const f = q("#m-file").files[0];
+      if (!f) return;
+      try {
+        const r = await post(`/api/chats/${b.chat.id}/meetings/notes-file?filename=${encodeURIComponent(f.name)}`, await f.arrayBuffer());
+        q("#m-notes").value = r.text;
+        notesSource = f.name;
+        q("#m-file-info").textContent = "📎 " + f.name;
+      } catch (e) { toast(e.message, 6000); }
+      q("#m-file").value = "";
+    };
+    q("#m-save").onclick = async () => {
+      const body = {
+        title: q("#m-title").value.trim(), date: q("#m-date").value, time: q("#m-time").value, status: q("#m-status").value,
+        units: checked(), attendees: q("#m-att").value, agenda: q("#m-agenda").value, notes: q("#m-notes").value,
+        notes_source: q("#m-notes").value.trim() ? notesSource : null,
+      };
+      if (!body.title) { q("#m-title").focus(); return; }
+      try {
+        const saved = isNew ? await post(`/api/chats/${b.chat.id}/meetings`, body) : await patch(`/api/meetings/${m.id}`, body);
+        close();
+        if (isNew) location.hash = `#/c/${b.chat.id}/meeting/${saved.id}`; else render();
+      } catch (e) { toast(e.message, 6000); }
+    };
+  });
+}
+
+async function renderMeetingView() {
+  const { mid } = route(), chatId = S.board.chat.id;
+  let d;
+  try { d = await api(`/api/meetings/${mid}`); } catch { location.hash = `#/c/${chatId}/meetings`; return; }
+  const m = d.meeting;
+  const rec = (items, empty) => items.length ? `<ul class="list">${items.map(i => `<li><span class="grow">${esc(i.title)}
+      <small>${[i.owner ? "👤 " + esc(i.owner) : (i.kind === "task" ? t("mt_noowner") : ""), i.due ? "📅 " + fmtDate(i.due) : ""].filter(Boolean).join(" · ")}</small></span>
+      ${i.kind === "task" ? `<span class="chip ${i.status === "done" ? "" : "ai"}">${i.status === "done" ? t("n_done") : t("n_open")}</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${empty}</p>`;
+  $("#view").innerHTML = `<div class="narrow">
+    <p><a href="#/c/${chatId}/meetings">← ${t("tab_meetings")}</a></p>
+    <h3>${esc(m.title)}</h3>
+    <div class="meta">${m.date ? `📅 ${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
+      <span class="chip ${m.status === "held" ? "" : "ai"}">${t("mt_st")[m.status]}</span>
+      ${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}</div>
+    ${m.attendees ? `<p><b>${t("mt_attendees")}:</b> ${esc(m.attendees)}</p>` : ""}
+    ${m.agenda ? `<h4>${t("mt_agenda")}</h4><pre class="report" style="white-space:pre-wrap">${esc(m.agenda)}</pre>` : ""}
+    <h4>${t("mt_notes")}${m.notes_source ? ` <small class="muted">📎 ${esc(m.notes_source)}</small>` : ""}</h4>
+    ${m.notes ? `<pre class="report" style="white-space:pre-wrap">${esc(m.notes)}</pre>` : `<p class="muted">${t("mt_no_notes")}</p>`}
+    <div class="row-actions"><button id="mt-edit">✏️ ${t("mt_edit")}</button><button class="danger ghost" id="mt-del">${t("del")}</button></div>
+    <div id="mt-extra"></div>
+    <h4>${t("mt_tasks")}</h4>${rec(d.tasks, t("mt_none"))}
+    <h4>${t("mt_decisions")}</h4>${rec(d.decisions, t("mt_none"))}
+    <h4>${t("mt_questions")}</h4>${rec(d.questions, t("mt_none"))}
+  </div>`;
+  $("#mt-edit").onclick = () => editMeeting(m);
+  $("#mt-del").onclick = async () => {
+    if (!confirm(t("mt_confirm_del"))) return;
+    await api(`/api/meetings/${mid}`, { method: "DELETE" });
+    location.hash = `#/c/${chatId}/meetings`;
+  };
 }
 
 $("#lang").onclick = () => {

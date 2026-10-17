@@ -16,7 +16,7 @@ from fastapi.responses import PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analysis, analyzer, assistant, db, export, insights, llm, report, seed
+from . import analysis, analyzer, assistant, db, export, insights, llm, meetings, report, seed
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -543,6 +543,126 @@ async def event_insight(chat_id: int):
                                   "unsupported": e.unsupported})
     db.save_insight(chat_id, r["insight"], r["fingerprint"], lang, r["model"])
     return {**stats, **analysis.insight_view(stats, db.get_insight(chat_id))}
+
+
+# ---- meetings --------------------------------------------------------------------
+
+LIMITS = {"title": 200, "attendees": 2000, "agenda": 5000, "notes": meetings.MAX_NOTES_BYTES}
+
+
+class MeetingFields(BaseModel):
+    title: str | None = None
+    date: str | None = None       # "" = unknown
+    time: str | None = None
+    units: list[str] | None = None
+    attendees: str | None = None
+    agenda: str | None = None
+    notes: str | None = None
+    notes_source: str | None = None
+    status: str | None = None
+
+
+def _clean_meeting(chat_id: int, fields: dict) -> dict:
+    """Blank text clears a field; date/time/status/committees are validated; no date is invented."""
+    out = {}
+    for k, v in fields.items():
+        if isinstance(v, str):
+            v = v.strip() or None
+        out[k] = v
+    for k, limit in LIMITS.items():
+        if out.get(k) and len(out[k]) > limit:
+            raise HTTPException(413 if k == "notes" else 400, f"{k}: en fazla {limit} karakter / at most {limit} characters")
+    try:
+        if "date" in out:
+            out["date"] = meetings.valid_date(out["date"])
+        if "time" in out:
+            out["time"] = meetings.valid_time(out["time"])
+    except ValueError as e:
+        raise HTTPException(400, f"Geçersiz {e} / invalid {e}")
+    if out.get("status") not in (None, *meetings.STATUSES):
+        raise HTTPException(400, "bad status")
+    if out.get("notes"):
+        try:
+            out["notes"] = meetings.clean_notes(out["notes"])
+        except meetings.NotesError as e:
+            raise HTTPException(400, str(e))
+    if "units" in out:
+        known = db.get_chat(chat_id)["units"]
+        out["units"] = [u for u in dict.fromkeys(x.strip() for x in (out["units"] or [])) if u]
+        if any(u not in known for u in out["units"]):
+            raise HTTPException(400, "Komite bulunamadı / unknown committee")
+    return out
+
+
+def _meeting_or_404(meeting_id: int) -> dict:
+    m = db.get_meeting(meeting_id)
+    if not m:
+        raise HTTPException(404, "meeting not found")
+    return m
+
+
+def _meeting_card(m: dict, items: list[dict]) -> dict:
+    mine = [i for i in items if i["meeting_id"] == m["id"]]
+    tasks = [i for i in mine if i["kind"] == "task"]
+    return {**{k: v for k, v in m.items() if k != "notes"}, "has_notes": bool(m["notes"]),
+            "tasks": len(tasks), "orphan_tasks": sum(1 for t in tasks if not t["owner"] and t["status"] == "open"),
+            "decisions": sum(1 for i in mine if i["kind"] == "decision"),
+            "questions": sum(1 for i in mine if i["kind"] == "question")}
+
+
+@app.get("/api/chats/{chat_id}/meetings")
+def list_meetings(chat_id: int):
+    _chat_or_404(chat_id)
+    items = db.get_items(chat_id)
+    return [_meeting_card(m, items) for m in db.get_meetings(chat_id)]
+
+
+@app.post("/api/chats/{chat_id}/meetings")
+def create_meeting(chat_id: int, body: MeetingFields):
+    _chat_or_404(chat_id)
+    fields = _clean_meeting(chat_id, body.model_dump(exclude_unset=True))
+    if not fields.get("title"):
+        raise HTTPException(400, "Başlık gerekli / title is required")
+    return db.get_meeting(db.add_meeting(chat_id, **fields))
+
+
+@app.post("/api/chats/{chat_id}/meetings/notes-file")
+async def meeting_notes_file(chat_id: int, request: Request, filename: str = ""):
+    """Validate an uploaded .txt/.md and return its text; nothing is saved until the user saves the meeting."""
+    _chat_or_404(chat_id)
+    try:
+        return {"text": meetings.decode_notes(await request.body(), filename), "filename": filename or None}
+    except meetings.NotesError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.get("/api/meetings/{meeting_id}")
+def get_meeting(meeting_id: int):
+    m = _meeting_or_404(meeting_id)
+    mine = [i for i in db.get_items(m["chat_id"], review=None) if i["meeting_id"] == meeting_id]
+    approved = [i for i in mine if i["review"] == "approved"]
+    return {"meeting": m, "tasks": [i for i in approved if i["kind"] == "task"],
+            "decisions": [i for i in approved if i["kind"] == "decision"],
+            "questions": [i for i in approved if i["kind"] == "question"],
+            "proposed": sum(1 for i in mine if i["review"] == "proposed"),
+            "lines": len(meetings.note_lines(m["notes"]))}
+
+
+@app.patch("/api/meetings/{meeting_id}")
+def patch_meeting(meeting_id: int, body: MeetingFields):
+    m = _meeting_or_404(meeting_id)
+    fields = _clean_meeting(m["chat_id"], body.model_dump(exclude_unset=True))
+    if "title" in fields and not fields["title"]:
+        raise HTTPException(400, "Başlık boş olamaz / title cannot be empty")
+    db.update_meeting(meeting_id, **fields)
+    return db.get_meeting(meeting_id)
+
+
+@app.delete("/api/meetings/{meeting_id}")
+def delete_meeting(meeting_id: int):
+    _meeting_or_404(meeting_id)
+    db.delete_meeting(meeting_id)
+    return {"ok": True}
 
 
 SAMPLE_EVENT = ROOT / "demo" / "sample-event.json"

@@ -91,6 +91,31 @@ CREATE TABLE IF NOT EXISTS event_insights (
     source      TEXT NOT NULL DEFAULT 'ai',   -- ai | sample (shipped, precomputed)
     created_at  TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS meetings (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id     INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+    title       TEXT NOT NULL,
+    date        TEXT,                          -- YYYY-MM-DD or NULL = "date unclear"
+    time        TEXT,                          -- HH:MM or NULL
+    units       TEXT NOT NULL DEFAULT '[]',    -- JSON list of committees
+    attendees   TEXT,                          -- free text, comma separated
+    agenda      TEXT,
+    notes       TEXT,                          -- pasted or uploaded; untrusted data
+    notes_source TEXT,                         -- file name, or NULL when pasted
+    status      TEXT NOT NULL DEFAULT 'planned',   -- planned | held | cancelled
+    analyzed_fp TEXT,                          -- hash of the notes the last analysis read
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS meeting_summaries (
+    meeting_id  INTEGER PRIMARY KEY REFERENCES meetings(id) ON DELETE CASCADE,
+    body        TEXT NOT NULL,
+    fingerprint TEXT NOT NULL,   -- hash of the notes + approved linked records the summary was written from
+    lang        TEXT NOT NULL,
+    model       TEXT,
+    source      TEXT NOT NULL DEFAULT 'ai',   -- ai | sample (shipped, precomputed)
+    created_at  TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS items_chat ON items(chat_id, kind);
 """
 
@@ -98,6 +123,9 @@ EVENT_COLUMNS = {"event_type": "TEXT", "phase": "TEXT", "event_units": "TEXT", "
                  "attendees_actual": "INTEGER", "budget_est": "REAL", "budget_actual": "REAL", "notes": "TEXT",
                  "applications": "INTEGER", "feedback_score": "REAL", "feedback_note": "TEXT",
                  "event_id": "INTEGER REFERENCES items(id) ON DELETE SET NULL"}
+
+MEETING_COLUMNS = {"meeting_id": "INTEGER REFERENCES meetings(id) ON DELETE SET NULL",
+                   "source_text": "TEXT"}  # source_text: the note line an item came from (survives later note edits)
 
 _lock = threading.RLock()
 _conn: sqlite3.Connection | None = None
@@ -115,7 +143,7 @@ def conn() -> sqlite3.Connection:
             _conn.execute("ALTER TABLE items ADD COLUMN review TEXT NOT NULL DEFAULT 'approved'")
             _conn.commit()
         have = {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}
-        for col, decl in EVENT_COLUMNS.items():
+        for col, decl in {**EVENT_COLUMNS, **MEETING_COLUMNS}.items():
             if col not in have:
                 _conn.execute(f"ALTER TABLE items ADD COLUMN {col} {decl}")
         _conn.commit()
@@ -225,6 +253,10 @@ def set_units(chat_id: int, units: list[str], renames: dict[str, str] | None = N
         for gone in {renames.get(u, u) for u in current} - set(units):
             c.execute("UPDATE items SET unit = NULL WHERE chat_id = ? AND unit = ?", (chat_id, gone))
         c.execute("UPDATE chats SET units = ? WHERE id = ?", (json.dumps(units, ensure_ascii=False), chat_id))
+        for m in c.execute("SELECT id, units FROM meetings WHERE chat_id = ?", (chat_id,)).fetchall():
+            mine = [renames.get(u, u) for u in json.loads(m["units"] or "[]")]
+            c.execute("UPDATE meetings SET units = ? WHERE id = ?",
+                      (json.dumps([u for u in mine if u in units], ensure_ascii=False), m["id"]))
         members = json.loads(c.execute("SELECT unit_members FROM chats WHERE id = ?", (chat_id,)).fetchone()[0] or "{}")
         kept = {renames.get(u, u): v for u, v in members.items() if renames.get(u, u) in units}
         c.execute("UPDATE chats SET unit_members = ? WHERE id = ?", (json.dumps(kept, ensure_ascii=False), chat_id))
@@ -237,7 +269,7 @@ def delete_chat(chat_id: int) -> None:
 
 def reset_analysis(chat_id: int) -> None:
     with _lock, conn() as c:
-        c.execute("DELETE FROM items WHERE chat_id = ?", (chat_id,))
+        c.execute("DELETE FROM items WHERE chat_id = ? AND meeting_id IS NULL", (chat_id,))  # meeting records stay
         c.execute("UPDATE chats SET analyzed_upto = -1, status = 'imported', error = NULL WHERE id = ?",
                   (chat_id,))
 
@@ -261,7 +293,7 @@ def senders(chat_id: int) -> list[str]:
 # ---- items -----------------------------------------------------------------
 
 ITEM_FIELDS = ("title", "owner", "due", "time", "place", "unit", "status", "source_idx", "resolved_idx", "review", "needs_review",
-               *EVENT_COLUMNS)
+               *EVENT_COLUMNS, *MEETING_COLUMNS)
 
 
 def add_item(chat_id: int, kind: str, **fields) -> int:
@@ -420,3 +452,67 @@ def set_meta(key: str, value: str) -> None:
 def delete_samples() -> int:
     with _lock, conn() as c:
         return c.execute("DELETE FROM chats WHERE is_sample = 1").rowcount
+
+
+# ---- meetings -----------------------------------------------------------------
+
+MEETING_FIELDS = ("title", "date", "time", "units", "attendees", "agenda", "notes", "notes_source", "status", "analyzed_fp")
+
+
+def _meeting(r: dict) -> dict:
+    r["units"] = json.loads(r["units"] or "[]")
+    return r
+
+
+def add_meeting(chat_id: int, **fields) -> int:
+    data = {k: fields.get(k) for k in MEETING_FIELDS}
+    data["units"] = json.dumps(data["units"] or [], ensure_ascii=False)
+    data["status"] = data["status"] or "planned"
+    now = _now()
+    with _lock, conn() as c:
+        return c.execute(
+            f"INSERT INTO meetings (chat_id, {', '.join(MEETING_FIELDS)}, created_at, updated_at) "
+            f"VALUES (?, {', '.join('?' * len(MEETING_FIELDS))}, ?, ?)", (chat_id, *data.values(), now, now)).lastrowid
+
+
+def update_meeting(meeting_id: int, **fields) -> None:
+    fields = {k: v for k, v in fields.items() if k in MEETING_FIELDS}
+    if "units" in fields:
+        fields["units"] = json.dumps(fields["units"] or [], ensure_ascii=False)
+    if not fields:
+        return
+    fields["updated_at"] = _now()
+    cols = ", ".join(f"{k} = ?" for k in fields)
+    with _lock, conn() as c:
+        c.execute(f"UPDATE meetings SET {cols} WHERE id = ?", (*fields.values(), meeting_id))
+
+
+def get_meeting(meeting_id: int) -> dict | None:
+    rows = _rows("SELECT * FROM meetings WHERE id = ?", (meeting_id,))
+    return _meeting(rows[0]) if rows else None
+
+
+def get_meetings(chat_id: int) -> list[dict]:
+    return [_meeting(r) for r in _rows(
+        "SELECT * FROM meetings WHERE chat_id = ? ORDER BY COALESCE(date, '9999-12-31') DESC, id DESC", (chat_id,))]
+
+
+def delete_meeting(meeting_id: int) -> None:
+    """Suggestions and rejected records from this meeting go with it; approved ones stay on the board,
+    but their note line is no longer there, so they lose the link and the source."""
+    with _lock, conn() as c:
+        c.execute("DELETE FROM items WHERE meeting_id = ? AND review != 'approved'", (meeting_id,))
+        c.execute("UPDATE items SET meeting_id = NULL, source_idx = NULL WHERE meeting_id = ?", (meeting_id,))
+        c.execute("DELETE FROM meetings WHERE id = ?", (meeting_id,))
+
+
+def save_meeting_summary(meeting_id: int, body: str, fingerprint: str, lang: str, model: str | None,
+                         source: str = "ai") -> None:
+    with _lock, conn() as c:
+        c.execute("INSERT OR REPLACE INTO meeting_summaries (meeting_id, body, fingerprint, lang, model, source, created_at) "
+                  "VALUES (?, ?, ?, ?, ?, ?, ?)", (meeting_id, body, fingerprint, lang, model, source, _now()))
+
+
+def get_meeting_summary(meeting_id: int) -> dict | None:
+    rows = _rows("SELECT * FROM meeting_summaries WHERE meeting_id = ?", (meeting_id,))
+    return rows[0] if rows else None

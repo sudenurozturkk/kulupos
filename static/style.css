@@ -434,3 +434,7 @@ pre.report { overflow-wrap: anywhere; background: var(--surface-2); padding: var
 .list li.unit-row { flex-wrap: wrap; align-items: center; }
 .list li.unit-row > input[data-unit] { flex: 1; }
 .list li.unit-row .unit-members { flex-basis: 100%; font-size: 13px; }
+
+.meeting-card { display: block; margin-bottom: var(--sp-3); text-decoration: none; color: inherit; }
+.meeting-card .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; align-items: center; }
+.narrow .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: var(--sp-3); }

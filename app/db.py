@@ -499,10 +499,10 @@ def get_meetings(chat_id: int) -> list[dict]:
 
 def delete_meeting(meeting_id: int) -> None:
     """Suggestions and rejected records from this meeting go with it; approved ones stay on the board,
-    but their note line is no longer there, so they lose the link and the source."""
+    but their note is no longer there, so they lose the link and the quoted source."""
     with _lock, conn() as c:
         c.execute("DELETE FROM items WHERE meeting_id = ? AND review != 'approved'", (meeting_id,))
-        c.execute("UPDATE items SET meeting_id = NULL, source_idx = NULL WHERE meeting_id = ?", (meeting_id,))
+        c.execute("UPDATE items SET meeting_id = NULL, source_text = NULL WHERE meeting_id = ?", (meeting_id,))
         c.execute("DELETE FROM meetings WHERE id = ?", (meeting_id,))
 
 

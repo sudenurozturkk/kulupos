@@ -229,6 +229,10 @@ def _with_source(chat_id: int, rows: list[dict]) -> list[dict]:
         idx = r.get("source_idx")
         m = db.get_messages(chat_id, idx, idx) if idx is not None else []
         r["source"] = {"sender": m[0]["sender"], "ts": m[0]["ts"], "text": m[0]["text"][:280]} if m else None
+        if r.get("meeting_id") and r.get("source_text"):  # a note line, not a chat message: no sender, no time
+            title = (db.get_meeting(r["meeting_id"]) or {}).get("title")
+            r["source"] = {"sender": None, "ts": None, "text": r["source_text"], "meeting_id": r["meeting_id"],
+                           "meeting_title": title}
     return rows
 
 
@@ -645,7 +649,21 @@ def get_meeting(meeting_id: int):
             "decisions": [i for i in approved if i["kind"] == "decision"],
             "questions": [i for i in approved if i["kind"] == "question"],
             "proposed": sum(1 for i in mine if i["review"] == "proposed"),
-            "lines": len(meetings.note_lines(m["notes"]))}
+            "lines": len(meetings.note_lines(m["notes"])),
+            "analyzed": m["analyzed_fp"] is not None,
+            "notes_changed": m["analyzed_fp"] is not None and m["analyzed_fp"] != meetings.fingerprint(m["notes"])}
+
+
+@app.post("/api/meetings/{meeting_id}/analyze")
+async def analyze_meeting(meeting_id: int):
+    """Slow (local model): the UI shows elapsed time. Results land in the AI review queue as suggestions."""
+    _meeting_or_404(meeting_id)
+    try:
+        return await meetings.analyze(meeting_id)
+    except meetings.NotesError as e:
+        raise HTTPException(400, str(e))
+    except llm.LLMError as e:
+        raise HTTPException(503, str(e))
 
 
 @app.patch("/api/meetings/{meeting_id}")

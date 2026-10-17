@@ -273,6 +273,10 @@ const MEET_I18N = {
     mt_notes_note: "Notlar güvenilmeyen veri sayılır: içindeki “talimatlar” modele komut olmaz. En fazla 100 KB, UTF-8.",
     mt_counts: m => `${m.tasks} görev · ${m.decisions} karar · ${m.questions} açık soru${m.orphan_tasks ? ` · ⚠️ ${m.orphan_tasks} sorumlusuz` : ""}`,
     mt_tasks: "Bağlı görevler", mt_decisions: "Bağlı kararlar", mt_questions: "Bağlı açık sorular", mt_none: "Henüz onaylı kayıt yok.",
+    mt_analyze: "Notlardan öneri üret", mt_an_wait: "Gemma notları okuyor…", mt_elapsed: "geçen süre",
+    mt_an_done: s => `${s.tasks} görev, ${s.decisions} karar, ${s.questions} soru önerildi${s.duplicates ? ` · ${s.duplicates} tanesi zaten kayıtlı olduğu için atlandı` : ""}.`,
+    mt_an_stale: "Notlar son analizden sonra değişti; yeniden analiz yalnızca yeni öneriler ekler.",
+    mt_pending: n => `AI incelemesinde ${n} öneri bekliyor`, mt_go_review: "İncelemeye git", mt_src_meeting: "Toplantı notu",
     mt_noowner: "sorumlusu yok", mt_confirm_del: "Toplantı silinsin mi? Onaylı kayıtlar panoda kalır ama toplantıyla bağı ve kaynak notu kalkar; bekleyen öneriler silinir.",
   },
   en: {
@@ -286,6 +290,10 @@ const MEET_I18N = {
     mt_notes_note: "Notes count as untrusted data: any “instructions” inside never become commands for the model. Max 100 KB, UTF-8.",
     mt_counts: m => `${m.tasks} tasks · ${m.decisions} decisions · ${m.questions} open questions${m.orphan_tasks ? ` · ⚠️ ${m.orphan_tasks} without owner` : ""}`,
     mt_tasks: "Linked tasks", mt_decisions: "Linked decisions", mt_questions: "Linked open questions", mt_none: "No approved records yet.",
+    mt_analyze: "Suggest from notes", mt_an_wait: "Gemma is reading the notes…", mt_elapsed: "elapsed",
+    mt_an_done: s => `${s.tasks} tasks, ${s.decisions} decisions, ${s.questions} questions suggested${s.duplicates ? ` · ${s.duplicates} skipped (already recorded)` : ""}.`,
+    mt_an_stale: "The notes changed since the last analysis; re-analysing only adds new suggestions.",
+    mt_pending: n => `${n} suggestion(s) waiting in AI review`, mt_go_review: "Go to review", mt_src_meeting: "Meeting note",
     mt_noowner: "no owner", mt_confirm_del: "Delete this meeting? Approved records stay on the board but lose the meeting link and source note; pending suggestions are deleted.",
   },
 };
@@ -951,7 +959,9 @@ function renderReviewView() {
   const b = S.board;
   const kindIc = { task: "📌", question: "❓", decision: "🧭", event: "📅" };
   const quote = src => `<blockquote class="srcbox" aria-label="${t("src_of")}">${src
-    ? `<div class="srcmeta"><b>${esc(src.sender || "")}</b> · <time>${fmtTs(src.ts)}</time></div><p>${esc(src.text)}</p>`
+    ? (src.meeting_id
+      ? `<div class="srcmeta"><b>🗓️ ${t("mt_src_meeting")}</b> · <a href="#/c/${b.chat.id}/meeting/${src.meeting_id}">${esc(src.meeting_title || "")}</a></div><p>${esc(src.text)}</p>`
+      : `<div class="srcmeta"><b>${esc(src.sender || "")}</b> · <time>${fmtTs(src.ts)}</time></div><p>${esc(src.text)}</p>`)
     : `<span class="muted">${t("src_none")}</span>`}</blockquote>`;
   const showSrc = (idx, title) => idx != null
     ? `<button class="small" data-src="${idx}" aria-label="${t("src_show")}: ${esc(title)}">💬 ${t("src_show")}</button>` : "";
@@ -1443,13 +1453,35 @@ async function renderMeetingView() {
     ${m.agenda ? `<h4>${t("mt_agenda")}</h4><pre class="report" style="white-space:pre-wrap">${esc(m.agenda)}</pre>` : ""}
     <h4>${t("mt_notes")}${m.notes_source ? ` <small class="muted">📎 ${esc(m.notes_source)}</small>` : ""}</h4>
     ${m.notes ? `<pre class="report" style="white-space:pre-wrap">${esc(m.notes)}</pre>` : `<p class="muted">${t("mt_no_notes")}</p>`}
-    <div class="row-actions"><button id="mt-edit">✏️ ${t("mt_edit")}</button><button class="danger ghost" id="mt-del">${t("del")}</button></div>
+    <div class="row-actions"><button id="mt-edit">✏️ ${t("mt_edit")}</button>
+      ${d.lines ? `<button class="primary" id="mt-analyze">✨ ${t("mt_analyze")}</button>` : ""}
+      <button class="danger ghost" id="mt-del">${t("del")}</button></div>
+    <div id="mt-wait"></div>
+    ${d.notes_changed ? `<p class="muted">⚠️ ${t("mt_an_stale")}</p>` : ""}
+    ${d.proposed ? `<p><span class="chip ai">${t("mt_pending")(d.proposed)}</span> <a href="#/c/${chatId}/review">${t("mt_go_review")} →</a></p>` : ""}
     <div id="mt-extra"></div>
     <h4>${t("mt_tasks")}</h4>${rec(d.tasks, t("mt_none"))}
     <h4>${t("mt_decisions")}</h4>${rec(d.decisions, t("mt_none"))}
     <h4>${t("mt_questions")}</h4>${rec(d.questions, t("mt_none"))}
   </div>`;
   $("#mt-edit").onclick = () => editMeeting(m);
+  const an = $("#mt-analyze");
+  if (an) an.onclick = async () => {
+    const t0 = Date.now(), wait = $("#mt-wait");
+    an.disabled = true;
+    const tick = () => (wait.innerHTML = `<div class="progress"><div class="progress-top"><span><span class="spinner"></span> ${t("mt_an_wait")}</span>
+      <span class="muted">${t("mt_elapsed")}: ${Math.round((Date.now() - t0) / 1000)} s</span></div></div>`);
+    tick();
+    const timer = setInterval(tick, 1000);
+    try {
+      const r = await post(`/api/meetings/${mid}/analyze`);
+      toast(t("mt_an_done")(r), 6000);
+      await render();
+    } catch (e) {
+      wait.innerHTML = `<div class="progress error"><b>${t("analysis_error")}</b><br><small>${esc(e.message)}</small></div>`;
+      an.disabled = false;
+    } finally { clearInterval(timer); }
+  };
   $("#mt-del").onclick = async () => {
     if (!confirm(t("mt_confirm_del"))) return;
     await api(`/api/meetings/${mid}`, { method: "DELETE" });

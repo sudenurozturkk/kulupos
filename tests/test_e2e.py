@@ -109,3 +109,35 @@ def test_stale_analyzing_becomes_retryable_on_startup(tmp_path, monkeypatch):
         chat = c.get(f"/api/chats/{cid}/board").json()["chat"]
         assert chat["status"] == "error" and "yarıda" in chat["error"]
         assert chat["analyzed_upto"] == 1  # retry resumes after message 1
+
+
+def test_analyze_endpoint_runs_in_background_and_persists(tmp_path, monkeypatch):
+    import time
+    db, analyzer, main = load(tmp_path, monkeypatch)
+
+    async def fake(*a, **k):
+        await asyncio.sleep(0.2)  # long enough to observe the running state
+        return RESULT
+    monkeypatch.setattr(analyzer.llm, "chat_json", fake)
+
+    with TestClient(main.app) as c:
+        cid = c.post("/api/chats", content=CHAT.encode()).json()["id"]
+        r = c.post(f"/api/chats/{cid}/analyze")
+        assert r.status_code == 200 and r.json()["state"] in ("queued", "running")
+        assert c.post(f"/api/chats/{cid}/analyze").json()["state"] in ("queued", "running")  # no second run
+
+        deadline = time.time() + 10
+        while c.get(f"/api/chats/{cid}/progress").json()["state"] != "done":
+            assert time.time() < deadline, "analysis did not finish"
+            time.sleep(0.05)
+
+        b = c.get(f"/api/chats/{cid}/board").json()
+        assert b["chat"]["status"] == "ready" and b["tasks"] == []
+        assert len(b["review"]) == 3 and {i["review"] for i in b["review"]} == {"proposed"}
+        task = next(i for i in b["review"] if i["kind"] == "task")
+        assert c.patch(f"/api/items/{task['id']}", json={"review": "approved"}).status_code == 200
+
+    db, analyzer, main = load(tmp_path, monkeypatch)
+    with TestClient(main.app) as c:
+        b = c.get(f"/api/chats/{cid}/board").json()
+        assert [t["title"] for t in b["tasks"]] == ["Afiş hazırla"] and len(b["review"]) == 2

@@ -78,6 +78,9 @@ def _import(data: bytes, name: str, units: list[str]) -> dict:
 def _start_analysis(chat_id: int) -> None:
     if analyzer.progress(chat_id).get("state") in ("queued", "running"):
         return
+    # Mark it queued now: the task only starts later, and a second click must not start another run.
+    analyzer.PROGRESS[chat_id] = {"state": "queued", "done": 0, "total": 0, "found": [],
+                                  "started": 0, "error": None}
     task = asyncio.create_task(analyzer.analyze(chat_id))
     _tasks.add(task)
     task.add_done_callback(_tasks.discard)

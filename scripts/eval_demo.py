@@ -97,6 +97,7 @@ async def main(lang: str) -> None:
         passed += ok
         print(f"  {'✅' if ok else '❌'} {desc}")
     print(f"\nScore: {passed}/{len(CHECKS[lang])}  ·  {len(items)} items  ·  {took:.0f}s\n")
+    print(f"DB: {os.environ['PANO_DB']}")
 
 
 if __name__ == "__main__":

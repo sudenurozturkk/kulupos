@@ -29,7 +29,8 @@ def _obj(**props) -> dict:
 
 
 SCHEMA = _obj(
-    new_tasks={"type": "array", "items": _obj(source=_i, title=_s, owner=_s, due=_s, unit=_s)},
+    new_tasks={"type": "array", "items": _obj(
+        source=_i, title=_s, owner=_s, due=_s, unit=_s, status={"type": "string", "enum": ["open", "done"]})},
     task_updates={"type": "array", "items": _obj(
         source=_i, id=_i, status={"type": "string", "enum": ["open", "done"]}, owner=_s, due=_s)},
     new_questions={"type": "array", "items": _obj(source=_i, text=_s, asked_by=_s)},
@@ -39,26 +40,50 @@ SCHEMA = _obj(
     event_updates={"type": "array", "items": _obj(source=_i, id=_i, date=_s, time=_s, place=_s)},
 )
 
-SYSTEM = """You are Pano, the organiser of a student club. You read the club's WhatsApp group \
-chat in small batches and keep the club's board up to date. You get the club units, the members, \
-the current board (open tasks T#, open questions Q#, events E#) and a batch of NEW MESSAGES, \
-each with an id like [#12].
+SYSTEM = """You keep the task board of a student club by reading its WhatsApp group in batches.
+You get UNITS, MEMBERS, a CALENDAR, the current BOARD (open tasks T#, open questions Q#, events E#), \
+EARLIER MESSAGES (context only) and NEW MESSAGES with ids like [#12]. Return JSON.
+Extract only from NEW MESSAGES:
 
-Extract ONLY what appears in the NEW MESSAGES:
-- new_tasks: a concrete piece of work someone committed to ("ben hallederim", "I'll do it") \
-or was asked to do. Not wishes, jokes, personal plans or chit-chat (films, matches, lessons, food). \
-owner = the member's full name as listed in MEMBERS; if a person volunteers, the owner is the \
-sender. If nobody took it, owner = "". due = YYYY-MM-DD resolved with the CALENDAR, or "". \
-unit = one of UNITS that fits the work, or "". title = short, max 8 words.
-- task_updates: a message finishes ("verdim ✅", "hazır", "done"), reassigns or reschedules an \
-EXISTING open task -> use its T id. Do not repeat a task that already exists as a new task.
-- new_questions: a question to the group about club work that needs an answer.
-- answered_questions: a NEW message answers an existing open question -> its Q id.
-- decisions: a final agreement of the group ("karar: ...", "tamam o zaman ... yapıyoruz").
-- new_events: a scheduled club event or meeting with a date. event_updates: an existing E# \
-event got a new date/time/place.
-source = the id of the message the item comes from. Write every text in the language of the chat.
-Empty lists are fine. Never invent people, dates or ids."""
+new_tasks: club work someone takes on or is given. Signals: "ben yaparım / hallederim / veririm / \
+alırım / atarım / hazırlarım", "I'll do it", a request answered with "tamam".
+  owner = full name from MEMBERS of the person who will do it (a volunteer is the sender). \
+"" if nobody took it.
+  due = YYYY-MM-DD read from the CALENDAR when a day is said ("perşembe", "pazar akşamına kadar", \
+"yarın"), relative to that message's date; else "".
+  unit = the UNIT whose kind of work it is, not the event it serves: posters, posts, stories, \
+announcements -> the media unit; venue, permits, speakers -> events; sponsors, catering deals -> \
+sponsorship; forms, website, certificates, equipment -> tech. title = short imperative, max 6 words.
+  "Ben X hazırlarım" is a task for the sender, never a decision.
+  status = "done" if the NEW MESSAGES already show it finished, else "open".
+  "Who will do X?" with no volunteer is a task with owner "" (not a question).
+task_updates: a NEW message finishes an existing T# ("verdim ✅", "hazır", "bitti", a link is \
+shared) -> status "done"; someone else takes it over -> owner.
+new_questions: an information question about club work that nobody answers. Skip personal, \
+school and social questions (lecture notes, exams, library, food, films, matches).
+answered_questions: an existing Q# that a NEW message clearly answers.
+decisions: a final group agreement, rewritten as a short statement (max 10 words). Not opinions.
+new_events / event_updates: dated official club events or meetings (talks, workshops, board \
+meetings), not friends' hangouts (film night, match). If an existing E# gets a new date, time or a \
+confirmed room, use event_updates, never a second event.
+Never repeat what is already on the BOARD. Write in the chat's language. Empty lists are fine.
+
+EXAMPLE
+NEW MESSAGES:
+[#3] Mon 2026-03-02 20:10 Ali Kaya: Stant için masa lazım, kim ayarlar?
+[#4] Mon 2026-03-02 20:12 Ayşe Demir: Ben çarşamba SKS'den isterim
+[#5] Mon 2026-03-02 20:15 Ali Kaya: O zaman tanıtım günü 12 Mart Perşembe, herkese uyar mı?
+[#6] Mon 2026-03-02 20:16 Ayşe Demir: Uyar 👍
+[#7] Mon 2026-03-02 21:30 Can Yıldız: Yarın sınav var mı bilen?
+[#8] Wed 2026-03-04 15:02 Ayşe Demir: Masayı aldım ✅
+[#9] Wed 2026-03-04 15:05 Ali Kaya: Broşürleri kim bastıracak?
+[#10] Wed 2026-03-04 15:20 Can Yıldız: Stantta priz var mı?
+OUTPUT:
+{"new_tasks":[{"source":4,"title":"SKS'den stant masası iste","owner":"Ayşe Demir","due":"2026-03-04","unit":"Etkinlik","status":"done"},\
+{"source":9,"title":"Broşürleri bastır","owner":"","due":"","unit":"Tanıtım","status":"open"}],\
+"task_updates":[],"new_questions":[{"source":10,"text":"Stantta priz var mı?","asked_by":"Can Yıldız"}],\
+"answered_questions":[],"decisions":[{"source":5,"text":"Tanıtım günü 12 Mart Perşembe"}],\
+"new_events":[{"source":5,"title":"Tanıtım günü","date":"2026-03-12","time":"","place":""}],"event_updates":[]}"""
 
 
 # ---- helpers ---------------------------------------------------------------
@@ -268,14 +293,18 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
                 if fill:
                     db.update_item(dup["id"], **fill)
             continue
+        done = t.get("status") == "done"
         new_id = db.add_item(chat_id, "task", title=title, owner=owner, due=due,
-                             unit=match_unit(t.get("unit", ""), units), source_idx=src(t))
+                             unit=match_unit(t.get("unit", ""), units), source_idx=src(t),
+                             status="done" if done else "open")
         tasks.append(db.get_item(new_id))
         note("task", title)
 
     for a in r.get("answered_questions", []):
         q = by_id.get(a.get("id"))
-        if q and q["kind"] == "question" and q["status"] == "open":
+        # The answer must be a real message that comes after the question.
+        if (q and q["kind"] == "question" and q["status"] == "open" and src(a) is not None
+                and (q["source_idx"] is None or src(a) > q["source_idx"])):
             db.update_item(q["id"], status="answered", resolved_idx=src(a))
 
     questions = db.get_items(chat_id, "question")

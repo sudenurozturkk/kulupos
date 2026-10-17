@@ -72,7 +72,7 @@ def overview(chat: dict, items: list[dict], members: list[str], today: date) -> 
 PLAN_SCHEMA = _obj(
     title=_s,
     event_date=_s,
-    tasks={"type": "array", "items": _obj(title=_s, unit=_s, owner=_s, due=_s, why=_s)},
+    tasks={"type": "array", "items": _obj(title=_s, unit=_s, owner=_s, due=_s)},
 )
 
 
@@ -98,13 +98,13 @@ CALENDAR: {cal}
 
 Request: {goal}
 
-Produce a realistic preparation plan: 8 to 14 concrete tasks covering venue/permits, speakers or content,
+Produce a realistic preparation plan: 8 to 10 concrete tasks covering venue/permits, speakers or content,
 sponsorship, promotion, registration, logistics/tech, the event day and the follow-up. For each task pick the
 unit from the list, suggest an owner from the members (prefer people who already worked in that unit and have
 fewer open tasks; "" if nobody fits), and a due date YYYY-MM-DD scheduled backwards from the event date
-(permits and venue first, promotion 1-2 weeks before, follow-up after). event_date = the event date resolved
-from the request. "why" = one short reason. Write titles and reasons in {'Turkish' if lang == 'tr' else 'English'},
-max 8 words per title."""
+(permits and venue first, promotion 1-2 weeks before). Every due date must be on or before event_date, except
+at most one follow-up task (survey, report, thank-you) after it. event_date = the event date resolved from the
+request. Write titles in {'Turkish' if lang == 'tr' else 'English'}, max 6 words per title."""
     r = await llm.chat_json([{"role": "user", "content": prompt}], PLAN_SCHEMA, temperature=0.3)
     event_date = valid_date(r.get("event_date", ""), today)
     tasks = []
@@ -114,6 +114,11 @@ max 8 words per title."""
         owner = match_member(t.get("owner", ""), members)
         tasks.append({"title": t["title"].strip(), "unit": match_unit(t.get("unit", ""), chat["units"]),
                       "owner": owner if owner in members else None,
-                      "due": valid_date(t.get("due", ""), today), "why": (t.get("why") or "").strip()})
+                      "due": valid_date(t.get("due", ""), today), "why": ""})
+    follow = ("rapor", "anket", "teşekkür", "geri bildirim", "survey", "report", "thank", "feedback", "follow")
+    if event_date:
+        for x in tasks:  # preparation can't happen after the event itself
+            if x["due"] and x["due"] > event_date and not any(w in x["title"].lower() for w in follow):
+                x["due"] = (date.fromisoformat(event_date) - timedelta(days=1)).isoformat()
     tasks.sort(key=lambda x: x["due"] or "9999")
     return {"title": (r.get("title") or goal).strip(), "event_date": event_date, "tasks": tasks}

@@ -128,7 +128,7 @@ def delete_chat(chat_id: int):
 
 
 @app.post("/api/chats/{chat_id}/analyze")
-def analyze(chat_id: int, reset: bool = False):
+async def analyze(chat_id: int, reset: bool = False):
     _chat_or_404(chat_id)
     if reset and analyzer.progress(chat_id).get("state") not in ("queued", "running"):
         db.reset_analysis(chat_id)

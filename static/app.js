@@ -236,7 +236,7 @@ function fmtTs(ts) {
 }
 
 // ---------------------------------------------------------------- state
-const S = { chats: [], board: null, health: null, member: "", showDone: false, poll: null, summary: null, answer: null };
+const S = { chats: [], board: null, health: null, member: "", showDone: true, poll: null, summary: null, answer: null };
 
 function route() {
   const [, kind, id, view] = location.hash.split("/");
@@ -369,7 +369,7 @@ function shell(view) {
     <div><h2>${esc(c.name)}</h2>
     <span class="meta">💬 ${c.message_count} ${t("messages")} · 📅 ${range} · 👥 ${b.members.length}</span></div>
     <div class="actions">
-      <a class="ghost small btn-link" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">⤓ Markdown</a>
+      <a class="btn ghost small" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">⤓ Markdown</a>
       <button class="ghost small" id="btn-add-export">⤓ ${t("add_export")}</button>
       <button class="ghost small" id="btn-reanalyze">↻ ${t("reanalyze")}</button>
       <button class="ghost small danger" id="btn-delete">${t("delete_chat")}</button>

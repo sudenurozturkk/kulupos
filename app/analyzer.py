@@ -257,6 +257,12 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
     def src(x):
         return x.get("source") if x.get("source") in valid_src else None
 
+    def flag(x, source, *dates):
+        """1 = no source message, 2 = the model gave a date that did not check out."""
+        if source is None:
+            return 1
+        return 2 if any((raw or "").strip() and not ok for raw, ok in dates) else 0
+
     def note(kind, text):
         found.append({"kind": kind, "text": text})
         del found[:-12]
@@ -294,7 +300,8 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
                     db.update_item(dup["id"], **fill)
             continue
         done = t.get("status") == "done"
-        new_id = db.add_item(chat_id, "task", review="proposed", title=title, owner=owner, due=due,
+        new_id = db.add_item(chat_id, "task", review="proposed", title=title,
+                             needs_review=flag(t, src(t), (t.get("due"), due)), owner=owner, due=due,
                              unit=match_unit(t.get("unit", ""), units), source_idx=src(t),
                              status="done" if done else "open")
         tasks.append(db.get_item(new_id))
@@ -312,7 +319,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
         text = (q.get("text") or "").strip()
         if not text or any(similar(o["title"], text) > 0.7 for o in questions):
             continue
-        new_id = db.add_item(chat_id, "question", review="proposed", title=text,
+        new_id = db.add_item(chat_id, "question", review="proposed", title=text, needs_review=flag(q, src(q)),
                              owner=match_member(q.get("asked_by", ""), members), source_idx=src(q))
         questions.append(db.get_item(new_id))
         note("question", text)
@@ -322,7 +329,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
         text = (d.get("text") or "").strip()
         if not text or any(similar(o["title"], text) > 0.7 for o in decisions):
             continue
-        new_id = db.add_item(chat_id, "decision", review="proposed", title=text, source_idx=src(d))
+        new_id = db.add_item(chat_id, "decision", review="proposed", title=text, needs_review=flag(d, src(d)), source_idx=src(d))
         decisions.append(db.get_item(new_id))
         note("decision", text)
 
@@ -349,7 +356,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
             if not dup["user_edited"] and dup["due"] != when:
                 db.update_item(dup["id"], due=when, time=(ev.get("time") or "").strip() or dup["time"])
             continue
-        new_id = db.add_item(chat_id, "event", review="proposed", title=title, due=when,
+        new_id = db.add_item(chat_id, "event", review="proposed", title=title, due=when, needs_review=flag(ev, src(ev)),
                              time=(ev.get("time") or "").strip() or None,
                              place=(ev.get("place") or "").strip() or None, source_idx=src(ev))
         events.append(db.get_item(new_id))

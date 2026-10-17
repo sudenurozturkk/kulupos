@@ -256,6 +256,11 @@ def patch_item(item_id: int, body: ItemPatch):
         raise HTTPException(400, "bad review")
     if fields.get("review") is None:
         fields.pop("review", None)
+    cur = db.get_item(item_id)
+    if fields.get("review") == "approved" and cur["needs_review"]:
+        # no source -> never approvable; unclear date -> only after the user edited it
+        if cur["needs_review"] == 1 or not (cur["user_edited"] or len(fields) > 1):
+            raise HTTPException(409, "Kaynak bulunamadı / date unclear: düzenle veya reddet / edit or reject")
     db.update_item(item_id, user=True, **fields)
     return db.get_item(item_id)
 

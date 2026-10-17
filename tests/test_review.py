@@ -61,3 +61,28 @@ def test_rejected_does_not_return_and_manual_is_approved(env, monkeypatch):
 
     client.post(f"/api/chats/{cid}/items", json={"kind": "task", "title": "Elle eklendi"})
     assert [t["title"] for t in client.get(f"/api/chats/{cid}/board").json()["tasks"]] == ["Elle eklendi"]
+
+
+def test_unsourced_item_flagged_and_not_approvable(env, monkeypatch):
+    db, analyzer, client = env
+
+    async def chat_json(*a, **k):
+        return {"new_tasks": [{"title": "Kaynaksız iş", "owner": "", "due": "", "unit": "", "source": 99},
+                              {"title": "Tarihi bozuk iş", "owner": "", "due": "2099-13-45", "unit": "", "source": 0}]}
+    monkeypatch.setattr(analyzer.llm, "chat_json", chat_json)
+    cid = client.post("/api/chats", content=CHAT.encode()).json()["id"]
+    run(analyzer, cid)
+    rev = {i["title"]: i for i in client.get(f"/api/chats/{cid}/board").json()["review"]}
+    assert rev["Kaynaksız iş"]["needs_review"] == 1
+    assert rev["Tarihi bozuk iş"]["needs_review"] == 2
+
+    r = client.patch(f"/api/items/{rev['Kaynaksız iş']['id']}", json={"review": "approved"})
+    assert r.status_code == 409
+    client.patch(f"/api/items/{rev['Kaynaksız iş']['id']}", json={"title": "Düzeltildi"})
+    assert client.patch(f"/api/items/{rev['Kaynaksız iş']['id']}", json={"review": "approved"}).status_code == 409
+    assert client.patch(f"/api/items/{rev['Kaynaksız iş']['id']}", json={"review": "rejected"}).status_code == 200
+
+    tid = rev["Tarihi bozuk iş"]["id"]
+    assert client.patch(f"/api/items/{tid}", json={"review": "approved"}).status_code == 409
+    client.patch(f"/api/items/{tid}", json={"due": "2026-10-20"})
+    assert client.patch(f"/api/items/{tid}", json={"review": "approved"}).status_code == 200

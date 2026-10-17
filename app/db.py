@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS items (
     resolved_idx INTEGER,
     user_edited  INTEGER NOT NULL DEFAULT 0,
     review       TEXT NOT NULL DEFAULT 'approved',  -- proposed | approved | rejected
+    needs_review INTEGER NOT NULL DEFAULT 0,        -- 1 no source message | 2 date unclear
     created_at   TEXT NOT NULL,
     updated_at   TEXT NOT NULL
 );
@@ -66,6 +67,9 @@ def conn() -> sqlite3.Connection:
         _conn.executescript(SCHEMA)
         if "review" not in {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}:
             _conn.execute("ALTER TABLE items ADD COLUMN review TEXT NOT NULL DEFAULT 'approved'")
+            _conn.commit()
+        if "needs_review" not in {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}:
+            _conn.execute("ALTER TABLE items ADD COLUMN needs_review INTEGER NOT NULL DEFAULT 0")
             _conn.commit()
     return _conn
 
@@ -172,7 +176,7 @@ def senders(chat_id: int) -> list[str]:
 
 # ---- items -----------------------------------------------------------------
 
-ITEM_FIELDS = ("title", "owner", "due", "time", "place", "unit", "status", "source_idx", "resolved_idx", "review")
+ITEM_FIELDS = ("title", "owner", "due", "time", "place", "unit", "status", "source_idx", "resolved_idx", "review", "needs_review")
 
 
 def add_item(chat_id: int, kind: str, **fields) -> int:
@@ -180,6 +184,7 @@ def add_item(chat_id: int, kind: str, **fields) -> int:
     data = {k: fields.get(k) for k in ITEM_FIELDS}
     data["status"] = data["status"] or "open"
     data["review"] = data["review"] or "approved"
+    data["needs_review"] = data["needs_review"] or 0
     now = _now()
     with _lock, conn() as c:
         cur = c.execute(

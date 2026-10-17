@@ -51,7 +51,7 @@ const I18N = {
     health_ok: "Yerel · Gemma 4 hazır",
     health_nomodel: "Model yok: ollama pull",
     health_down: "Ollama kapalı",
-    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", approve: "Onayla", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -137,7 +137,7 @@ const I18N = {
     health_ok: "Local · Gemma 4 ready",
     health_nomodel: "Model missing: ollama pull",
     health_down: "Ollama is not running",
-    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", approve: "Approve", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -585,16 +585,18 @@ async function showSource(idx) {
 function renderReviewView() {
   const b = S.board;
   const row = i => `<li class="review-row" data-id="${i.id}">
-    <span class="grow"><b>${t("k_" + i.kind)}</b> · ${esc(i.title)}
+    <span class="grow"><b>${t("k_" + i.kind)}</b> · ${esc(i.title)}${i.needs_review ? ` <span class="chip overdue">⚠️ ${t(i.needs_review === 1 ? "no_source" : "date_unclear")}</span>` : ""}
       <small>${i.owner ? esc(firstName(i.owner)) : ""}${i.due ? " · " + fmtDate(i.due) : ""}${i.unit ? " · " + esc(i.unit) : ""}</small></span>
     ${i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}">💬</button>` : ""}
     <button class="small" data-edit="${i.id}">${t("edit")}</button>
-    <button class="small primary" data-ok="${i.id}">${t("approve")}</button>
+    <button class="small primary" data-ok="${i.id}" ${i.needs_review === 1 ? "disabled" : ""}>${t("approve")}</button>
     <button class="small ghost danger" data-no="${i.id}">${t("reject")}</button></li>`;
   $("#view").innerHTML = `<div class="narrow"><p class="muted">${t("review_intro")}</p>
     ${b.review.length ? `<ul class="list">${b.review.map(row).join("")}</ul>` : `<p class="muted">${t("review_empty")}</p>`}</div>`;
   const view = $("#view");
-  const decide = (id, review) => async () => { await patch(`/api/items/${id}`, { review }); await render(); };
+  const decide = (id, review) => async () => {
+    try { await patch(`/api/items/${id}`, { review }); await render(); } catch (e) { toast(e.message); }
+  };
   view.querySelectorAll("[data-ok]").forEach(el => (el.onclick = decide(el.dataset.ok, "approved")));
   view.querySelectorAll("[data-no]").forEach(el => (el.onclick = decide(el.dataset.no, "rejected")));
   view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(b.review.find(x => x.id === Number(el.dataset.edit)))));

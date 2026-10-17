@@ -103,7 +103,7 @@ def unsupported_quotes(report: str, event: dict) -> list[str]:
 SHARED = re.compile(r"ortak|tekrar|birden fazla|birçok|çok katılımcı|common|shared|several|multiple|repeated|recurring|"
                     r"many participants", re.I)
 ABSENT = re.compile(r"bulunmamakta|belirtilmemi|girilmedi|girilmemi|veri yok|bilgi yok|yer almamakta|not entered|no data|"
-                    r"not specified|not provided|no information|none entered|not available", re.I)
+                    r"not specified|not provided|no information|none entered|not available|^\W*(yok|none|n/a)\W*$", re.I)
 SINGLE = re.compile(r"tek bir|tek yorum|yalnızca bir|sadece bir|single|only one|one participant", re.I)
 
 

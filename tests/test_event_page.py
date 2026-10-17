@@ -142,4 +142,5 @@ def test_report_that_mentions_missing_data_is_rejected(env, monkeypatch):
     assert report.unsupported_claims("Kararlar\nVeri setinde kararlara dair bilgi bulunmamaktadır.", ev)
     assert report.unsupported_claims("Bağlı karar sayısı: Girilmedi", ev)
     assert report.unsupported_claims("Decisions: none entered, no data", ev)
+    assert report.unsupported_claims("Açık noktalar\nYok", ev)
     assert report.unsupported_claims("Özet\nEtkinlik yapıldı.", ev) == []

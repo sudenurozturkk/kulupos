@@ -19,6 +19,9 @@
 - Onaylananlar panoya geçer: komite bazlı görev panosu, gecikenler, atanmamışlar, tarihi çelişenler, yaklaşan etkinlikler.
 - **Toplantılar:** başlık, tarih, saat, komite(ler), katılımcılar, gündem, notlar, durum. Notlar yapıştırılır ya da .txt/.md yüklenir (en çok 100 KB, UTF-8). Notlardan çıkan görev/karar/açık soru önerileri aynı inceleme kuyruğundan geçer ve toplantıya bağlanır; onaylı kayıtlar ezilmez. "Toplantı özeti" yalnızca notlardan ve onaylı bağlı kayıtlardan yazılır, kayıtta olmayan sayı veya isim içeren özet reddedilir; veri değişirse özet "ESKİ" işaretlenir. Notlar güvenilmeyen veridir: içindeki "talimatlar" modele komut olmaz. Tarih girilmemişse "tarih belirsiz" kalır, göreli tarihler çözülmez.
 - Komitelere üye listesi girilebilir; toplantıdaki görevin sorumlusu o komitenin listesinde yoksa bilgi amaçlı uyarı çıkar (engellemez). Panoda "yaklaşan toplantılar" ve "yapıldı ama sorumlusuz görev var" kartları bulunur.
+- **Menü yedi gruptur:** Panel · Etkinlikler · Toplantılar · Görevler (AI inceleme kuyruğu burada sekme) · Kişiler · Komiteler · İçe/Dışa aktar. Haftalık özet ve “sohbete sor” Panel'in, etkinlik analizi ve planlayıcı Etkinlikler'in sekmesidir.
+- **Etkinlik sayfası:** bir etkinliğe tıklayınca bilgi, bağlı görev (gecikmeli), karar, açık soru, toplantı, katılım, elle girilen geri bildirim (puan ortalaması, katılımcı yorumları, iyi giden/aksayan) ve rapor tek sayfada açılır. Rapor yalnızca bu kayıtlardan yazılır, geri bildirimdeki tekrar eden konular kaynak alıntıyla verilir (alıntı yorumlarda yoksa rapor reddedilir), veri yoksa “Veri yok” der, kayıtlar değişince ESKİ işaretlenir. Etkinlik karşılaştırma tablosunda eksik veri “—” kalır.
+- **Kişiler:** görev sahiplerinden türeyen sayfa; komiteler, açık/geciken/tamamlanan görevler, yaklaşan teslimler, etkinlik ve toplantılar. Yalnızca sayılar: görev sayısı zorluğu yansıtmaz, performans yargısı yoktur.
 - Etkinlik kaydı elle girilir; AI etkinlik raporu **yalnızca girilen veriden** yazılır, boş alan "Girilmedi" kalır, veride olmayan sayı içeren rapor reddedilir.
 
 **Neden açık model, neden yerel?** Kulüp sohbetinde onlarca öğrencinin adı, numarası ve özel mesajı var. Pano'da sohbet bilgisayardan çıkmaz: analiz yerel Gemma ile yapılır, sunucu yalnızca `127.0.0.1`'i dinler, harici font/CDN/API anahtarı yoktur. Kullanım ücreti sıfırdır ve model indirildikten sonra internetsiz çalışır. (Bu, veri maruziyetini azaltır; KVKK uyumu garantisi veya hukuki görüş değildir.)
@@ -50,7 +53,8 @@ Student clubs run on WhatsApp. Tasks are handed out during a 200-message evening
 5. **Board and panel.** Per-team (editable committees) task board, a "needs attention today" panel (overdue, unassigned, conflicting dates, decisions not yet marked final), upcoming events, import history. Counts of AI proposals are kept apart from real task counts, and "no data" is shown as "—", not as a zero.
 6. **Events.** Manual event records (type, status, attendees, budget, committees, linked tasks and decisions). The AI event report is built **only from the recorded fields**; empty fields stay "Girilmedi / Not entered", and a report containing a number that is not in the input is rejected.
 7. **Meetings.** A meeting has a title, date, time, committees, attendees, agenda, notes and a status (planned / held / cancelled). Notes are pasted or uploaded as `.txt`/`.md` (max 100 KB, UTF-8, size and encoding checked). Suggestions found in the notes go through the same review queue, quote the note line (no invented sender or timestamp), and are linked to the meeting; existing approved records are never overwritten and duplicates are skipped. Relative dates ("next Friday") are resolved against the meeting date only; with no meeting date they stay unresolved and the meeting is marked "date unclear". The notes are untrusted data: instructions inside them never become commands for the model. The **meeting summary** is written only from the notes and the approved linked records, and is rejected if it contains a number or a capitalised name that is not in that data; it is marked outdated when the notes, fields or approved records change. Committees can carry a member list; an owner outside the meeting committees' lists gets an informational warning (never a block). The panel shows upcoming meetings and held meetings that still have ownerless tasks.
-8. Also: weekly recap formatted for WhatsApp, "ask the chat" with source links, an AI event planner, CSV/JSON/Markdown export.
+8. **Event page, People, menu.** Click an event to get its info, linked tasks (with lateness), decisions, open questions, meetings, attendance, hand-entered feedback (average score, pasted participant comments, went well / fell short) and the report on one page; the report is written only from those records, repeated feedback topics must carry a verbatim quote (a quote that is not in the comments rejects the report), it says “No data” when nothing was entered, and goes OUTDATED when the records change. A comparison table shows attendance rate, late tasks and average score per event (“—” where nothing was entered). The People page lists task owners with their committees, open / late / completed tasks, upcoming deadlines, events and meetings: numbers only, no performance verdict (a task count does not reflect difficulty). The menu has seven groups: Dashboard · Events · Meetings · Tasks (the AI review queue is a tab here) · People · Committees · Import / Export.
+9. Also: weekly recap formatted for WhatsApp, "ask the chat" with source links, an AI event planner, CSV/JSON/Markdown export.
 
 ### How it works
 
@@ -106,7 +110,7 @@ Windows: double-click `run.bat`. macOS/Linux: `./run.sh` (both check for Ollama,
 
 With an empty database the app opens on a **sample club filled with fake data** (clearly labelled "Örnek veri / Sample data", removable with one click, and it does not come back once cleared). A short welcome answers: what it does, which file to upload, where the data goes, whether analysis started, where to check results, and what to do when the AI is wrong.
 
-Flow: **Club status** (today's focus, cards that link to filtered lists) → **AI review** (approve / edit / reject with the source quote) → **Board** (teams, events, decisions) → **Meetings** (notes, suggestions, summary) → **Plan an event** → **Weekly recap** → **Ask the chat**. The event form has an event report button; the sample event ships with a precomputed report.
+Flow: **Dashboard** (today's focus, cards that link to filtered lists; weekly recap and ask-the-chat are tabs here) → **Tasks** (board, plus the AI review queue with the source quote) → **Events** (event page, comparison, analysis, planner) → **Meetings** (notes, suggestions, summary) → **People** → **Committees** → **Import / Export**. The event page has the report and feedback; the sample club ships with a held event that already has feedback and a precomputed report (written once by the local Gemma, not edited).
 
 You can also try the Turkish or English demo chats from the home page, or upload your own export (*WhatsApp → group → Export chat → Without media*).
 
@@ -133,6 +137,18 @@ Results vary by one or two checks between runs. The latest run produced 17 propo
 - **Meeting summary and tests.** The meeting analysis and summary also have automated tests with a fake model (guards, injection handling, stale flag, figure/name check). The only live summary run is the precomputed summary of the sample meeting. The name check is a heuristic (capitalised words in mid-sentence); it can reject a good summary or miss a wrong name that also appears elsewhere in the data. The summary reads at most the first 12,000 characters of the notes and says so when it cuts them. The meeting screens were not inspected visually.
 - **Testing.** Backend and API are covered by automated tests with a fake model. There are no automated UI tests; the interface was inspected by hand in Chrome only. The live-model path is covered by the eval script, not by the test suite.
 - **Privacy scope.** Deleting a club removes its rows from the local SQLite file; backups or copies of that file are yours to manage.
+
+### Yol haritası (Roadmap)
+
+Aşağıdakilerin **hiçbiri şu an yok**; hepsi **planlı**. Çalışıyormuş gibi sunulmaz.
+
+- Çok kullanıcılı hesaplar ve roller (şu an giriş sistemi bilerek yok)
+- Sistem içi mesajlaşma
+- Toplantı ses kaydı
+- Bütçe / sponsor takibi
+- Dış platform entegrasyonları
+
+None of these exist today; all are **planned**.
 
 ### Project structure
 

@@ -11,10 +11,12 @@ const I18N = {
     mock_chat: [["Elif", "Salon dilekçesini kim verir?"], ["Deniz", "Ben perşembe veririm"], ["Mert", "Ahmet Bey 24'ünde yok, 31 Ekim olur diyor"], ["Elif", "Tamam karar: söyleşi 31 Ekim 14:00", true]],
     mock_cards: [["Salon dilekçesi", "Deniz", "Per 8 Eki"], ["Söyleşi → 31 Eki", "Etkinlik", "taşındı"], ["Projeksiyon dilekçesi", "sahibi yok", "⚠️"]],
     feat: [
-      ["🗂️", "Birim bazlı pano", "Her görev sorumlusu, son tarihi ve geldiği mesaj veya notla birlikte doğru birimin sütununda."],
+      ["📊", "Panel", "Bugün ilgilenilecekler, riskler, yaklaşan etkinlik ve toplantılar tek bakışta. Haftalık özet ve “sohbete sor” da burada."],
+      ["🎪", "Etkinlikler", "Her etkinlik tek sayfada: bağlı görev, karar, soru, toplantı, katılım, geri bildirim ve yalnızca girilen veriden yazılan rapor."],
       ["🗓️", "Toplantılar", "Notları yapıştırın ya da .txt/.md yükleyin; görev, karar ve sorular önce incelemeye düşer. Özet yalnızca notlardan ve onaylı kayıtlardan yazılır."],
-      ["⚠️", "Gözden kaçanlar", "Cevapsız sorular, kimsenin üstlenmediği işler, geciken ve yaklaşan tarihler."],
-      ["🧭", "Etkinlik planlayıcı", "\"3 hafta sonra 200 kişilik etkinlik\" deyin; Gemma birimlere bölünmüş, tarihli bir plan önersin."],
+      ["📌", "Görevler", "Komite bazlı pano ve onay bekleyen AI önerileri (inceleme kuyruğu). Her kayıt geldiği mesaj veya notla birlikte."],
+      ["👤", "Kişiler ve komiteler", "Görev sahiplerinden türeyen kişi sayfaları (yalnızca sayılar, performans yargısı yok) ve komite üye listeleri."],
+      ["⇅", "İçe/Dışa aktar", "WhatsApp dışa aktarımını al, onaylı kayıtları CSV/JSON/Markdown olarak ver. Veri bilgisayardan çıkmaz."],
     ],
     why_title: "Neden açık model, neden yerel?",
     why_sub: "Bir kulüp sohbetinde onlarca öğrencinin telefon numarası ve özel mesajı var.",
@@ -144,10 +146,12 @@ const I18N = {
     mock_chat: [["Maya", "Who can book the lab?"], ["Leo", "I'll book it today"], ["Noah", "They moved our booth to Oct 30"], ["Maya", "Decision: booth on Friday Oct 30", true]],
     mock_cards: [["Book the lab", "Leo", "Thu 8 Oct"], ["Fair → Oct 30", "Events", "moved"], ["Print the banner", "no owner", "⚠️"]],
     feat: [
-      ["🗂️", "A board per team", "Every task with its owner, due date and the message or note it came from, in the right team's column."],
+      ["📊", "Dashboard", "What needs attention today, risks, upcoming events and meetings at a glance. The weekly recap and “ask the chat” live here too."],
+      ["🎪", "Events", "Each event on one page: linked tasks, decisions, questions, meetings, attendance, feedback and a report written only from what was entered."],
       ["🗓️", "Meetings", "Paste notes or upload .txt/.md; tasks, decisions and questions go to review first. The summary is written only from the notes and approved records."],
-      ["⚠️", "Slipping through", "Unanswered questions, work nobody took, overdue and due-soon tasks."],
-      ["🧭", "Event planner", "Say \"a 200-person event in 3 weeks\" and Gemma proposes a dated plan split across your teams."],
+      ["📌", "Tasks", "A board per committee plus the AI suggestions waiting for approval (review queue). Every record keeps the message or note it came from."],
+      ["👤", "People and committees", "Person pages derived from task owners (numbers only, no performance verdict) and committee member lists."],
+      ["⇅", "Import / Export", "Bring in a WhatsApp export, take approved records out as CSV/JSON/Markdown. The data never leaves this computer."],
     ],
     why_title: "Why an open model, and why local?",
     why_sub: "A club chat holds dozens of students' phone numbers and private messages.",
@@ -325,6 +329,12 @@ const MEET_I18N = {
 };
 const HUB_I18N = {
   tr: {
+    nav_main: "Ana menü", nav_panel: "Panel", nav_list: "Etkinlik listesi", nav_tasks: "Görevler", tab_units: "Komiteler", nav_data: "İçe/Dışa aktar",
+    un_intro: "Komiteler, üye listeleri ve onlara bağlı işler. Sayılar yalnızca girilmiş görev ve etkinlik kayıtlarından gelir.", un_members: "Üyeler (serbest metin)",
+    un_loose: n => `${n} görev komitesiz.`,
+    da_intro: "Sohbeti içeri al, verini dışarı ver. Veri bilgisayardan çıkmaz.", da_import: "İçe aktar", da_new: "Başka sohbet / yeni kulüp",
+    da_import_note: "Aynı sohbetin daha yeni bir dışa aktarımı eklenirse yalnızca yeni mesajlar alınır. “Baştan analiz et” modelin tüm sohbeti yeniden okumasını ister (yavaştır); kendi düzeltmelerin ezilmez.",
+    da_export: "Dışa aktar", da_export_note: "Yalnızca onaylı kayıtlar. CSV/JSON penceresinde filtre ve tarih aralığı seçilir.", da_danger: "Tehlikeli bölge",
     tab_people: "Kişiler", pp_intro: "Görev sahiplerinden otomatik türeyen isimler. Bir kişiye tıklayınca görevleri, etkinlikleri ve toplantıları açılır.",
     pp_note: "Yalnızca sayılar: görev sayısı zorluğu yansıtmaz; bu sayfa bir performans değerlendirmesi değildir.",
     pp_name: "Kişi", pp_committees: "Komiteler", pp_open: "Açık", pp_late: "Geciken görevler", pp_done: "Tamamlanan", pp_done_l: "Tamamladıkları",
@@ -341,6 +351,12 @@ const HUB_I18N = {
     cmp_note: "— : veri girilmemiş; tahmin yazılmaz. Geciken görev: bağlı açık görevlerden tarihi geçmiş olanlar / bağlı görev sayısı.",
   },
   en: {
+    nav_main: "Main menu", nav_panel: "Dashboard", nav_list: "Event list", nav_tasks: "Tasks", tab_units: "Committees", nav_data: "Import / Export",
+    un_intro: "Committees, their member lists and the work tied to them. Counts come only from entered task and event records.", un_members: "Members (free text)",
+    un_loose: n => `${n} task(s) without a committee.`,
+    da_intro: "Bring a chat in, take your data out. The data never leaves this computer.", da_import: "Import", da_new: "Another chat / new club",
+    da_import_note: "Adding a newer export of the same chat only takes the new messages. “Re-analyse from scratch” makes the model read the whole chat again (slow); your own corrections are not overwritten.",
+    da_export: "Export", da_export_note: "Approved records only. The CSV/JSON dialog lets you pick a filter and a date range.", da_danger: "Danger zone",
     tab_people: "People", pp_intro: "Names derived from task owners. Click a person to see their tasks, events and meetings.",
     pp_note: "Numbers only: a task count does not reflect difficulty; this page is not a performance review.",
     pp_name: "Person", pp_committees: "Committees", pp_open: "Open", pp_late: "Late tasks", pp_done: "Completed", pp_done_l: "Completed",
@@ -565,6 +581,31 @@ async function loadBoard(chatId) {
   return S.board;
 }
 
+// Seven menu groups. Old pages keep their routes and live under a group as sub-tabs.
+const NAV = [
+  { key: "nav_panel", icon: "📊", views: ["overview", "summary", "ask"], subs: [["overview", "tab_overview"], ["summary", "tab_summary"], ["ask", "tab_ask"]] },
+  { key: "tab_events", icon: "🎪", views: ["events", "event", "analysis", "plan"], subs: [["events", "nav_list"], ["analysis", "tab_analysis"], ["plan", "tab_plan"]] },
+  { key: "tab_meetings", icon: "🗓️", views: ["meetings", "meeting"], subs: [] },
+  { key: "nav_tasks", icon: "📌", views: ["board", "review"], subs: [["board", "tab_board"], ["review", "tab_review"]] },
+  { key: "tab_people", icon: "👤", views: ["people", "person"], subs: [] },
+  { key: "tab_units", icon: "👥", views: ["units"], subs: [] },
+  { key: "nav_data", icon: "⇅", views: ["data"], subs: [] },
+];
+
+function navHtml(view, c, missedCount, reviewCount) {
+  const href = v => `#/c/${c.id}/${v}`;
+  const count = n => n ? `<span class="count">${n}</span>` : "";
+  const cur = NAV.find(g => g.views.includes(view)) || NAV[0];
+  const first = g => (g.subs[0] || [g.views[0]])[0];
+  const top = NAV.map(g => `<a href="${href(first(g))}" class="${g === cur ? "active" : ""}">${g.icon} ${t(g.key)}${g.key === "nav_tasks" ? count(reviewCount) : ""}</a>`).join("");
+  const sub = cur.subs.length > 1 ? `<nav class="tabs sub" aria-label="${esc(t(cur.key))}">${cur.subs.map(([v, k]) => {
+    const on = v === view || (v === "events" && view === "event");
+    const badge = v === "board" ? count(missedCount) : v === "review" ? count(reviewCount) : v === "plan" ? `<span class="new">AI</span>` : "";
+    return `<a href="${href(v)}" class="${on ? "active" : ""}">${t(k)}${badge}</a>`;
+  }).join("")}</nav>` : "";
+  return `<nav class="tabs" aria-label="${esc(t("nav_main"))}">${top}</nav>${sub}`;
+}
+
 function shell(view) {
   const b = S.board, c = b.chat;
   const missedCount = Object.values(b.missed).reduce((n, l) => n + l.length, 0);
@@ -578,28 +619,10 @@ function shell(view) {
     <div><h2>${esc(c.name)}</h2>
     <span class="meta">💬 ${c.message_count} ${t("messages")} · 📅 ${range} · 👥 ${b.members.length}</span></div>
     <div class="actions">
-      <a class="btn ghost small" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">⤓ Markdown</a>
-      <button class="ghost small" id="btn-export">⤓ ${t("exp_btn")}</button>
       <button class="ghost small" id="btn-help">❔ ${t("help_btn")}</button>
-      <button class="ghost small" id="btn-units">👥 ${t("units_btn")}</button>
-      <button class="ghost small" id="btn-add-export">⤓ ${t("add_export")}</button>
-      <button class="ghost small" id="btn-reanalyze">↻ ${t("reanalyze")}</button>
-      <button class="ghost small danger" id="btn-delete">${t("delete_chat")}</button>
-      <input type="file" id="file2" accept=".txt,.zip" hidden>
     </div>
   </div>
-  <nav class="tabs">
-    <a href="#/c/${c.id}/overview" class="${view === "overview" ? "active" : ""}">📊 ${t("tab_overview")}</a>
-    <a href="#/c/${c.id}/board" class="${view === "board" ? "active" : ""}">📌 ${t("tab_board")}${missedCount ? `<span class="count">${missedCount}</span>` : ""}</a>
-    <a href="#/c/${c.id}/events" class="${view === "events" || view === "event" ? "active" : ""}">🎪 ${t("tab_events")}</a>
-    <a href="#/c/${c.id}/people" class="${view === "people" || view === "person" ? "active" : ""}">👤 ${t("tab_people")}</a>
-    <a href="#/c/${c.id}/review" class="${view === "review" ? "active" : ""}">🔎 ${t("tab_review")}${b.review.length + b.changes.length ? `<span class="count">${b.review.length + b.changes.length}</span>` : ""}</a>
-    <a href="#/c/${c.id}/plan" class="${view === "plan" ? "active" : ""}">🧭 ${t("tab_plan")}<span class="new">AI</span></a>
-    <a href="#/c/${c.id}/analysis" class="${view === "analysis" ? "active" : ""}">📈 ${t("tab_analysis")}</a>
-    <a href="#/c/${c.id}/meetings" class="${view === "meetings" || view === "meeting" ? "active" : ""}">🗓️ ${t("tab_meetings")}</a>
-    <a href="#/c/${c.id}/summary" class="${view === "summary" ? "active" : ""}">🗞️ ${t("tab_summary")}</a>
-    <a href="#/c/${c.id}/ask" class="${view === "ask" ? "active" : ""}">💬 ${t("tab_ask")}</a>
-  </nav>
+  ${navHtml(view, c, missedCount, b.review.length + b.changes.length)}
   <div id="progress-slot">${progressHtml(b.progress)}</div>
   <div id="view"></div>`;
 }
@@ -622,6 +645,21 @@ function progressHtml(p) {
 
 function bindShell() {
   const id = S.board.chat.id;
+  $("#btn-help").onclick = showWelcome;
+  const clr = $("#btn-clear-sample");
+  if (clr) clr.onclick = async () => {
+    if (!confirm(t("sample_confirm"))) return;
+    await api("/api/sample", { method: "DELETE" });
+    S.seedTried = true;
+    location.hash = "#/";
+  };
+  document.querySelectorAll(".tabs a").forEach(a => a.addEventListener("click", () => { S.taskFilter = null; }));
+  const retry = $("#btn-retry");
+  if (retry) retry.onclick = async () => { await post(`/api/chats/${id}/analyze`); startPolling(id); };
+}
+
+function bindDataActions() {
+  const id = S.board.chat.id;
   const f2 = $("#file2");
   $("#btn-add-export").onclick = () => f2.click();
   f2.onchange = async () => {
@@ -639,18 +677,7 @@ function bindShell() {
     location.hash = "#/";
   };
   $("#btn-units").onclick = manageUnits;
-  $("#btn-help").onclick = showWelcome;
   $("#btn-export").onclick = showExport;
-  const clr = $("#btn-clear-sample");
-  if (clr) clr.onclick = async () => {
-    if (!confirm(t("sample_confirm"))) return;
-    await api("/api/sample", { method: "DELETE" });
-    S.seedTried = true;
-    location.hash = "#/";
-  };
-  document.querySelectorAll(".tabs a").forEach(a => a.addEventListener("click", () => { S.taskFilter = null; }));
-  const retry = $("#btn-retry");
-  if (retry) retry.onclick = async () => { await post(`/api/chats/${id}/analyze`); startPolling(id); };
 }
 
 function showWelcome() {
@@ -933,7 +960,7 @@ async function reloadBoard() {
   await loadBoard(chatId);
   $("#progress-slot").innerHTML = progressHtml(S.board.progress);
   bindShell();
-  if (["board", "overview", "review", "events", "event", "people", "person"].includes(view)) VIEWS[view]();
+  if (["board", "overview", "review", "events", "event", "people", "person", "units", "data"].includes(view)) VIEWS[view]();
 }
 
 // ---------------------------------------------------------------- modals
@@ -1588,7 +1615,40 @@ async function renderPersonView() {
   view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(all.find(x => x.id === Number(el.dataset.edit)))));
 }
 
-const VIEWS = { people: renderPeopleView, person: renderPersonView, events: renderEventsView, event: renderEventView, meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
+// ---------------------------------------------------------------- committees and import/export pages
+function renderUnitsView() {
+  const b = S.board, units = b.chat.units, members = b.chat.unit_members || {};
+  const rows = units.map(u => {
+    const tasks = b.tasks.filter(x => x.unit === u), open = tasks.filter(x => x.status === "open");
+    const late = open.filter(x => x.due && x.due < b.today).length;
+    const evs = b.events.filter(e => (e.event_units || []).includes(u)).length;
+    return `<tr><th scope="row">${esc(u)}</th><td>${members[u] ? esc(members[u]) : dash}</td><td><b>${open.length}</b></td><td>${late ? `<b>${late}</b>` : "0"}</td><td>${evs}</td></tr>`;
+  }).join("");
+  const loose = b.tasks.filter(x => !x.unit || !units.includes(x.unit)).length;
+  $("#view").innerHTML = `<div class="narrow wide"><p class="muted">${t("un_intro")}</p>
+    <div class="row-actions"><button class="primary" id="btn-units">👥 ${t("units_btn")}</button></div>
+    ${units.length ? `<div class="tscroll"><table class="atable"><thead><tr><th>${t("tab_units")}</th><th>${t("un_members")}</th><th>${t("pp_open")}</th><th>${t("pp_late")}</th><th>${t("tab_events")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<p class="muted">${t("none_yet")}</p>`}
+    ${loose ? `<p class="muted small">${t("un_loose")(loose)}</p>` : ""}</div>`;
+  $("#btn-units").onclick = manageUnits;
+}
+
+function renderDataView() {
+  const c = S.board.chat;
+  $("#view").innerHTML = `<div class="narrow"><p class="muted">${t("da_intro")}</p>
+    <div class="panel"><h3>⤓ ${t("da_import")}</h3><p class="muted small">${t("da_import_note")}</p>
+      <div class="row-actions"><button class="ghost" id="btn-add-export">⤓ ${t("add_export")}</button>
+      <button class="ghost" id="btn-reanalyze">↻ ${t("reanalyze")}</button>
+      <a class="btn ghost" href="#/">＋ ${t("da_new")}</a></div>
+      <input type="file" id="file2" accept=".txt,.zip" hidden></div>
+    <div class="panel"><h3>⤒ ${t("da_export")}</h3><p class="muted small">${t("da_export_note")}</p>
+      <div class="row-actions"><a class="btn ghost" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">⤓ Markdown</a>
+      <button class="ghost" id="btn-export">⤓ ${t("exp_btn")}</button></div></div>
+    <div class="panel"><h3>${t("da_danger")}</h3><div class="row-actions"><button class="ghost danger" id="btn-delete">${t("delete_chat")}</button></div></div></div>`;
+  bindDataActions();
+}
+
+const VIEWS = { units: renderUnitsView, data: renderDataView, people: renderPeopleView, person: renderPersonView, events: renderEventsView, event: renderEventView, meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
 
 // ---------------------------------------------------------------- render & polling
 function startPolling(chatId) {

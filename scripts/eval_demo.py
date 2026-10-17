@@ -9,10 +9,13 @@ Uses a throwaway database, so it never touches your real boards.
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import sys
 import tempfile
 import time
+from collections import Counter
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -83,7 +86,7 @@ async def main(lang: str) -> None:
     if p["state"] == "error":
         sys.exit(f"Analysis failed: {p['error']}")
 
-    items = db.get_items(chat_id)
+    items = db.get_items(chat_id, review=None)  # every proposal, whatever its review state
     print(f"\n=== {name} · {llm.MODEL} · {p['total']} windows · {took:.0f}s ===\n")
     for kind in ("task", "question", "decision", "event"):
         print(kind.upper())

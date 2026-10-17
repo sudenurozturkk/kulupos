@@ -108,29 +108,69 @@ def _terms(text: str) -> list[str]:
     return [w[:5] for w in norm(text).split() if w not in STOP and len(w) > 1]
 
 
-async def ask(chat_id: int, question: str) -> dict:
-    msgs = [m for m in db.get_messages(chat_id) if m["kind"] in ("text", "media")]
-    q_terms = set(_terms(question))
-    scored = []
-    for pos, m in enumerate(msgs):
-        hits = len(q_terms & set(_terms(m["text"])))
-        if hits:
-            scored.append((hits, pos))
-    keep: set[int] = set()
-    for _, pos in sorted(scored, reverse=True)[:25]:
-        keep.update(range(max(0, pos - 2), min(len(msgs), pos + 3)))
-    keep.update(range(max(0, len(msgs) - 15), len(msgs)))  # always include the latest messages
-    context = [msgs[p] for p in sorted(keep)]
+def club_context(chat_id: int) -> tuple[str, dict[str, dict]]:
+    """The club's own approved records as text lines with citable ids, plus an index id -> record."""
+    idx: dict[str, dict] = {}
+    lines: list[str] = []
 
-    lang = detect_lang(msgs)
+    def add(ref, kind, rec, text, href=None):
+        idx[ref] = {"ref": ref, "kind": kind, "id": rec["id"], "title": rec["title"], "href": href}
+        lines.append(f"[{ref}] {text}")
+
+    def v(x):
+        return "-" if x in (None, "", []) else str(x)
+
+    items = db.get_items(chat_id)
+    events = {e["id"]: e for e in items if e["kind"] == "event"}
+    for e in events.values():
+        fb = " ".join(x for x in (e.get("feedback_note"), e.get("feedback_good"), e.get("feedback_bad")) if x)
+        add(f"E{e['id']}", "event", e,
+            f"EVENT {e['title']} | status {v(e['phase'])} | date {v(e['due'])} | place {v(e['place'])} | owner {v(e['owner'])} | "
+            f"teams {v(', '.join(e['event_units']))} | applications {v(e['applications'])} | expected {v(e['attendees_expected'])} | "
+            f"actual {v(e['attendees_actual'])} | budget plan {v(e['budget_est'])} | budget actual {v(e['budget_actual'])} | "
+            f"feedback score {v(e['feedback_score'])} | feedback {v(fb)}", href=f"#/c/{chat_id}/event/{e['id']}")
+    for t in (i for i in items if i["kind"] == "task"):
+        ev = events.get(t["event_id"])
+        add(f"T{t['id']}", "task", t, f"TASK {t['title']} | {t['status']} | team {v(t['unit'])} | owner {v(t['owner'])} | "
+            f"due {v(t['due'])} | event {v(ev['title'] if ev else None)}")
+    for d in (i for i in items if i["kind"] == "decision" and i["validity"] == "valid"):
+        add(f"D{d['id']}", "decision", d, f"DECISION {d['title']} | {d['status']}")
+    for q in (i for i in items if i["kind"] == "question"):
+        add(f"Q{q['id']}", "question", q, f"OPEN QUESTION {q['title']} | {q['status']}")
+    for m in db.get_meetings(chat_id):
+        notes = " ".join((m.get("notes") or "").split())[:300]
+        add(f"M{m['id']}", "meeting", m, f"MEETING {m['title']} | {v(m['date'])} | {m['status']} | notes: {v(notes)}",
+            href=f"#/c/{chat_id}/meeting/{m['id']}")
+    return "\n".join(lines), idx
+
+
+async def ask(chat_id: int, question: str) -> dict:
+    """Answer from the club's records (tasks, events, feedback, decisions, meetings) and, if the club imported one,
+    the relevant chat excerpts. The answer cites record ids [T12] and message ids [#12]."""
+    msgs = [m for m in db.get_messages(chat_id) if m["kind"] in ("text", "media")]
+    data, idx = club_context(chat_id)
+    context = []
+    if msgs:
+        q_terms = set(_terms(question))
+        scored = [(len(q_terms & set(_terms(m["text"]))), pos) for pos, m in enumerate(msgs)]
+        keep: set[int] = set()
+        for _, pos in sorted([x for x in scored if x[0]], reverse=True)[:15]:
+            keep.update(range(max(0, pos - 1), min(len(msgs), pos + 2)))
+        keep.update(range(max(0, len(msgs) - 8), len(msgs)))
+        context = [msgs[p] for p in sorted(keep)]
+
+    lang = detect_lang(msgs) if msgs else "tr"
+    chat_part = "\n\nIMPORTED CHAT EXCERPTS:\n" + render_messages(context) if context else ""
     prompt = (
-        f"Excerpts from a student club's WhatsApp group:\n\n{render_messages(context)}\n\n"
-        f"Today is {date.today().isoformat()}. Answer the question using ONLY these messages. "
-        f"Be brief (1-3 sentences) and cite the message ids you used like [#12]. If the messages "
-        f"do not contain the answer, say so. Answer in {'Turkish' if lang == 'tr' else 'English'}."
-        f"\n\nQuestion: {question}"
+        "CLUB RECORDS (entered or approved by the club; '-' means not entered):\n" + data + chat_part + "\n\n"
+        f"Today is {date.today().isoformat()}. Answer the question using ONLY the records and excerpts above; do not "
+        "use outside knowledge and never invent names, numbers or dates. Be concrete and brief (2-5 sentences, or a short "
+        "list). Cite the records you used like [T12], [E3], [D5], [M2] and chat messages like [#12]. If the data does not "
+        "contain the answer, say what is missing. "
+        f"Answer in {'Turkish' if lang == 'tr' else 'English'}.\n\nQuestion: {question}"
     )
     answer = (await llm.chat([{"role": "user", "content": prompt}], temperature=0.2)).strip()
     cited = sorted({int(n) for n in re.findall(r"#(\d+)", answer)})
     by_idx = {m["idx"]: m for m in msgs}
-    return {"answer": answer, "sources": [by_idx[i] for i in cited if i in by_idx]}
+    refs = list(dict.fromkeys(re.findall(r"\b([TEDQM]\d+)\b", answer)))
+    return {"answer": answer, "sources": [by_idx[i] for i in cited if i in by_idx], "records": [idx[r] for r in refs if r in idx]}

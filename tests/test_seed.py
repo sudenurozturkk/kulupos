@@ -187,3 +187,18 @@ def test_demo_button_rebuilds_an_outdated_sample_and_leaves_user_clubs_alone(cli
     assert new != old and old not in [c["id"] for c in client.get("/api/chats").json()]
     assert len(db.get_meetings(new)) == 2 and own in [c["id"] for c in client.get("/api/chats").json()]
     assert client.post("/api/demo/tr").json()["id"] == new     # current sample is reused
+
+
+def test_ask_uses_club_records_and_returns_cited_records(client, monkeypatch):
+    from app import assistant, llm
+    cid = client.post("/api/seed").json()["chat_id"]
+    seen = {}
+
+    async def fake(messages, *a, **k):
+        seen["p"] = messages[0]["content"]
+        ev = next(l for l in seen["p"].splitlines() if "Siber Güvenlik Semineri" in l)
+        return f"En düşük puan: {ev[:5]}"
+    monkeypatch.setattr(llm, "chat", fake)
+    r = client.post(f"/api/chats/{cid}/ask", json={"question": "En düşük puanlı etkinlik?"}).json()
+    assert "feedback score 3.9" in seen["p"] and "TASK" in seen["p"] and "MEETING" in seen["p"]
+    assert r["records"] and r["records"][0]["title"] == "Siber Güvenlik Semineri" and r["records"][0]["href"]

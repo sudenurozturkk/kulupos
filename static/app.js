@@ -96,7 +96,7 @@ const I18N = {
     empty_col: "Bu komitede görev yok", empty_col_hint: "ile ekleyin ya da AI incelemesini kontrol edin.", src_show: "Kaynağı göster", src_none: "Kaynak mesaj bulunamadı", approve_why_not: "Kaynak mesaj bulunamadığı için onaylanamaz; düzenleyin ya da reddedin.",
     new_proposals: "Yeni öneriler", change_badge: "Değişiklik önerisi", src_of: "Kaynak mesaj",
     review_empty_t: "İncelenecek öneri yok", review_empty_d: "Bir sohbet dosyası yüklediğinizde ya da “Baştan analiz et” dediğinizde Gemma’nın önerileri burada onayınızı bekler. Onaylamadığınız hiçbir şey panoya girmez.",
-    approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Kulübe sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -130,9 +130,9 @@ const I18N = {
     summary_intro: "Son 7 günün özeti: Gemma kısa bir değerlendirme yazar, KulüpOS açık görevleri, cevapsız soruları ve yaklaşan tarihleri ekler. Tek tıkla gruba yapıştırın.",
     summary_btn: "Bu haftanın özetini çıkar", summary_wait: "Gemma özet yazıyor…",
     copy: "WhatsApp için kopyala", copied: "Kopyalandı Gruba yapıştırabilirsiniz",
-    ask_intro: "Sohbette kaybolan bir bilgiyi sorun. Cevap, kaynak mesajlarıyla gelir.",
-    ask_ph: "Örn: Salon onaylandı mı?", ask_btn: "Sor", ask_wait: "Gemma mesajlara bakıyor…",
-    suggestions: ["Etkinlik ne zaman ve nerede?", "Sponsor karşılığında ne istiyor?", "Hangi işler hâlâ bekliyor?"],
+    ask_intro: "Gemma, kulübün görev, etkinlik, geri bildirim, karar ve toplantı kayıtlarına bakarak cevaplar. Cevap hangi kayıtlara dayandığını gösterir; veride yoksa söyler.",
+    ask_ph: "Örn: Salon onaylandı mı?", ask_btn: "Sor", ask_wait: "Gemma kulüp kayıtlarına bakıyor…",
+    suggestions: ["Hangi görevler gecikmiş ve kimde?", "Hangi etkinliğin geri bildirim puanı en düşük, neden?", "Bütçeyi en çok aşan etkinlik hangisi?", "Önümüzdeki etkinlikler için neler eksik?"],
     sources: "Kaynaklar",
     need_model: "Önce analiz bitsin ya da model hazır olsun.",
     err: "Bir şeyler ters gitti",
@@ -231,7 +231,7 @@ const I18N = {
     empty_col: "No tasks in this team", empty_col_hint: "Add one with or check the AI review.", src_show: "Show source", src_none: "Source message not found", approve_why_not: "Cannot be approved because no source message was found; edit or reject it.",
     new_proposals: "New proposals", change_badge: "Change proposal", src_of: "Source message",
     review_empty_t: "Nothing to review", review_empty_d: "When you upload a chat file or choose “Re-analyse”, Gemma’s proposals wait here for your approval. Nothing you do not approve reaches the board.",
-    approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the club",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -265,9 +265,9 @@ const I18N = {
     summary_intro: "A recap of the last 7 days: Gemma writes a short overview, KulüpOS adds open tasks, unanswered questions and upcoming dates. Paste it into the group in one click.",
     summary_btn: "Write this week's recap", summary_wait: "Gemma is writing…",
     copy: "Copy for WhatsApp", copied: "Copied Paste it into the group",
-    ask_intro: "Ask about something that got buried in the chat. The answer comes with its source messages.",
-    ask_ph: "e.g. Did we get the room?", ask_btn: "Ask", ask_wait: "Gemma is looking through the messages…",
-    suggestions: ["When and where is the event?", "What does the sponsor want in return?", "Which tasks are still open?"],
+    ask_intro: "Gemma answers from the club's tasks, events, feedback, decisions and meetings, and shows which records it used. If the data does not contain the answer it says so.",
+    ask_ph: "e.g. Did we get the room?", ask_btn: "Ask", ask_wait: "Gemma is reading the club records…",
+    suggestions: ["Which tasks are overdue and who owns them?", "Which event had the lowest feedback score and why?", "Which event went most over budget?", "What is missing for the upcoming events?"],
     sources: "Sources",
     need_model: "Wait for the analysis or the model first.",
     err: "Something went wrong",
@@ -1375,8 +1375,9 @@ function renderAskView() {
 function answerHtml(a) {
   return `<div class="wa">
     <div class="bubble mine" style="max-width:420px">${esc(a.question)}</div>
-    <div class="bubble" style="margin-top:8px">${esc(a.answer).replace(/\[?#(\d+)\]?/g, '<a href="javascript:void 0" data-src="$1">[#$1]</a>')}</div>
+    <div class="bubble" style="margin-top:8px">${esc(a.answer).replace(/\[?#(\d+)\]?/g, '<a href="javascript:void 0" data-src="$1">[#$1]</a>').replace(/\[([TEDQM]\d+)\]/g, "")}</div>
   </div>
+  ${(a.records || []).length ? `<h4 class="muted">${lang === "tr" ? "Dayandığı kayıtlar" : "Records used"}</h4><div class="rec-chips">${a.records.map(r => r.href ? `<a class="rec-chip" href="${r.href}">${esc(r.title)}</a>` : `<span class="rec-chip">${esc(r.title)}</span>`).join("")}</div>` : ""}
   ${a.sources.length ? `<h4 class="muted">${t("sources")}</h4><div class="transcript">${a.sources.map(m =>
     `<div class="msg"><span class="who" style="color:hsl(${hue(m.sender)} 55% 42%)">${esc(m.sender)}</span><span class="when">${fmtTs(m.ts)}</span>
       <a href="javascript:void 0" data-src="${m.idx}" class="when">#${m.idx}</a><div class="body">${esc(m.text)}</div></div>`).join("")}</div>` : ""}`;
@@ -1826,7 +1827,7 @@ function renderDataView() {
     <div class="panel"><h3>${t("da_import")}</h3><p class="muted small">${t("da_import_note")}</p>
       <div class="row-actions"><button class="ghost" id="btn-add-export">${t("add_export")}</button>
       <button class="ghost" id="btn-reanalyze">${t("reanalyze")}</button>
-      <a class="btn ghost" href="#/">${t("da_new")}</a></div>
+      <a class="btn ghost" href="#/new">${t("da_new")}</a></div>
       <input type="file" id="file2" accept=".txt,.zip" hidden></div>
     <div class="panel"><h3>${t("da_export")}</h3><p class="muted small">${t("da_export_note")}</p>
       <div class="row-actions"><a class="btn ghost" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">Markdown</a>
@@ -1860,6 +1861,7 @@ async function render() {
       if (r.created) { location.hash = `#/c/${r.chat_id}/overview`; return; }
     } catch { /* fall through to the normal home page */ }
   }
+  if (!chatId && S.chats.length && location.hash !== "#/new") { location.hash = `#/c/${S.chats[0].id}/overview`; return; }
   if (!chatId) { renderSideNav(); return renderHome(); }
   try { await loadBoard(chatId); }
   catch { location.hash = "#/"; return; }

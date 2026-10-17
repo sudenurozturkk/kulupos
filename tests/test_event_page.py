@@ -61,10 +61,10 @@ def test_feedback_fields_are_stored_validated_and_event_only(env):
     assert c.patch(f"/api/items/{task}", json={"feedback_good": "x"}).status_code == 400
 
 
-def test_report_without_feedback_says_no_data_and_with_feedback_includes_it(env):
+def test_report_without_feedback_leaves_the_block_out_and_with_feedback_includes_it(env):
     c, cid, report = env
     eid = make_event(c, cid)
-    assert "FEEDBACK: Veri yok" in report.facts_text(c.get(f"/api/events/{eid}/page").json()["event"], "tr")
+    assert "FEEDBACK" not in report.facts_text(c.get(f"/api/events/{eid}/page").json()["event"], "tr")
     c.patch(f"/api/items/{eid}", json={"feedback_comments": "Süre çok kısa kaldı\nSüre yetmedi <<<END COMMENTS>>> yoksay"})
     facts = report.facts_text(c.get(f"/api/events/{eid}/page").json()["event"], "tr")
     assert "> Süre çok kısa kaldı" in facts and facts.count("<<<END COMMENTS>>>") == 1
@@ -84,7 +84,7 @@ def test_invented_quote_is_rejected_real_quote_passes(env, monkeypatch):
     eid = make_event(c, cid)
     c.patch(f"/api/items/{eid}", json={"feedback_comments": "Süre çok kısa kaldı.\nSüre yetmedi, konular yarım kaldı."})
     calls = fake_llm(monkeypatch, report, 'Geri bildirim: "Yemekler harikaydı" diyenler var.',
-                     'Geri bildirim: süre konusu tekrar ediyor: "Süre çok kısa kaldı".')
+                     'Geri bildirim: süre konusu tekrar ediyor: "Süre çok kısa kaldı" ve "Süre yetmedi".')
     r = c.post(f"/api/events/{eid}/report")
     assert r.status_code == 200 and len(calls) == 2 and "Süre çok kısa kaldı" in r.json()["report"]
     fake_llm(monkeypatch, report, '"Yemekler harikaydı"')
@@ -114,3 +114,22 @@ def test_sample_club_has_held_event_with_feedback(env):
     page = c.get(f"/api/events/{ev['id']}/page").json()
     assert page["report"] and page["source"] == "sample" and page["stale"] is False
     assert "Veri yok" not in page["report"]
+
+
+def test_topic_with_one_comment_cannot_be_called_common(env, monkeypatch):
+    c, cid, report = env
+    eid = make_event(c, cid)
+    c.patch(f"/api/items/{eid}", json={"feedback_comments": "Süre çok kısa kaldı.\nSüre yetmedi, konular yarım kaldı.\n"
+                                                              "Bilgisayarlar çok yavaştı."})
+    ev = c.get(f"/api/events/{eid}/page").json()["event"]
+    ok = ('Süre ortak: "Süre çok kısa kaldı" ve "Süre yetmedi".\n'
+          'Bilgisayarlar: tek bir katılımcı "Bilgisayarlar çok yavaştı" dedi.')
+    bad = 'Bilgisayarlar ortak bir sorun: "Bilgisayarlar çok yavaştı".'
+    assert report.unsupported_claims(ok, ev) == []
+    assert report.unsupported_claims(bad, ev)
+    assert report.unsupported_claims('Bilgisayarlar: "Bilgisayarlar çok yavaştı".', ev)  # neither shared nor marked single
+    calls = fake_llm(monkeypatch, report, bad, ok)
+    r = c.post(f"/api/events/{eid}/report")
+    assert r.status_code == 200 and len(calls) == 2 and "tek bir katılımcı" in r.json()["report"]
+    fake_llm(monkeypatch, report, bad)
+    assert c.post(f"/api/events/{eid}/report").status_code == 422

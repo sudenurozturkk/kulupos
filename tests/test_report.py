@@ -36,12 +36,13 @@ def fake_llm(monkeypatch, report, *answers):
     return calls
 
 
-def test_prompt_has_only_recorded_data_and_marks_empty_fields(env, monkeypatch):
+def test_prompt_has_only_recorded_data_and_omits_empty_fields(env, monkeypatch):
     c, cid, eid, report = env
     calls = fake_llm(monkeypatch, report, "Özet: 95 kişi katıldı.")
     assert c.post(f"/api/events/{eid}/report").status_code == 200
     prompt = "\n".join(m["content"] for m in calls[0])
-    assert "Venue: Girilmedi" in prompt and "Actual budget: Girilmedi" in prompt and "Notes: Girilmedi" in prompt
+    assert "Girilmedi" not in prompt and "Venue" not in prompt and "Actual budget" not in prompt and "Notes:" not in prompt
+    assert "FEEDBACK (" not in prompt and "<<<COMMENTS>>>" not in prompt  # a block with no data is left out entirely
     assert "Expected attendees: 120" in prompt and "Actual attendees: 95" in prompt
     assert "Afiş" in prompt and "Amfi 2 kullanılacak" in prompt
     assert "gizli sohbet" not in prompt and "777" not in prompt  # chat text never reaches the report prompt

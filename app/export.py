@@ -10,7 +10,7 @@ from . import db
 from .analyzer import detect_lang
 
 KINDS = {"tasks": "task", "decisions": "decision", "questions": "question"}
-COLUMNS = ["id", "title", "owner", "unit", "due", "status", "validity", "source_idx", "source_sender", "source_date", "source_text"]
+COLUMNS = ["id", "title", "owner", "unit", "due", "status", "source_idx", "source_sender", "source_date", "source_text", "validity"]
 UNSAFE = ("=", "+", "-", "@", "\t", "\r")
 
 

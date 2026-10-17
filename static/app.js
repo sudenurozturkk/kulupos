@@ -323,8 +323,32 @@ const MEET_I18N = {
     mt_noowner: "no owner", mt_confirm_del: "Delete this meeting? Approved records stay on the board but lose the meeting link and source note; pending suggestions are deleted.",
   },
 };
-Object.assign(I18N.tr, MEET_I18N.tr);
-Object.assign(I18N.en, MEET_I18N.en);
+const HUB_I18N = {
+  tr: {
+    tab_events: "Etkinlikler", evs_intro: "Bir etkinliğe tıkla: bilgi, bağlı görevler, kararlar, sorular, toplantılar, katılım, geri bildirim ve rapor tek sayfada açılır.",
+    evp_open: "Aç", evp_info: "Bilgi", evp_attend: "Katılım", evp_applied: "Kayıt / başvuru (ilgi)", evp_tasks: "Bağlı görevler", evp_decisions: "Bağlı kararlar",
+    evp_questions: "Bağlı açık sorular", evp_meetings: "Bağlı toplantılar", evp_none: "Bağlı kayıt yok.",
+    evp_meet_note: "Bu etkinliğe bağlı kayıtların geldiği toplantılar (toplantıdan etkinliğe doğrudan bağ yok).",
+    evp_feedback: "Geri bildirim", fb_score: "Puan ortalaması (1–5, isteğe bağlı)", fb_good: "İyi giden", fb_bad: "Aksayan",
+    fb_comments: "Katılımcı yorumları", fb_comments_ph: "Yorumları yapıştır; her satıra bir yorum", fb_count: "Yorum sayısı",
+    fb_empty: "Geri bildirim girilmedi. Elle girilir; uydurulmaz.", fb_note_hint: "Geri bildirimler elle girilir. Rapor yalnızca bu alanlardan ve etkinliğin kayıtlarından yazılır.",
+    cmp_title: "Etkinlik karşılaştırması", cmp_att: "Katılım oranı", cmp_late: "Geciken görev", cmp_score: "Puan ortalaması",
+    cmp_note: "— : veri girilmemiş; tahmin yazılmaz. Geciken görev: bağlı açık görevlerden tarihi geçmiş olanlar / bağlı görev sayısı.",
+  },
+  en: {
+    tab_events: "Events", evs_intro: "Click an event: info, linked tasks, decisions, questions, meetings, attendance, feedback and report open on one page.",
+    evp_open: "Open", evp_info: "Info", evp_attend: "Attendance", evp_applied: "Registered / applied (interest)", evp_tasks: "Linked tasks", evp_decisions: "Linked decisions",
+    evp_questions: "Linked open questions", evp_meetings: "Linked meetings", evp_none: "No linked records.",
+    evp_meet_note: "Meetings that produced records linked to this event (there is no direct meeting-to-event link).",
+    evp_feedback: "Feedback", fb_score: "Average score (1–5, optional)", fb_good: "What went well", fb_bad: "What fell short",
+    fb_comments: "Participant comments", fb_comments_ph: "Paste the comments; one per line", fb_count: "Number of comments",
+    fb_empty: "No feedback entered. It is entered by hand; nothing is made up.", fb_note_hint: "Feedback is entered by hand. The report is written only from these fields and the event's records.",
+    cmp_title: "Event comparison", cmp_att: "Attendance rate", cmp_late: "Late tasks", cmp_score: "Average score",
+    cmp_note: "— : not entered; nothing is estimated. Late tasks: linked open tasks past their date / number of linked tasks.",
+  },
+};
+Object.assign(I18N.tr, MEET_I18N.tr, HUB_I18N.tr);
+Object.assign(I18N.en, MEET_I18N.en, HUB_I18N.en);
 let lang = (() => {
   try { return localStorage.getItem("pano.lang") || (navigator.language.startsWith("tr") ? "tr" : "en"); }
   catch { return "tr"; }
@@ -557,6 +581,7 @@ function shell(view) {
   <nav class="tabs">
     <a href="#/c/${c.id}/overview" class="${view === "overview" ? "active" : ""}">📊 ${t("tab_overview")}</a>
     <a href="#/c/${c.id}/board" class="${view === "board" ? "active" : ""}">📌 ${t("tab_board")}${missedCount ? `<span class="count">${missedCount}</span>` : ""}</a>
+    <a href="#/c/${c.id}/events" class="${view === "events" || view === "event" ? "active" : ""}">🎪 ${t("tab_events")}</a>
     <a href="#/c/${c.id}/review" class="${view === "review" ? "active" : ""}">🔎 ${t("tab_review")}${b.review.length + b.changes.length ? `<span class="count">${b.review.length + b.changes.length}</span>` : ""}</a>
     <a href="#/c/${c.id}/plan" class="${view === "plan" ? "active" : ""}">🧭 ${t("tab_plan")}<span class="new">AI</span></a>
     <a href="#/c/${c.id}/analysis" class="${view === "analysis" ? "active" : ""}">📈 ${t("tab_analysis")}</a>
@@ -732,7 +757,7 @@ function renderBoardView() {
       <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}" aria-label="${t("ev_add")}">＋</button></h3>
         ${b.events.length ? "" : `<p><button class="ghost small" data-ev-sample>${t("ev_sample")}</button></p>`}${b.events.length ? `<ul class="list">${b.events.map(e => {
         const n = b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
-        return `<li><span class="grow"><a href="javascript:void 0" data-ev-edit="${e.id}"><b>${esc(e.title)}</b></a>
+        return `<li><span class="grow"><a href="#/c/${b.chat.id}/event/${e.id}"><b>${esc(e.title)}</b></a>
           <small>${e.due ? fmtDate(e.due) : "—"}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.phase ? " · " + esc(t("ph")[e.phase] || e.phase) : ""}${n ? " · " + t("ev_linked")(n) : ""}</small></span>${srcBtn(e)}</li>`;
       }).join("")}</ul>`
         : `<p class="muted">${t("none_yet")}</p>`}</div>
@@ -849,6 +874,10 @@ function editEvent(ev) {
       ${num("v-apps", t("ev_apps"), ev.applications)}${num("v-fbs", t("ev_fb_score"), ev.feedback_score, "0.1", "1", "5")}
     </div>
     <label>${t("ev_fb_note")}</label><input type="text" id="v-fbn" value="${esc(ev.feedback_note || "")}">
+    <p class="muted small">${t("fb_note_hint")}</p>
+    <div class="grid2"><div><label>${t("fb_good")}</label><textarea id="v-fbg" rows="2">${esc(ev.feedback_good || "")}</textarea></div>
+      <div><label>${t("fb_bad")}</label><textarea id="v-fbb" rows="2">${esc(ev.feedback_bad || "")}</textarea></div></div>
+    <label>${t("fb_comments")}</label><textarea id="v-fbc" rows="4" placeholder="${esc(t("fb_comments_ph"))}">${esc(ev.feedback_comments || "")}</textarea>
     <label>${t("ev_units")}</label>
     <div class="filters">${b.chat.units.map(u => `<label><input type="checkbox" data-vu="${esc(u)}" ${(ev.event_units || []).includes(u) ? "checked" : ""}> ${esc(u)}</label>`).join("")}</div>
     <label>${t("ev_notes")}</label><textarea id="v-notes" rows="3">${esc(ev.notes || "")}</textarea>
@@ -861,7 +890,10 @@ function editEvent(ev) {
     const src = q("#v-src");
     if (src) src.onclick = () => showSource(ev.source_idx);
     const del = q("#v-del");
-    if (del) del.onclick = async () => { await api(`/api/items/${ev.id}`, { method: "DELETE" }); close(); reloadBoard(); };
+    if (del) del.onclick = async () => {
+      await api(`/api/items/${ev.id}`, { method: "DELETE" }); close();
+      if (route().view === "event") location.hash = `#/c/${b.chat.id}/events`; else reloadBoard();
+    };
     const rp = q("#v-report");
     if (rp) rp.onclick = () => { close(); showReport(ev.id); };
     const n = id => (q(id).value === "" ? null : Number(q(id).value));
@@ -871,6 +903,7 @@ function editEvent(ev) {
         due: q("#v-due").value, time: q("#v-time").value, place: q("#v-place").value, owner: q("#v-owner").value,
         attendees_expected: n("#v-exp"), attendees_actual: n("#v-act"), budget_est: n("#v-best"), budget_actual: n("#v-bact"),
         applications: n("#v-apps"), feedback_score: n("#v-fbs"), feedback_note: q("#v-fbn").value,
+        feedback_good: q("#v-fbg").value, feedback_bad: q("#v-fbb").value, feedback_comments: q("#v-fbc").value,
         event_units: [...m.querySelectorAll("[data-vu]:checked")].map(x => x.dataset.vu), notes: q("#v-notes").value,
       };
       if (!body.title) return;
@@ -889,7 +922,7 @@ async function reloadBoard() {
   await loadBoard(chatId);
   $("#progress-slot").innerHTML = progressHtml(S.board.progress);
   bindShell();
-  if (view === "board" || view === "overview" || view === "review") VIEWS[view]();
+  if (["board", "overview", "review", "events", "event"].includes(view)) VIEWS[view]();
 }
 
 // ---------------------------------------------------------------- modals
@@ -1390,7 +1423,111 @@ async function renderAnalysisView() {
   draw(a);
 }
 
-const VIEWS = { meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
+// ---------------------------------------------------------------- events hub (list + comparison) and event page
+const dash = `<span class="muted">—</span>`;
+
+async function renderEventsView() {
+  const b = S.board, id = b.chat.id, cmp = b.event_compare || [];
+  const link = e => `#/c/${id}/event/${e.id}`;
+  const linked = e => b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
+  const list = b.events.length ? `<ul class="list">${b.events.map(e => `<li><span class="grow"><a href="${link(e)}"><b>${esc(e.title)}</b></a>
+      <small>${e.due ? fmtDate(e.due) : "—"}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.phase ? " · " + esc(t("ph")[e.phase] || e.phase) : ""}${linked(e) ? " · " + t("ev_linked")(linked(e)) : ""}</small></span>
+      <a class="btn ghost small" href="${link(e)}">${t("evp_open")}</a></li>`).join("")}</ul>`
+    : `<p class="muted">${t("none_yet")}</p><p><button class="ghost small" data-ev-sample>${t("ev_sample")}</button></p>`;
+  const rows = cmp.map(r => `<tr><th scope="row"><a href="${link(r)}">${esc(r.title)}</a><div class="muted small">${esc(t("ph")[r.phase] || "")}${r.date ? " · " + fmtDate(r.date, false) : ""}</div></th>
+    <td>${r.attendance_pct != null ? `<b>${r.attendance_pct}%</b>` : dash}</td>
+    <td>${r.late_tasks != null ? `<b>${r.late_tasks}</b> <span class="muted small">/ ${r.tasks}</span>` : dash}</td>
+    <td>${r.feedback_score != null ? `<b>${r.feedback_score}</b>/5` : dash}</td></tr>`).join("");
+  $("#view").innerHTML = `<div class="narrow wide">
+    <p class="muted">${t("evs_intro")}</p>
+    <div class="row-actions"><button class="primary" data-ev-add>＋ ${t("ev_add")}</button></div>
+    ${list}
+    <h3>${t("cmp_title")}</h3>
+    ${cmp.length ? `<p class="muted small">${t("cmp_note")}</p>
+      <div class="tscroll"><table class="atable"><thead><tr><th>${t("an_c_event")}</th><th>${t("cmp_att")}</th><th>${t("cmp_late")}</th><th>${t("cmp_score")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<p class="muted">${t("none_yet")}</p>`}</div>`;
+  const view = $("#view");
+  view.querySelectorAll("[data-ev-add]").forEach(el => (el.onclick = () => editEvent({})));
+  view.querySelectorAll("[data-ev-sample]").forEach(el => (el.onclick = async () => {
+    try { const r = await post(`/api/chats/${id}/sample-event`); location.hash = `#/c/${id}/event/${r.event_id}`; }
+    catch (e) { toast(e.message); }
+  }));
+}
+
+async function renderEventView() {
+  const { chatId, mid: eid } = route(), view = $("#view");
+  const back = `<p><a href="#/c/${chatId}/events">← ${t("tab_events")}</a></p>`;
+  view.innerHTML = `<div class="narrow wide">${back}<p class="muted"><span class="spinner"></span></p></div>`;
+  let p;
+  try { p = await api(`/api/events/${eid}/page`); }
+  catch { location.hash = `#/c/${chatId}/events`; return; }
+  const r = route();
+  if (r.view !== "event" || r.mid !== eid) return;  // user navigated away while loading
+  const ev = p.event, a = p.attendance, no = `<span class="muted">${t("an_none")}</span>`;
+  const val = (x, suffix = "") => x == null || x === "" ? no : `${esc(x)}${suffix}`;
+  const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : "";
+  const none = `<p class="muted">${t("evp_none")}</p>`;
+  const taskLi = x => `<li><input type="checkbox" data-toggle="${x.id}" ${x.status === "done" ? "checked" : ""} aria-label="${t("st_done")}">
+    <span class="grow ${x.status === "done" ? "muted" : ""}"><a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a>
+    <small>${x.owner ? esc(firstName(x.owner)) : t("no_owner")}</small></span>${dueChip(x, p.today)}${srcBtn(x)}</li>`;
+  const decLi = d => `<li class="${d.validity !== "valid" ? "muted" : ""}"><span class="grow">${d.validity !== "valid" ? `<s>${esc(d.title)}</s> <small>${esc(t("val_name")[d.validity] || d.validity)}</small>` : esc(d.title)}</span>${srcBtn(d)}</li>`;
+  const qLi = q => `<li><span class="grow">${esc(q.title)} <small>${esc(t("st_name")[q.status] || q.status)}</small></span>${srcBtn(q)}</li>`;
+  const meetLi = m => `<li><span class="grow"><a href="#/c/${chatId}/meeting/${m.id}">${esc(m.title)}</a>
+    <small>${m.date ? fmtDate(m.date) : t("mt_nodate")} · ${esc(t("mt_st")[m.status] || m.status)} · ${t("mt_counts")(m)}</small></span></li>`;
+  const sect = (title, body, count) => `<div class="panel"><h3>${title}${count != null ? ` <span class="n">${count}</span>` : ""}</h3>${body}</div>`;
+  const ul = (items, fmt) => items.length ? `<ul class="list">${items.map(fmt).join("")}</ul>` : none;
+  const kv = (l, v) => `<div><label>${l}</label><div>${v}</div></div>`;
+  const fbLines = (l, v) => v ? `<h4>${l}</h4><p style="white-space:pre-wrap">${esc(v)}</p>` : "";
+  const hasFb = ev.feedback_score != null || ev.feedback_note || ev.feedback_good || ev.feedback_bad || ev.feedback_comments;
+  const nComments = (ev.feedback_comments || "").split("\n").filter(x => x.trim()).length;
+  view.innerHTML = `<div class="narrow wide">${back}
+    <div class="row-actions"><h2 style="margin:0" class="grow">${esc(ev.title)}</h2><button class="ghost small" id="evp-edit">✏️ ${t("edit")}</button></div>
+    ${sect(t("evp_info"), `<div class="grid2">${kv(t("ev_date"), ev.due ? fmtDate(ev.due) : no)}${kv(t("ev_time"), val(ev.time))}${kv(t("ev_place"), val(ev.place))}
+      ${kv(t("ev_owner"), val(ev.owner))}${kv(t("ev_phase"), val(t("ph")[ev.phase] || ev.phase))}${kv(t("ev_type"), val(ev.event_type))}
+      ${kv(t("ev_units"), ev.event_units.length ? ev.event_units.map(esc).join(", ") : no)}</div>${ev.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(ev.notes)}</p>` : ""}`)}
+    ${sect(t("evp_attend"), `<div class="grid2">${kv(t("evp_applied"), val(a.applications))}${kv(t("ev_exp"), val(a.expected))}${kv(t("ev_act"), val(a.actual))}
+      ${kv(t("an_c_rate"), a.attendance_pct != null ? `<b>${a.attendance_pct}%</b>` : no)}${kv(t("an_c_conv"), a.conversion_pct != null ? `<b>${a.conversion_pct}%</b>` : no)}</div>`)}
+    ${sect(t("evp_tasks"), ul(p.tasks, taskLi), p.tasks.length)}
+    ${sect(t("evp_decisions"), ul(p.decisions, decLi), p.decisions.length)}
+    ${sect(t("evp_questions"), ul(p.questions, qLi), p.questions.length)}
+    ${sect(t("evp_meetings"), `<p class="muted small">${t("evp_meet_note")}</p>${ul(p.meetings, meetLi)}`, p.meetings.length)}
+    ${sect(t("evp_feedback"), hasFb ? `<div class="grid2">${kv(t("fb_score"), ev.feedback_score != null ? `<b>${ev.feedback_score}</b>/5` : no)}${kv(t("fb_count"), nComments || no)}</div>
+      ${fbLines(t("ev_fb_note"), ev.feedback_note)}${fbLines(t("fb_good"), ev.feedback_good)}${fbLines(t("fb_bad"), ev.feedback_bad)}${fbLines(t("fb_comments"), ev.feedback_comments)}`
+      : `<p class="muted">${t("fb_empty")}</p>`)}
+    ${sect(t("rp_title"), `<div id="evp-report"></div>`)}</div>`;
+  view.querySelector("#evp-edit").onclick = () => editEvent(ev);
+  view.querySelectorAll("[data-toggle]").forEach(el => (el.onchange = async () => {
+    await patch(`/api/items/${el.dataset.toggle}`, { status: el.checked ? "done" : "open" });
+    await reloadBoard();
+  }));
+  view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(p.tasks.find(x => x.id === Number(el.dataset.edit)))));
+  view.querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
+  drawEventReport(eid, p);
+}
+
+// Inline version of the report box: same endpoints and checks as the report dialog.
+function drawEventReport(eid, r, extra = "") {
+  const box = $("#evp-report");
+  if (!box) return;
+  box.innerHTML = `<p class="muted">${t("rp_note")}</p>
+    ${r.report ? `<p class="muted">${t(r.source === "sample" ? "rp_src_sample" : "rp_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
+      ${r.stale ? `<p>⚠️ ${t("rp_stale")}</p>` : ""}<pre class="report" style="white-space:pre-wrap">${esc(r.report)}</pre>` : `<p>${t("rp_none")}</p>`}
+    ${extra}<div id="rp-wait"></div>
+    <div class="row-actions">${r.report ? `<button class="ghost" id="rp-copy">${t("rp_copy")}</button>` : ""}
+      <button class="primary" id="rp-make">${r.report ? t("rp_remake") : t("rp_make")}</button></div>`;
+  const cp = $("#rp-copy");
+  if (cp) cp.onclick = () => copyText(r.report);
+  $("#rp-make").onclick = async e => {
+    const t0 = Date.now(); e.target.disabled = true;
+    const tick = () => { const w = $("#rp-wait"); if (w) w.innerHTML = `<div class="progress"><div class="progress-top"><span><span class="spinner"></span> ${t("rp_wait")}</span>
+      <span class="muted">${t("rp_elapsed")}: ${Math.round((Date.now() - t0) / 1000)} s</span></div></div>`; };
+    tick(); const timer = setInterval(tick, 1000);
+    try { const next = await post(`/api/events/${eid}/report`); clearInterval(timer); drawEventReport(eid, next); }
+    catch (err) { clearInterval(timer); drawEventReport(eid, r, `<div class="progress error"><b>${t("rp_rejected")}</b><br><small>${esc(err.message)}</small></div>`); }
+  };
+}
+
+const VIEWS = { events: renderEventsView, event: renderEventView, meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
 
 // ---------------------------------------------------------------- render & polling
 function startPolling(chatId) {

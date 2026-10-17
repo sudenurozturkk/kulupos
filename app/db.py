@@ -131,6 +131,7 @@ CREATE INDEX IF NOT EXISTS items_chat ON items(chat_id, kind);
 EVENT_COLUMNS = {"event_type": "TEXT", "phase": "TEXT", "event_units": "TEXT", "attendees_expected": "INTEGER",
                  "attendees_actual": "INTEGER", "budget_est": "REAL", "budget_actual": "REAL", "notes": "TEXT",
                  "applications": "INTEGER", "feedback_score": "REAL", "feedback_note": "TEXT",
+                 "feedback_good": "TEXT", "feedback_bad": "TEXT", "feedback_comments": "TEXT",
                  "event_id": "INTEGER REFERENCES items(id) ON DELETE SET NULL"}
 
 MEETING_COLUMNS = {"meeting_id": "INTEGER REFERENCES meetings(id) ON DELETE SET NULL",

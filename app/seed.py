@@ -12,6 +12,7 @@ from .parser import parse_chat, read_export
 DEMO = Path(__file__).resolve().parent.parent / "demo"
 SPEC = DEMO / "seed-panel-tr.json"
 INSIGHT = DEMO / "seed-insight-tr.json"
+REPORT = DEMO / "seed-report-tr.json"
 MEETINGS = DEMO / "seed-meetings-tr.json"
 MEETING_SUMMARY = DEMO / "seed-meeting-summary-tr.json"
 
@@ -41,11 +42,12 @@ def seed_sample(today, force: bool = False) -> int | None:
     events = {}
     for e in spec["events"]:
         events[e["key"]] = db.add_item(
-            chat_id, "event", title=e["title"], due=due(e["due"]), time=e["time"], place=e["place"],
+            chat_id, "event", title=e["title"], due=e.get("due_date") or due(e["due"]), time=e["time"], place=e["place"],
             owner=e["owner"], event_type=e["event_type"], phase=e["phase"], event_units=e["event_units"],
             source_idx=find(e["src"]),
             **{k: e[k] for k in ("attendees_expected", "attendees_actual", "applications", "budget_est",
-                                 "budget_actual", "feedback_score", "feedback_note") if k in e})
+                                 "budget_actual", "feedback_score", "feedback_note", "feedback_good", "feedback_bad",
+                                 "feedback_comments") if k in e})
     for t in spec["tasks"]:
         db.add_item(chat_id, "task", title=t["title"], owner=t.get("owner"), unit=t.get("unit"),
                     due=due(t.get("due")), status=t.get("status", "open"), source_idx=find(t["src"]),
@@ -60,6 +62,7 @@ def seed_sample(today, force: bool = False) -> int | None:
         db.add_item(chat_id, p["kind"], review="proposed", title=p["title"], owner=p.get("owner"),
                     unit=p.get("unit"), source_idx=find(p.get("src")), needs_review=p.get("needs_review", 0))
     _seed_insight(chat_id)
+    _seed_report(events)
     _seed_meetings(chat_id, today)
     db.update_chat(chat_id, status="ready", analyzed_upto=len(messages) - 1)
     return chat_id
@@ -82,6 +85,17 @@ def _seed_insight(chat_id: int) -> None:
     spec = json.loads(INSIGHT.read_text(encoding="utf-8"))
     facts = analysis.facts_text(analysis.compute(db.get_items(chat_id)), spec["lang"])
     db.save_insight(chat_id, spec["insight"], report.fingerprint(facts), spec["lang"], spec.get("model"), "sample")
+
+
+def _seed_report(events: dict) -> None:
+    """Precomputed report of the held sample event (written once by scripts/make_sample_event_report.py with the local
+    model, never edited by hand). Its fingerprint is taken from the record, so it reads as current."""
+    if not REPORT.exists():
+        return
+    spec = json.loads(REPORT.read_text(encoding="utf-8"))
+    ev = db.get_item(events[spec["key"]])
+    db.save_report(ev["id"], spec["report"], report.fingerprint(report.facts_text(ev, spec["lang"])), spec["lang"],
+                   spec.get("model"), "sample")
 
 
 def _seed_meetings(chat_id: int, today) -> None:

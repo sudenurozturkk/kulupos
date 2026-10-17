@@ -16,7 +16,10 @@
     {"key": "atolye", "title": "Python Atölyesi (örnek veri)", "due": -21, "time": "13:00", "place": "Bilgisayar Lab",
      "owner": "Mert Demir", "event_type": "atölye", "phase": "held", "event_units": ["Etkinlik", "İletişim"],
      "attendees_expected": 60, "attendees_actual": 48, "applications": 72, "budget_est": 1200, "budget_actual": 1350,
-     "feedback_score": 4, "feedback_note": "Uygulama bölümü beğenildi, süre kısa kaldı.", "src": ""}
+     "feedback_score": 4, "feedback_note": "Uygulama bölümü beğenildi, süre kısa kaldı.",
+     "feedback_good": "Uygulamalı bölüm ve anlatımın netliği.", "feedback_bad": "Süre kısa kaldı; labdaki bazı bilgisayarlar yavaştı.",
+     "feedback_comments": "Uygulamalı bölüm çok işime yaradı, daha fazla örnek olsun.\nSüre çok kısa kaldı, konular yarım kaldı.\nAnlatım netti ama labdaki bilgisayarlar yavaştı.\nUygulamalı bölümü çok beğendim.\nBir saat daha olsa iyi olurdu, süre yetmedi.",
+     "due_date": "2026-09-26", "src": ""}
   ],
   "tasks": [
     {"title": "Salon için SKS'ye dilekçe ver", "owner": "Deniz Çelik", "unit": "Etkinlik", "status": "done", "event": "soylesi", "src": "Dilekçeyi verdim"},

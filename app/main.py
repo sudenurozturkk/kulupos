@@ -262,6 +262,7 @@ def board(chat_id: int):
         "review": _with_source(chat_id, db.get_items(chat_id, review="proposed")),  # AI suggestions awaiting approval
         "changes": _with_source(chat_id, db.get_changes(chat_id)),  # AI edits to approved items awaiting approval
         "review_total": len(db.get_items(chat_id, review="proposed")) + len(db.get_changes(chat_id)),
+        "event_compare": analysis.compare(items, t.isoformat()),
         "overview": insights.overview(chat, items, db.senders(chat_id), t),
         "meetings": meetings.panel_cards(db.get_meetings(chat_id), items, t.isoformat()),
         "progress": analyzer.progress(chat_id),
@@ -357,7 +358,9 @@ def messages(chat_id: int, around: int, radius: int = 4):
 
 PHASES = ("idea", "planning", "confirmed", "held", "cancelled")
 NUMERIC = ("attendees_expected", "attendees_actual", "budget_est", "budget_actual", "applications")
-EVENT_ONLY = ("phase", "event_type", "event_units", "feedback_score", "feedback_note", *NUMERIC)
+EVENT_ONLY = ("phase", "event_type", "event_units", "feedback_score", "feedback_note", "feedback_good", "feedback_bad",
+              "feedback_comments", *NUMERIC)
+FEEDBACK_LIMITS = {"feedback_note": 500, "feedback_good": 2000, "feedback_bad": 2000, "feedback_comments": 8000}
 
 
 class EventFields(BaseModel):
@@ -373,6 +376,9 @@ class EventFields(BaseModel):
     applications: int | None = None
     feedback_score: float | None = None  # 1-5, optional
     feedback_note: str | None = None
+    feedback_good: str | None = None      # typed by the club: what went well / what fell short
+    feedback_bad: str | None = None
+    feedback_comments: str | None = None  # pasted participant comments, one per line
     notes: str | None = None
     event_id: int | None = None  # link a task/decision to an event
 
@@ -389,6 +395,9 @@ def _clean_event_fields(chat_id: int, fields: dict) -> dict:
             raise HTTPException(400, f"{k} must be >= 0")
     if fields.get("feedback_score") is not None and not 1 <= fields["feedback_score"] <= 5:
         raise HTTPException(400, "feedback_score must be between 1 and 5")
+    for k, limit in FEEDBACK_LIMITS.items():
+        if fields.get(k) and len(fields[k]) > limit:
+            raise HTTPException(413, f"{k}: en fazla {limit} karakter / at most {limit} characters")
     if fields.get("event_id") is not None:
         ev = db.get_item(fields["event_id"])
         if not ev or ev["kind"] != "event" or ev["chat_id"] != chat_id:
@@ -538,11 +547,29 @@ async def make_event_report(event_id: int):
     except llm.LLMError as e:
         raise HTTPException(503, str(e))
     except report.ReportRejected as e:
-        raise HTTPException(422, {"message": "Rapor, kayıtlı veride olmayan sayılar içerdiği için reddedildi / "
-                                             "report rejected: it contained figures that are not in the recorded data",
+        raise HTTPException(422, {"message": "Rapor, kayıtlı veride olmayan sayı veya alıntı içerdiği için reddedildi / "
+                                             "report rejected: it contained figures or quotations that are not in the recorded data",
                                   "unsupported": e.unsupported})
     db.save_report(event_id, r["report"], r["fingerprint"], lang, r["model"])
     return _report_view(ev, db.get_report(event_id))
+
+
+@app.get("/api/events/{event_id}/page")
+def event_page(event_id: int):
+    """Everything recorded about one event, in one response. Linked = items whose event_id points here."""
+    ev = _event_or_404(event_id)
+    items = db.get_items(ev["chat_id"])
+    today_s = today().isoformat()
+    mine = [i for i in items if i["event_id"] == event_id]
+    tasks = [{**i, "late": i["status"] == "open" and bool(i["due"]) and i["due"] < today_s}
+             for i in mine if i["kind"] == "task"]
+    meeting_ids = {i["meeting_id"] for i in mine if i["meeting_id"]}
+    cards = [_meeting_card(m, items) for m in db.get_meetings(ev["chat_id"]) if m["id"] in meeting_ids]
+    return {"event": ev, "today": today_s, "tasks": tasks,
+            "decisions": [i for i in mine if i["kind"] == "decision"],
+            "questions": [i for i in mine if i["kind"] == "question"],
+            "meetings": cards, "attendance": analysis.event_row(ev),
+            **_report_view(ev, db.get_report(event_id))}
 
 
 @app.get("/api/chats/{chat_id}/event-analysis")

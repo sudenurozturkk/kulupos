@@ -66,6 +66,21 @@ def compute(items: list[dict]) -> dict:
     }
 
 
+def compare(items: list[dict], today: str) -> list[dict]:
+    """One row per non-cancelled event for the club-wide comparison. None = not enough recorded data (shown as "—"):
+    no late-task count when no task is linked, no rate without both attendee figures, no score unless entered."""
+    out = []
+    for e in sorted((e for e in items if e["kind"] == "event" and e["phase"] != "cancelled"),
+                    key=lambda e: (e["due"] or "9999", e["id"])):
+        tasks = [i for i in items if i["kind"] == "task" and i["event_id"] == e["id"]]
+        late = sum(1 for t in tasks if t["status"] == "open" and t["due"] and t["due"] < today)
+        out.append({"id": e["id"], "title": e["title"], "phase": e["phase"], "date": e["due"],
+                    "attendance_pct": _pct(e["attendees_actual"], e["attendees_expected"]),
+                    "tasks": len(tasks) if tasks else None, "late_tasks": late if tasks else None,
+                    "feedback_score": e["feedback_score"]})
+    return out
+
+
 # ---- period insight -----------------------------------------------------------
 
 NO = {"tr": "Girilmedi", "en": "Not entered"}

@@ -290,3 +290,12 @@ def decide_change(change_id: int, approve: bool) -> None:
     with _lock, conn() as c:
         c.execute("UPDATE changes SET review = ? WHERE id = ?",
                   ("approved" if approve else "rejected", change_id))
+
+
+def recover_stale_analyses() -> int:
+    """After a crash/restart nothing is really analysing: make those chats retryable."""
+    with _lock, conn() as c:
+        return c.execute(
+            "UPDATE chats SET status = 'error', error = ? WHERE status = 'analyzing'",
+            ("Analiz yarıda kaldı (uygulama kapandı); 'Tekrar dene' kaldığı yerden devam eder / "
+             "analysis was interrupted; retry resumes where it stopped",)).rowcount

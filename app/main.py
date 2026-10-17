@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import hashlib
 import os
 import re
@@ -24,7 +25,13 @@ DEMOS = {
            ["Board", "Events", "Social Media", "Sponsorship", "Tech"]),
 }
 
-app = FastAPI(title="Pano", docs_url="/api/docs")
+@contextlib.asynccontextmanager
+async def lifespan(_: FastAPI):
+    db.recover_stale_analyses()
+    yield
+
+
+app = FastAPI(title="Pano", docs_url="/api/docs", lifespan=lifespan)
 _tasks: set[asyncio.Task] = set()
 
 

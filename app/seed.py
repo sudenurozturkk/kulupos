@@ -68,7 +68,11 @@ def seed_sample(today, force: bool = False) -> int | None:
 def ensure_sample(today) -> int:
     """The sample club for an explicit "open the demo" click: reuse the existing one, else create it. No model."""
     rows = db._rows("SELECT id FROM chats WHERE is_sample = 1 ORDER BY id LIMIT 1")
-    return rows[0]["id"] if rows else seed_sample(today, force=True)
+    if not rows:
+        return seed_sample(today, force=True)
+    if not db.get_meetings(rows[0]["id"]):  # a sample made before meetings existed gets the two sample meetings
+        _seed_meetings(rows[0]["id"], today)
+    return rows[0]["id"]
 
 
 def _seed_insight(chat_id: int) -> None:

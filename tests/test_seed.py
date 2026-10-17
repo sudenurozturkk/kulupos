@@ -157,3 +157,15 @@ def test_sample_meeting_summary_is_precomputed_fresh_and_passes_the_checks(clien
     assert meetings.report.unsupported_figures(view["summary"], facts) == [] and meetings.unsupported_names(view["summary"], facts) == []
     db.update_meeting(held["id"], notes=m["notes"] + " Yeni satır")   # editing the notes makes it outdated
     assert client.get(f"/api/meetings/{held['id']}/summary").json()["stale"] is True
+
+
+def test_demo_button_adds_meetings_to_a_sample_made_before_they_existed(client):
+    from app import db
+    cid = client.post("/api/seed").json()["chat_id"]
+    for m in db.get_meetings(cid):
+        db.delete_meeting(m["id"])
+    assert client.get(f"/api/chats/{cid}/meetings").json() == []
+    assert client.post("/api/demo/tr").json()["id"] == cid
+    assert len(client.get(f"/api/chats/{cid}/meetings").json()) == 2
+    client.post("/api/demo/tr")   # a second click does not duplicate them
+    assert len(client.get(f"/api/chats/{cid}/meetings").json()) == 2

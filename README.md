@@ -6,7 +6,7 @@
 
 ## Türkçe özet
 
-**Pano**, öğrenci kulüplerinin WhatsApp yönetim grubunu bilgisayarda çalışan açık model **Gemma 4 (`gemma4:e4b`, Ollama)** ile okuyup görev, karar, açık soru ve etkinlik panosuna çeviren yerel bir uygulamadır.
+**Pano, kulübün tüm işlerini tek yerde toplar: sohbet, toplantı notu ve etkinlik verisi, hepsi yerelde Gemma ile.** Açık model **Gemma 4 (`gemma4:e4b`, Ollama)** bilgisayarda çalışır; WhatsApp yönetim grubunu, toplantı notlarını ve etkinlik kayıtlarını görev, karar, açık soru ve etkinlik panosuna çevirir. WhatsApp yalnızca girdi kaynaklarından biridir.
 
 **Sorun:** Kulüpler WhatsApp'ta yürüyor. Görevler 200 mesajlık bir akşamda dağıtılıyor, etkinlik tarihi iki kez değişiyor, "sponsor dosyası kimde?" sorusu iki hafta cevapsız kalıyor.
 
@@ -15,6 +15,8 @@
 - Gemma görev, karar, soru ve etkinlikleri **öneri** olarak çıkarır. Her öneri kaynak mesajına bağlıdır.
 - Öneriler **sen onaylayana kadar panoya girmez** (AI incelemesi sekmesi: Onayla / Düzenle / Reddet). Kaynak mesajı bulunamayan öneri onaylanamaz.
 - Onaylananlar panoya geçer: komite bazlı görev panosu, gecikenler, atanmamışlar, tarihi çelişenler, yaklaşan etkinlikler.
+- **Toplantılar:** başlık, tarih, saat, komite(ler), katılımcılar, gündem, notlar, durum. Notlar yapıştırılır ya da .txt/.md yüklenir (en çok 100 KB, UTF-8). Notlardan çıkan görev/karar/açık soru önerileri aynı inceleme kuyruğundan geçer ve toplantıya bağlanır; onaylı kayıtlar ezilmez. "Toplantı özeti" yalnızca notlardan ve onaylı bağlı kayıtlardan yazılır, kayıtta olmayan sayı veya isim içeren özet reddedilir; veri değişirse özet "ESKİ" işaretlenir. Notlar güvenilmeyen veridir: içindeki "talimatlar" modele komut olmaz. Tarih girilmemişse "tarih belirsiz" kalır, göreli tarihler çözülmez.
+- Komitelere üye listesi girilebilir; toplantıdaki görevin sorumlusu o komitenin listesinde yoksa bilgi amaçlı uyarı çıkar (engellemez). Panoda "yaklaşan toplantılar" ve "yapıldı ama sorumlusuz görev var" kartları bulunur.
 - Etkinlik kaydı elle girilir; AI etkinlik raporu **yalnızca girilen veriden** yazılır, boş alan "Girilmedi" kalır, veride olmayan sayı içeren rapor reddedilir.
 
 **Neden açık model, neden yerel?** Kulüp sohbetinde onlarca öğrencinin adı, numarası ve özel mesajı var. Pano'da sohbet bilgisayardan çıkmaz: analiz yerel Gemma ile yapılır, sunucu yalnızca `127.0.0.1`'i dinler, harici font/CDN/API anahtarı yoktur. Kullanım ücreti sıfırdır ve model indirildikten sonra internetsiz çalışır. (Bu, veri maruziyetini azaltır; KVKK uyumu garantisi veya hukuki görüş değildir.)
@@ -29,7 +31,7 @@ Kodun büyük kısmı **Claude Code** ile yazıldı; insan incelemesi ve otomati
 
 ## English
 
-**Pano turns a student club's WhatsApp group into a task board, using Gemma 4 running on the club lead's own laptop. Every item is a proposal with a source message, and nothing reaches the board until a human approves it.**
+**Pano keeps all of a student club's work in one place: chat, meeting notes and event data, all analysed locally with Gemma 4 on the club lead's own laptop. WhatsApp is just one of the input sources. Every AI item is a proposal with a source (a chat message or a note line), and nothing reaches the board until a human approves it.**
 
 Started at **Hacktoberfest Elazığ Fest 2026** (Week 2: *Side Hustle*).
 
@@ -45,7 +47,8 @@ Student clubs run on WhatsApp. Tasks are handed out during a 200-message evening
 4. **Human approval.** Proposals sit in an *AI review* queue (Approve / Edit / Reject). They do not count as real tasks until approved. A proposal without a valid source message cannot be approved; an unclear date is flagged. Later AI edits to an already approved record arrive as *change proposals*, never as silent overwrites, and your own edits are not overwritten by later analyses.
 5. **Board and panel.** Per-team (editable committees) task board, a "needs attention today" panel (overdue, unassigned, conflicting dates, decisions not yet marked final), upcoming events, import history. Counts of AI proposals are kept apart from real task counts, and "no data" is shown as "—", not as a zero.
 6. **Events.** Manual event records (type, status, attendees, budget, committees, linked tasks and decisions). The AI event report is built **only from the recorded fields**; empty fields stay "Girilmedi / Not entered", and a report containing a number that is not in the input is rejected.
-7. Also: weekly recap formatted for WhatsApp, "ask the chat" with source links, an AI event planner, Markdown export.
+7. **Meetings.** A meeting has a title, date, time, committees, attendees, agenda, notes and a status (planned / held / cancelled). Notes are pasted or uploaded as `.txt`/`.md` (max 100 KB, UTF-8, size and encoding checked). Suggestions found in the notes go through the same review queue, quote the note line (no invented sender or timestamp), and are linked to the meeting; existing approved records are never overwritten and duplicates are skipped. Relative dates ("next Friday") are resolved against the meeting date only; with no meeting date they stay unresolved and the meeting is marked "date unclear". The notes are untrusted data: instructions inside them never become commands for the model. The **meeting summary** is written only from the notes and the approved linked records, and is rejected if it contains a number or a capitalised name that is not in that data; it is marked outdated when the notes, fields or approved records change. Committees can carry a member list; an owner outside the meeting committees' lists gets an informational warning (never a block). The panel shows upcoming meetings and held meetings that still have ownerless tasks.
+8. Also: weekly recap formatted for WhatsApp, "ask the chat" with source links, an AI event planner, CSV/JSON/Markdown export.
 
 ### How it works
 
@@ -101,7 +104,7 @@ Windows: double-click `run.bat`. macOS/Linux: `./run.sh` (both check for Ollama,
 
 With an empty database the app opens on a **sample club filled with fake data** (clearly labelled "Örnek veri / Sample data", removable with one click, and it does not come back once cleared). A short welcome answers: what it does, which file to upload, where the data goes, whether analysis started, where to check results, and what to do when the AI is wrong.
 
-Flow: **Club status** (today's focus, cards that link to filtered lists) → **AI review** (approve / edit / reject with the source quote) → **Board** (teams, events, decisions) → **Plan an event** → **Weekly recap** → **Ask the chat**. The event form has an event report button; the sample event ships with a precomputed report.
+Flow: **Club status** (today's focus, cards that link to filtered lists) → **AI review** (approve / edit / reject with the source quote) → **Board** (teams, events, decisions) → **Meetings** (notes, suggestions, summary) → **Plan an event** → **Weekly recap** → **Ask the chat**. The event form has an event report button; the sample event ships with a precomputed report.
 
 You can also try the Turkish or English demo chats from the home page, or upload your own export (*WhatsApp → group → Export chat → Without media*).
 
@@ -123,7 +126,8 @@ Results vary by one or two checks between runs. The latest run produced 17 propo
 - **Speed.** On this hardware Gemma 4 e4b needs minutes for a few hundred messages. That is why the first-run sample data and the sample event's precomputed report exist: the app can be explored without waiting for the model. A smaller model (`gemma4:e2b`) or a GPU with more VRAM is faster.
 - **Figure check is coarse.** The event-report check compares digit groups against the input. A made-up number is caught, but reusing a digit group that exists elsewhere in the data (say "10" from a date) in a wrong context is not. Only one real model run of the event report was done (on the sample event).
 - **Accuracy.** About 10 of 14 on one demo chat is not a general accuracy figure; it is one small hand-labelled test on a fictional chat.
-- **Not built yet** (the working checklist is `DURUM.md`, which lags behind recent work; this list is what the code does today): club profile and permissions (there is no login on purpose), universal search, task search/sort/filter, CSV/JSON export (Markdown only), sub-tasks, dependencies and comment history, a "resolved / invalid" button for open questions, decision history, month/week calendar and clash warnings, duplicate/conflict suggestions shown to the user (fuzzy duplicates are only skipped), source links inside the weekly recap. `DURUM.md` also lists a known bug in the recap's "completed" list that has not been re-checked.
+- **Not built yet** (the working checklist is `DURUM.md`, which lags behind recent work; this list is what the code does today): club profile and permissions (there is no login on purpose), universal search, task search/sort/filter, sub-tasks, dependencies and comment history, a "resolved / invalid" button for open questions, decision history, month/week calendar and clash warnings, duplicate/conflict suggestions shown to the user (fuzzy duplicates are only skipped),.
+- **Meetings are only tested with a fake model.** The meeting analysis and summary have automated tests (guards, injection handling, stale flag, figure/name check), but the suggestion quality of the live model on real meeting notes has not been measured, and there is no eval for it. The only live-model run is the precomputed summary of the sample meeting. The name check is a heuristic (capitalised words in mid-sentence); it can reject a good summary or miss a wrong name that also appears elsewhere in the data. The summary reads at most the first 12,000 characters of the notes and says so when it cuts them. The meeting screens were not inspected visually.
 - **Testing.** Backend and API are covered by automated tests with a fake model. There are no automated UI tests; the interface was inspected by hand in Chrome only. The live-model path is covered by the eval script, not by the test suite.
 - **Privacy scope.** Deleting a club removes its rows from the local SQLite file; backups or copies of that file are yours to manage.
 
@@ -131,10 +135,12 @@ Results vary by one or two checks between runs. The latest run produced 17 propo
 
 ```
 app/        parser, analyzer (windows + guardrails), llm (Ollama client), db (SQLite), insights (panel, planner),
-            assistant (recap, ask), report (event report + figure check), seed (sample club), main (FastAPI)
+            assistant (recap, ask), report (event report + figure check), meetings (notes, analysis, summary, checks),
+            seed (sample club), main (FastAPI)
 static/     index.html, app.js, style.css  (vanilla JS, light theme only)
 demo/       fictional TR/EN chats, sample-club and sample-event data
-scripts/    eval_demo.py (pipeline eval), make_sample_report.py (regenerates the sample event report)
+scripts/    eval_demo.py (pipeline eval), make_sample_report.py, make_sample_insight.py,
+            make_sample_meeting_summary.py (regenerate the precomputed sample texts with the local model)
 tests/      pytest suites (no Ollama needed)
 run.bat, run.sh, requirements.txt (fastapi, uvicorn, httpx)
 ```

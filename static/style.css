@@ -700,3 +700,13 @@ button.big { padding: 14px 26px; font-size: 16px; border-radius: 12px; }
 .pub-card p { margin: 0; color: var(--muted); font-size: 14px; }
 .linkish { background: none; border: 0; box-shadow: none; color: var(--accent); padding: 0; font-weight: 600; cursor: pointer; align-self: flex-start; }
 .linkish:hover { text-decoration: underline; background: none; }
+
+/* board grouping toggle, readable sidebar labels, status columns */
+.seg-group { display: inline-flex; background: #e9eaf6; border-radius: 10px; padding: 3px; gap: 2px; }
+.seg-group button { background: transparent; border: 0; box-shadow: none; border-radius: 8px; padding: 6px 12px; color: var(--muted); font-weight: 600; }
+.seg-group button.on { background: #fff; color: var(--accent); box-shadow: 0 1px 3px rgba(49,46,129,.15); }
+.side-nav .side-label, .side-nav h6, .side-nav .grp { color: #a5b4fc; }
+.column.st-overdue .column-head { color: var(--danger); }
+.column.st-overdue { background: #fff5f5; }
+.column.st-done { background: #f1f8f3; }
+.side-label { color: #a5b4fc !important; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }

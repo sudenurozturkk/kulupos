@@ -506,7 +506,7 @@ function fmtTs(ts) {
 }
 
 // ---------------------------------------------------------------- state
-const S = { chats: [], board: null, health: null, member: "", showDone: true, poll: null, summary: null, answer: null };
+const S = { chats: [], board: null, health: null, member: "", showDone: true, group: "status", poll: null, summary: null, answer: null };
 
 function route() {
   const [, kind, id, view, mid] = location.hash.split("/");
@@ -717,7 +717,7 @@ function shell(view) {
     <div class="page-title">
       <p class="crumb"><a href="#/c/${c.id}/overview">${esc(c.name)}</a></p>
       <h2>${esc(t(TITLE[view] || "tab_overview"))}</h2>
-      <p class="meta">${c.message_count} ${t("messages")}${range ? " · " + range : ""} · ${b.members.length}</p>
+      <p class="meta">${c.message_count} ${t("messages")}${range ? " · " + range : ""} · ${b.members.length} ${lang === "tr" ? "kişi" : "people"}</p>
     </div>
     ${pageActionsHtml(view)}
   </header>
@@ -878,7 +878,15 @@ function renderBoardView() {
   if (F === "open") tasks = tasks.filter(x => x.status === "open");
   else if (ids) tasks = tasks.filter(x => ids.has(x.id));
   if (tasks.some(x => !x.unit || !units.includes(x.unit))) units.push("");
-  const cols = units.map(u => {
+  const stCols = [["overdue", lang === "tr" ? "Gecikmiş" : "Overdue", x => x.status !== "done" && x.due && x.due < b.today],
+    ["open", lang === "tr" ? "Açık" : "Open", x => x.status !== "done" && !(x.due && x.due < b.today)],
+    ["done", lang === "tr" ? "Tamamlandı" : "Done", x => x.status === "done"]];
+  const statusHtml = stCols.map(([key, label, test]) => {
+    const list = tasks.filter(test);
+    return `<div class="column st-${key}"><div class="column-head"><span>${label} <span class="n">${list.length}</span></span></div>
+      ${list.map(x => card(x, b.today)).join("") || `<div class="empty"><b>${t("empty_col")}</b></div>`}</div>`;
+  }).join("");
+  const unitCols = units.map(u => {
     const list = tasks.filter(x => (u ? x.unit === u : !x.unit || !b.chat.units.includes(x.unit)));
     return `<div class="column">
       <div class="column-head"><span>${esc(u || t("no_unit"))} <span class="n">${list.length}</span></span>
@@ -886,6 +894,7 @@ function renderBoardView() {
       ${list.map(x => card(x, b.today)).join("") || `<div class="empty"><b>${t("empty_col")}</b>${t("empty_col_hint")}</div>`}
     </div>`;
   }).join("");
+  const cols = S.group === "unit" ? unitCols : statusHtml;
 
   const m = b.missed;
   const miss = (title, list, fmt) => list.length ? `<h4>${title} (${list.length})</h4><ul class="list">${list.map(fmt).join("")}</ul>` : "";
@@ -921,10 +930,12 @@ function renderBoardView() {
   $("#view").innerHTML = `
   <div class="filters board-filters">
     ${F ? `<span class="chip ai">${t("flt_label")}: ${t("flt_" + F)} <button class="small" id="clear-flt">${t("flt_clear")}</button></span>` : ""}
+    <span class="segment seg-group" role="group"><button type="button" data-group="status" class="${S.group === "unit" ? "" : "on"}">${lang === "tr" ? "Duruma göre" : "By status"}</button><button type="button" data-group="unit" class="${S.group === "unit" ? "on" : ""}">${lang === "tr" ? "Komiteye göre" : "By committee"}</button></span>
     <select id="member"><option value="">${t("everyone")}</option>${b.members.map(n =>
       `<option ${n === S.member ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
     <label><input type="checkbox" id="showdone" ${S.showDone ? "checked" : ""}> ${t("show_done")}</label>
     ${S.member ? `<button class="small" id="copy-member">${t("copy_member")(firstName(S.member))}</button>` : ""}
+    <button type="button" class="primary" data-add="">${icon("plus")} ${t("add_task")}</button>
     <button type="button" class="ghost" id="btn-missed">${icon("alert")} ${t("missed")}${missedN ? ` <span class="side-count">${missedN}</span>` : ""}</button>
   </div>
   <div class="board-scroll"><div class="columns">${boardHtml}</div></div>
@@ -939,6 +950,7 @@ function renderBoardView() {
     </div>
   </aside>`;
 
+  document.querySelectorAll("[data-group]").forEach(bt => (bt.onclick = () => { S.group = bt.dataset.group; renderBoardView(); }));
   $("#member").onchange = e => { S.member = e.target.value; renderBoardView(); };
   const cf = $("#clear-flt");
   if (cf) cf.onclick = () => { S.taskFilter = null; renderBoardView(); };

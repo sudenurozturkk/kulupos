@@ -102,6 +102,8 @@ def unsupported_quotes(report: str, event: dict) -> list[str]:
 
 SHARED = re.compile(r"ortak|tekrar|birden fazla|birçok|çok katılımcı|common|shared|several|multiple|repeated|recurring|"
                     r"many participants", re.I)
+ABSENT = re.compile(r"bulunmamakta|belirtilmemi|girilmedi|girilmemi|veri yok|bilgi yok|yer almamakta|not entered|no data|"
+                    r"not specified|not provided|no information|none entered|not available", re.I)
 SINGLE = re.compile(r"tek bir|tek yorum|yalnızca bir|sadece bir|single|only one|one participant", re.I)
 
 
@@ -115,6 +117,8 @@ def unsupported_claims(report: str, event: dict) -> list[str]:
     comments = [_flat(c) for c in _comments(event)]
     bad = []
     for line in report.splitlines():
+        if ABSENT.search(line):
+            bad.append("mentions missing data: " + line.strip()[:60])
         quotes = [q for q in (_flat(m.group(1)) for m in _QUOTE.finditer(line)) if any(q in c for c in comments)]
         sources = {i for q in quotes for i, c in enumerate(comments) if q in c}
         if quotes and len(sources) < 2 and (SHARED.search(line) or not SINGLE.search(line)):
@@ -129,7 +133,9 @@ def _prompt(event: dict, lang: str, facts: str, extra: str = "") -> list[dict]:
     system = (
         f"You write a short factual event report for a student club, in {language}. Use ONLY the "
         f"recorded data below. Write only about what appears in the data: if a field, section or kind of record is not "
-        f"in the data, do not mention it at all (no placeholders, no \"not entered\", no zero counts of missing things). "
+        f"in the data, do not mention it at all (no placeholders, no \"not entered\", no \"no information\", no zero counts of missing things). "
+        f"If there are no linked tasks leave out the Tasks section, if no decisions leave out Decisions, if no feedback "
+        f"leave out Feedback, and write Open points only when there are open tasks. "
         f"Never guess, estimate, round, or invent names, numbers, dates, places or outcomes. Do not "
         f"compute percentages or differences. Do not add numbers that are not in the data. "
         f"Plain text with short sections, headings written in {language}, only those the data supports: "

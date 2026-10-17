@@ -73,7 +73,7 @@ def test_report_without_feedback_leaves_the_block_out_and_with_feedback_includes
 def test_report_goes_stale_when_feedback_changes(env, monkeypatch):
     c, cid, report = env
     eid = make_event(c, cid)
-    fake_llm(monkeypatch, report, "Özet\nGeri bildirim: Veri yok")
+    fake_llm(monkeypatch, report, "Özet\nEtkinlik yapıldı.")
     assert c.post(f"/api/events/{eid}/report").json()["stale"] is False
     c.patch(f"/api/items/{eid}", json={"feedback_good": "Anlatım netti"})
     assert c.get(f"/api/events/{eid}/page").json()["stale"] is True
@@ -133,3 +133,13 @@ def test_topic_with_one_comment_cannot_be_called_common(env, monkeypatch):
     assert r.status_code == 200 and len(calls) == 2 and "tek bir katılımcı" in r.json()["report"]
     fake_llm(monkeypatch, report, bad)
     assert c.post(f"/api/events/{eid}/report").status_code == 422
+
+
+def test_report_that_mentions_missing_data_is_rejected(env, monkeypatch):
+    c, cid, report = env
+    eid = make_event(c, cid)
+    ev = c.get(f"/api/events/{eid}/page").json()["event"]
+    assert report.unsupported_claims("Kararlar\nVeri setinde kararlara dair bilgi bulunmamaktadır.", ev)
+    assert report.unsupported_claims("Bağlı karar sayısı: Girilmedi", ev)
+    assert report.unsupported_claims("Decisions: none entered, no data", ev)
+    assert report.unsupported_claims("Özet\nEtkinlik yapıldı.", ev) == []

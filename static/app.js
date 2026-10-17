@@ -127,7 +127,7 @@ const I18N = {
     confirm_delete: "Bu grubun panosu silinsin mi? (WhatsApp'taki sohbet etkilenmez)",
     added_msgs: n => `${n} yeni mesaj eklendi, analiz ediliyor`,
     no_new: "Yeni mesaj yok",
-    summary_intro: "Son 7 günün özeti: Gemma kısa bir değerlendirme yazar, KulüpOS açık görevleri, cevapsız soruları ve yaklaşan tarihleri ekler. Tek tıkla gruba yapıştırın.",
+    summary_intro: "Son 7 günün özeti: Gemma kulüp kayıtlarına (görev, etkinlik, karar, toplantı) bakıp kısa bir değerlendirme ve gelecek hafta için öneri yazar; altına açık görevleri, sahipsizleri, cevapsız soruları ve yaklaşan etkinlikleri listeler. İstersen kopyalayıp gruba yapıştırırsın.",
     summary_btn: "Bu haftanın özetini çıkar", summary_wait: "Gemma özet yazıyor…",
     copy: "WhatsApp için kopyala", copied: "Kopyalandı Gruba yapıştırabilirsiniz",
     ask_intro: "Gemma, kulübün görev, etkinlik, geri bildirim, karar ve toplantı kayıtlarına bakarak cevaplar. Cevap hangi kayıtlara dayandığını gösterir; veride yoksa söyler.",
@@ -262,7 +262,7 @@ const I18N = {
     confirm_delete: "Delete this group's board? (The WhatsApp chat itself is not affected)",
     added_msgs: n => `${n} new messages added, analysing`,
     no_new: "No new messages",
-    summary_intro: "A recap of the last 7 days: Gemma writes a short overview, KulüpOS adds open tasks, unanswered questions and upcoming dates. Paste it into the group in one click.",
+    summary_intro: "Last 7 days: Gemma reads the club records (tasks, events, decisions, meetings) and writes a short assessment with suggestions for next week, then lists open tasks, unowned tasks, unanswered questions and upcoming events. Copy it to share with the group.",
     summary_btn: "Write this week's recap", summary_wait: "Gemma is writing…",
     copy: "Copy for WhatsApp", copied: "Copied Paste it into the group",
     ask_intro: "Gemma answers from the club's tasks, events, feedback, decisions and meetings, and shows which records it used. If the data does not contain the answer it says so.",
@@ -1303,10 +1303,10 @@ function renderSummaryView() {
   const id = S.board.chat.id;
   const cached = S.summary && S.summary.chatId === id ? S.summary : null;
   $("#view").innerHTML = `<div class="narrow">
-    <p class="muted">${t("summary_intro")}</p>
+    <div class="panel ai-panel"><p class="muted" style="margin:0 0 12px">${t("summary_intro")}</p>
     <div class="row-actions"><button class="primary" id="btn-sum"> ${t("summary_btn")}</button>
       ${cached ? `<button id="btn-copy">${t("copy")}</button>` : ""}</div>
-    <div id="sum-out">${cached ? `<div class="wa"><div class="bubble mine">${waFormat(cached.text)}</div></div>` : ""}</div>
+    </div><div id="sum-out">${cached ? `<div class="panel sum-card">${waFormat(cached.text)}</div>` : ""}</div>
   </div>`;
   $("#btn-sum").onclick = async e => {
     e.target.disabled = true;
@@ -1375,7 +1375,7 @@ function renderAskView() {
 function answerHtml(a) {
   return `<div class="wa">
     <div class="bubble mine" style="max-width:420px">${esc(a.question)}</div>
-    <div class="bubble" style="margin-top:8px">${esc(a.answer).replace(/\[?#(\d+)\]?/g, '<a href="javascript:void 0" data-src="$1">[#$1]</a>').replace(/\[([TEDQM]\d+)\]/g, "")}</div>
+    <div class="bubble" style="margin-top:8px">${esc(a.answer).replace(/\[#(\d+)\]/g, '<a href="javascript:void 0" data-src="$1">[#$1]</a>').replace(/\[([TEDQM]\d+)\]/g, "")}</div>
   </div>
   ${(a.records || []).length ? `<h4 class="muted">${lang === "tr" ? "Dayandığı kayıtlar" : "Records used"}</h4><div class="rec-chips">${a.records.map(r => r.href ? `<a class="rec-chip" href="${r.href}">${esc(r.title)}</a>` : `<span class="rec-chip">${esc(r.title)}</span>`).join("")}</div>` : ""}
   ${a.sources.length ? `<h4 class="muted">${t("sources")}</h4><div class="transcript">${a.sources.map(m =>
@@ -1694,7 +1694,7 @@ async function renderEventView() {
   const tile = (l, v, sub = "") => `<div class="tile"><span>${l}</span><b>${v}</b>${sub ? `<small>${sub}</small>` : ""}</div>`;
   const money = x => x == null || x === "" ? no : `${esc(x)} ₺`;
   const chips = [ev.due ? fmtDate(ev.due) : null, ev.time, ev.place, ev.owner, ev.event_type].filter(Boolean).map(x => `<span class="meta-chip">${esc(x)}</span>`).join("")
-    + ev.event_units.map(u => `<span class="meta-chip unit">${esc(u)}</span>`).join("");
+    + ev.event_units.map(u => `<span class="meta-chip uchip">${esc(u)}</span>`).join("");
   const doneN = p.tasks.filter(x => x.status === "done").length;
   view.innerHTML = `<div class="evp">${back}
     <section class="evp-hero"><div class="grow"><div class="evp-title"><h2>${esc(ev.title)}</h2><span class="pill ${PHc[ev.phase] || "muted"}">${esc(t("ph")[ev.phase] || ev.phase || "")}</span></div>
@@ -1782,7 +1782,7 @@ async function renderPersonView() {
   const all = [...p.late, ...p.open, ...p.done];
   view.innerHTML = `${back}
     <section class="evp-hero"><div class="grow"><div class="evp-title">${avatar(p.name)}<h2>${esc(p.name)}</h2></div>
-      <div class="meta-chips">${p.committees.length ? p.committees.map(u => `<span class="meta-chip unit">${esc(u)}</span>`).join("") : `<span class="meta-chip">${t("no_unit")}</span>`}</div>
+      <div class="meta-chips">${p.committees.length ? p.committees.map(u => `<span class="meta-chip uchip">${esc(u)}</span>`).join("") : `<span class="meta-chip">${t("no_unit")}</span>`}</div>
       <p class="evp-notes">${t("pp_note")}</p></div></section>
     <div class="tiles"><div class="tile"><span>${t("pp_open")}</span><b>${p.open.length}</b></div><div class="tile ${p.late.length ? "bad" : ""}"><span>${t("pp_late")}</span><b>${p.late.length}</b></div><div class="tile"><span>${t("pp_done_l")}</span><b>${p.done.length}</b></div><div class="tile"><span>${t("pp_events")}</span><b>${p.events.length}</b></div></div>
     ${sect(t("pp_late"), p.late, taskLi)}
@@ -1886,13 +1886,13 @@ async function renderMeetingsView() {
   if (add) add.onclick = () => editMeeting({});
   let list = [];
   try { list = await api(`/api/chats/${id}/meetings`); } catch (e) { toast(e.message); }
-  $("#mt-list").innerHTML = list.length ? `<div class="mt-list">${list.map(m => `<a class="ev-row" href="#/c/${id}/meeting/${m.id}">
-      <span class="ev-title">${esc(m.title)}</span>
-      ${avatarStack(m.attendees)}
-      <span class="muted">${m.date ? `${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : t("mt_nodate")}</span>
-      <span class="chip">${esc(t("mt_st")[m.status] || m.status)}</span>
-      ${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}
-      <span class="muted">${t("mt_counts")(m)}</span></a>`).join("")}</div>`
+  const MS = { held: "ok", planned: "info", cancelled: "bad" };
+  const mc = m => `<a class="mt-card" href="#/c/${id}/meeting/${m.id}">
+      <span class="mt-top"><b>${esc(m.title)}</b><span class="pill ${MS[m.status] || "muted"}">${esc(t("mt_st")[m.status] || m.status)}</span></span>
+      <span class="mt-when">${m.date ? `${fmtDate(m.date)}${m.time ? " · " + esc(m.time) : ""}` : t("mt_nodate")}</span>
+      <span class="mt-units">${m.units.map(u => `<span class="meta-chip uchip">${esc(u)}</span>`).join("")}</span>
+      <span class="mt-foot">${avatarStack(m.attendees)}<small>${t("mt_counts")(m)}</small></span></a>`;
+  $("#mt-list").innerHTML = list.length ? `<div class="mt-grid">${list.map(mc).join("")}</div>`
     : `<div class="empty-quiet">${icon("people")}<p>${t("mt_empty")}</p></div>`;
 }
 
@@ -1995,31 +1995,33 @@ async function renderMeetingView() {
   const rec = (items, empty) => items.length ? `<ul class="list">${items.map(i => `<li><span class="grow">${esc(i.title)}
       <small>${[i.owner ? icon("person") + " " + esc(i.owner) : (i.kind === "task" ? t("mt_noowner") : ""), i.due ? icon("calendar") + " " + fmtDate(i.due) : ""].filter(Boolean).join(" · ")}</small></span>
       ${i.kind === "task" ? `<span class="chip ${i.status === "done" ? "" : "ai"}">${i.status === "done" ? t("n_done") : t("n_open")}</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${empty}</p>`;
-  $("#view").innerHTML = `<div class="meet-page">
+  const MSt = { held: "ok", planned: "info", cancelled: "bad" };
+  const sec = (title, body, n) => `<section class="panel"><h3>${title}${n != null ? ` <span class="n">${n}</span>` : ""}</h3>${body}</section>`;
+  $("#view").innerHTML = `<div class="evp meet-page">
     <p><a href="#/c/${chatId}/meetings">${t("tab_meetings")}</a></p>
-    <h3>${esc(m.title)}</h3>
-    <div class="meta">${avatarStack(m.attendees)} ${m.date ? `${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
-      <span class="chip ${m.status === "held" ? "" : "ai"}">${t("mt_st")[m.status]}</span>
-      ${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}</div>
-    ${m.attendees ? `<p><b>${t("mt_attendees")}:</b> ${esc(m.attendees)}</p>` : ""}
-    ${m.agenda ? `<h4>${t("mt_agenda")}</h4><pre class="report" style="white-space:pre-wrap">${esc(m.agenda)}</pre>` : ""}
-    <h4>${t("mt_notes")}${m.notes_source ? ` <small class="muted">${esc(m.notes_source)}</small>` : ""}</h4>
-    ${m.notes ? `<pre class="report" style="white-space:pre-wrap">${esc(m.notes)}</pre>` : `<p class="muted">${t("mt_no_notes")}</p>`}
-    <div class="row-actions"><button id="mt-edit"> ${t("mt_edit")}</button>
-      ${d.lines ? `<button class="primary" id="mt-analyze">${t("mt_analyze")}</button>` : ""}
-      <button class="danger ghost" id="mt-del">${t("del")}</button></div>
-    <div id="mt-wait"></div>
+    <section class="evp-hero"><div class="grow">
+      <div class="evp-title"><h2>${esc(m.title)}</h2><span class="pill ${MSt[m.status] || "muted"}">${esc(t("mt_st")[m.status])}</span></div>
+      <div class="meta-chips">${m.date ? `<span class="meta-chip">${fmtDate(m.date)}${m.time ? " · " + esc(m.time) : ""}</span>` : `<span class="meta-chip">${t("mt_nodate")}</span>`}
+        ${m.units.map(u => `<span class="meta-chip uchip">${esc(u)}</span>`).join("")}</div>
+      ${m.attendees ? `<p class="evp-notes">${avatarStack(m.attendees)} ${esc(m.attendees)}</p>` : ""}
+      <div class="row-actions" style="margin-top:14px">${d.lines ? `<button class="hero-btn" id="mt-analyze">${t("mt_analyze")}</button>` : ""}<button class="hero-btn ghost-dark" id="mt-edit">${t("mt_edit")}</button><button class="hero-btn ghost-dark danger" id="mt-del">${t("del")}</button></div>
+      <div id="mt-wait"></div></div></section>
     ${d.orphan_tasks ? `<p><span class="chip overdue">${t("mt_orphans")(d.orphan_tasks)}</span></p>` : ""}
     ${d.warnings.length ? `<div class="panel"><b> ${t("mt_warn_title")}</b><ul class="list">${d.warnings.map(w => `<li><span class="grow">${t("mt_warn")(w)}</span></li>`).join("")}</ul></div>` : ""}
     ${d.notes_changed ? `<p class="muted"> ${t("mt_an_stale")}</p>` : ""}
     ${d.proposed ? `<p><span class="chip ai">${t("mt_pending")(d.proposed)}</span> <a href="#/c/${chatId}/review">${t("mt_go_review")} </a></p>` : ""}
-    <h4>${t("mt_sum_title")}</h4><p class="muted">${t("mt_sum_note")}</p>
-    <div id="mt-sum"></div>
-    <div id="mt-extra"></div>
-    <h4>${t("mt_tasks")}</h4>${rec(d.tasks, t("mt_none"))}
-    <h4>${t("mt_decisions")}</h4>${rec(d.decisions, t("mt_none"))}
-    <h4>${t("mt_questions")}</h4>${rec(d.questions, t("mt_none"))}
-  </div>`;
+    <section class="panel ai-panel"><div class="panel-head"><div><h3>${t("mt_sum_title")}</h3><p class="muted small">${t("mt_sum_note")}</p></div></div><div id="mt-sum"></div><div id="mt-extra"></div></section>
+    <div class="evp-grid">
+      <div class="stack">
+        ${sec(t("mt_notes") + (m.notes_source ? ` <small class="muted">${esc(m.notes_source)}</small>` : ""), m.notes ? `<pre class="report" style="white-space:pre-wrap">${esc(m.notes)}</pre>` : `<p class="muted">${t("mt_no_notes")}</p>`)}
+        ${m.agenda ? sec(t("mt_agenda"), `<pre class="report" style="white-space:pre-wrap">${esc(m.agenda)}</pre>`) : ""}
+      </div>
+      <div class="stack">
+        ${sec(t("mt_tasks"), rec(d.tasks, t("mt_none")), d.tasks.length)}
+        ${sec(t("mt_decisions"), rec(d.decisions, t("mt_none")), d.decisions.length)}
+        ${sec(t("mt_questions"), rec(d.questions, t("mt_none")), d.questions.length)}
+      </div>
+    </div></div>`;
   $("#mt-edit").onclick = () => editMeeting(m);
   drawMeetingSummary(mid, d.summary, "");
   const an = $("#mt-analyze");

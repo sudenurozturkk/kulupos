@@ -31,21 +31,22 @@ def short_date(iso: str | None, lang: str) -> str:
 async def weekly_summary(chat_id: int, days: int = 7) -> dict:
     chat = db.get_chat(chat_id)
     msgs = db.get_messages(chat_id)
-    lang = detect_lang(msgs)
+    lang = detect_lang(msgs) if msgs else "tr"
     L = LABELS[lang]
-    end = datetime.fromisoformat(chat["last_ts"])
+    end = datetime.now()
     since = end - timedelta(days=days)
     recent = [m for m in msgs if datetime.fromisoformat(m["ts"]) >= since]
     recent_idx = {m["idx"] for m in recent}
     items = db.get_items(chat_id)
 
+    data, _ = club_context(chat_id)
+    chat_part = f"\n\nCHAT MESSAGES OF THE LAST {days} DAYS:\n{render_messages(recent)[-6000:]}" if recent else ""
     prompt = (
-        f"Here are the last {days} days of a student club's WhatsApp group "
-        f"({since:%Y-%m-%d} – {end:%Y-%m-%d}).\n\n{render_messages(recent)[-14000:]}\n\n"
-        f"Write a warm, concise recap of what happened this week for the club members: 3 to 5 "
-        f"sentences, in {'Turkish' if lang == 'tr' else 'English'}, plain text, no lists, no "
-        f"headings, no emojis. Mention concrete progress and what still needs attention. "
-        f"Skip memes and small talk."
+        f"CLUB RECORDS ('-' means not entered):\n{data}{chat_part}\n\n"
+        f"Today is {end:%Y-%m-%d}. Write a concise weekly recap for the club lead in "
+        f"{'Turkish' if lang == 'tr' else 'English'}, plain text, no headings, no emojis, 5 to 7 sentences: what is going well, "
+        f"what is overdue or has no owner, which events come next and what they still need, and one or two concrete suggestions "
+        f"for next week. Use ONLY the records above; never invent names, numbers or dates."
     )
     recap = (await llm.chat([{"role": "user", "content": prompt}], temperature=0.4)).strip()
 
@@ -77,7 +78,7 @@ async def weekly_summary(chat_id: int, days: int = 7) -> dict:
     orphan = [t for t in tasks if t["status"] == "open" and not t["owner"]]
     questions = [q for q in items if q["kind"] == "question" and q["status"] == "open"]
     upcoming = sorted((e for e in items if e["kind"] == "event" and e["due"]
-                       and e["due"] >= end.date().isoformat()), key=lambda e: e["due"])
+                       and e["due"] >= end.date().isoformat() and e["phase"] != "held"), key=lambda e: e["due"])
     decisions = [d for d in items if d["kind"] == "decision" and d["source_idx"] in recent_idx]
 
     parts = [f"*📋 {chat['name']} — {L['title']}*",

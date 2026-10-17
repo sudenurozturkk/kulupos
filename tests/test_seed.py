@@ -36,11 +36,11 @@ def test_empty_database_gets_a_labelled_sample_panel(client):
     manual = {x["title"] for k in ("events", "tasks", "decisions", "questions") for x in spec[k] if not x.get("src")}
     assert all(i["source_idx"] is not None for i in [*b["tasks"], *b["questions"], *b["decisions"], *b["events"]]
                if "(örnek veri)" not in i["title"] and not i["meeting_id"] and i["title"] not in manual)
-    assert len(b["review"]) == 4 and sum(1 for i in b["review"] if i["needs_review"] == 1) == 1
+    assert len(b["review"]) == 5 and sum(1 for i in b["review"] if i["needs_review"] == 1) == 1
     # AI proposals are counted apart from real tasks
-    assert b["review_total"] == 4 and all(i["review"] == "approved" for i in b["tasks"])
+    assert b["review_total"] == 5 and all(i["review"] == "approved" for i in b["tasks"])
     chats = client.get("/api/chats").json()
-    assert chats[0]["is_sample"] == 1 and chats[0]["review_count"] == 4 and chats[0]["source_name"].endswith(".txt")
+    assert chats[0]["is_sample"] == 1 and chats[0]["review_count"] == 5 and chats[0]["source_name"].endswith(".txt")
 
 
 def test_panel_focus_lists(client):
@@ -139,14 +139,14 @@ def test_sample_has_two_meetings_held_and_planned(client):
     assert held["has_notes"] and (held["tasks"], held["decisions"], held["questions"], held["orphan_tasks"]) == (3, 2, 1, 1)
     assert planned["date"] == "2026-10-21" and not planned["has_notes"]   # PANO_TODAY + 4 days
     d = client.get(f"/api/meetings/{held['id']}").json()
-    assert d["proposed"] == 1 and d["analyzed"] and not d["notes_changed"]
+    assert d["proposed"] == 2 and d["analyzed"] and not d["notes_changed"]
     assert [w["owner"] for w in d["warnings"]] == ["Burak Yıldız"]   # sample shows the informational check
     cards = board(client, cid)["meetings"]
     assert [m["title"] for m in cards["upcoming"]] == ["Haftalık yönetim toplantısı"]
     assert [m["id"] for m in cards["held_orphans"]] == [held["id"]]
     # the sample suggestion waits in the review queue with its note quote; nothing about it is invented
     rev = next(i for i in board(client, cid)["review"] if i["meeting_id"] == held["id"])
-    assert rev["source"]["sender"] is None and rev["source"]["ts"] is None and "e-sertifika" in rev["source"]["text"]
+    assert rev["source"]["sender"] is None and rev["source"]["ts"] is None and rev["source"]["text"]
     assert client.delete("/api/sample").json() == {"removed": 1}
     assert client.get(f"/api/meetings/{held['id']}").status_code == 404   # sample meetings go with the sample
 

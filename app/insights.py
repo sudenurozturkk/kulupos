@@ -118,7 +118,8 @@ def overview(chat: dict, items: list[dict], members: list[str], today: date) -> 
 PLAN_SCHEMA = _obj(
     title=_s,
     event_date=_s,
-    tasks={"type": "array", "items": _obj(title=_s, unit=_s, owner=_s, due=_s)},
+    tasks={"type": "array", "items": _obj(title=_s, unit=_s, owner=_s, due=_s, why=_s)},
+    meetings={"type": "array", "items": _obj(title=_s, units={"type": "array", "items": _s}, date=_s, agenda=_s)},
 )
 
 
@@ -150,7 +151,11 @@ unit from the list, suggest an owner from the members (prefer people who already
 fewer open tasks; "" if nobody fits), and a due date YYYY-MM-DD scheduled backwards from the event date
 (permits and venue first, promotion 1-2 weeks before). Every due date must be on or before event_date, except
 at most one follow-up task (survey, report, thank-you) after it. event_date = the event date resolved from the
-request. Write titles in {'Turkish' if lang == 'tr' else 'English'}, max 6 words per title."""
+request. For every task also give "why": one short sentence on why it comes at that point in the order (what it
+unblocks or depends on). List tasks in the order they must be done.
+Also propose 2 to 4 preparation meetings: which teams (from the list) must meet, on which date (before the event,
+after the tasks they depend on are under way), and a one-sentence agenda. Do not invent teams.
+Write titles in {'Turkish' if lang == 'tr' else 'English'}, max 6 words per title; write why and agenda in the same language."""
     r = await llm.chat_json([{"role": "user", "content": prompt}], PLAN_SCHEMA, temperature=0.3)
     event_date = valid_date(r.get("event_date", ""), today)
     tasks = []
@@ -160,11 +165,70 @@ request. Write titles in {'Turkish' if lang == 'tr' else 'English'}, max 6 words
         owner = match_member(t.get("owner", ""), members)
         tasks.append({"title": t["title"].strip(), "unit": match_unit(t.get("unit", ""), chat["units"]),
                       "owner": owner if owner in members else None,
-                      "due": valid_date(t.get("due", ""), today), "why": ""})
+                      "due": valid_date(t.get("due", ""), today), "why": (t.get("why") or "").strip()})
     follow = ("rapor", "anket", "teşekkür", "geri bildirim", "survey", "report", "thank", "feedback", "follow")
     if event_date:
         for x in tasks:  # preparation can't happen after the event itself
             if x["due"] and x["due"] > event_date and not any(w in x["title"].lower() for w in follow):
                 x["due"] = (date.fromisoformat(event_date) - timedelta(days=1)).isoformat()
     tasks.sort(key=lambda x: x["due"] or "9999")
-    return {"title": (r.get("title") or goal).strip(), "event_date": event_date, "tasks": tasks}
+    meets = []
+    for m in r.get("meetings", []):
+        units = [u for u in dict.fromkeys(match_unit(u, chat["units"]) for u in m.get("units", [])) if u]
+        d = valid_date(m.get("date", ""), today)
+        if (m.get("title") or "").strip() and units and (not event_date or not d or d <= event_date):
+            meets.append({"title": m["title"].strip(), "units": units, "date": d, "agenda": (m.get("agenda") or "").strip()})
+    meets.sort(key=lambda x: x["date"] or "9999")
+    plan = {"title": (r.get("title") or goal).strip(), "event_date": event_date, "tasks": tasks, "meetings": meets,
+            "model": llm.MODEL}
+    plan["saved_id"] = db.save_ai(chat_id, "plan", plan["title"], {**plan, "goal": goal}, llm.MODEL)
+    return plan
+
+
+IDEAS_SCHEMA = _obj(ideas={"type": "array", "items": _obj(title=_s, why=_s, based_on=_s, unit=_s)})
+
+
+def _past_events_text(events: list[dict]) -> str:
+    def v(x):
+        return "-" if x in (None, "", []) else x
+    return "\n".join(
+        f"- {e['title']} | type: {v(e['event_type'])} | {v(e['due'])} | teams: {v(', '.join(e['event_units']))} | "
+        f"attendance {v(e['attendees_actual'])}/{v(e['attendees_expected'])} | score {v(e['feedback_score'])} | "
+        f"went well: {v(e.get('feedback_good'))} | fell short: {v(e.get('feedback_bad'))}" for e in events)
+
+
+async def suggest_events(chat_id: int, today: date) -> dict:
+    """New event ideas drawn from the club's own held events. Each idea must point at a recorded event (`based_on`);
+    an idea whose reference is not a recorded event title is dropped, so nothing rests on invented history."""
+    chat = db.get_chat(chat_id)
+    items = db.get_items(chat_id)
+    held = [e for e in items if e["kind"] == "event" and e["phase"] == "held"]
+    if not held:
+        return {"ideas": [], "reason": "no_held_events"}
+    lang = detect_lang(db.get_messages(chat_id)[:200])
+    decisions = [d["title"] for d in items if d["kind"] == "decision" and d["validity"] == "valid"][:10]
+    planned = [e["title"] for e in items if e["kind"] == "event" and e["phase"] in ("idea", "planning", "confirmed")]
+    prompt = f"""You advise a student club on its next events. Today is {today:%Y-%m-%d}.
+Club: {chat['name']}. Teams: {', '.join(chat['units'])}.
+HELD EVENTS (the only history you may rely on):
+{_past_events_text(held)}
+Valid club decisions: {'; '.join(decisions) or '-'}
+Already planned (do not repeat): {'; '.join(planned) or '-'}
+
+Suggest 3 new event ideas that fit this club's style and build on what worked: repeat what scored and attended well,
+fix what fell short, and vary the format. For each: title (max 7 words), why (one sentence citing the recorded
+attendance, score or feedback that supports it; use only figures written above), based_on (copy ONE held event
+title exactly from the list), unit (one of the teams, "" if unsure). Write in {'Turkish' if lang == 'tr' else 'English'}."""
+    r = await llm.chat_json([{"role": "user", "content": prompt}], IDEAS_SCHEMA, temperature=0.5)
+    titles = {e["title"].strip().casefold(): e["title"] for e in held}
+    ideas = []
+    for x in r.get("ideas", []):
+        ref = titles.get((x.get("based_on") or "").strip().casefold())
+        if not (x.get("title") or "").strip() or not ref:
+            continue
+        ideas.append({"title": x["title"].strip(), "why": (x.get("why") or "").strip(), "based_on": ref,
+                      "unit": match_unit(x.get("unit", ""), chat["units"])})
+    out = {"ideas": ideas[:3], "model": llm.MODEL}
+    if out["ideas"]:
+        out["saved_id"] = db.save_ai(chat_id, "ideas", f"{today:%Y-%m-%d} · {len(out['ideas'])}", out, llm.MODEL)
+    return out

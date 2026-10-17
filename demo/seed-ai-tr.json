@@ -1,0 +1,147 @@
+{
+  "model": "gemma4:e4b",
+  "meeting": "yonetim",
+  "proposals": [
+    {
+      "kind": "task",
+      "title": "Görüş konuşmacıyla yol/konaklama",
+      "unit": null,
+      "owner": "Mert Demir",
+      "due": null,
+      "source_text": "Mert konuşmacıyla yol ve konaklama konusunu görüşüp bilgi verecek."
+    },
+    {
+      "kind": "task",
+      "title": "Netleştir sözleşme maddelerini kahveciyle",
+      "unit": "Sponsorluk",
+      "owner": "Burak Yıldız",
+      "due": null,
+      "source_text": "Burak sponsor kahveciyle sözleşme maddelerini netleştirecek."
+    }
+  ],
+  "ideas": {
+    "ideas": [
+      {
+        "title": "Veri Bilimi Uygulamalı Çalıştay",
+        "why": "Python Atölyesi'nin uygulayıcı içeriği ve 48/60 katılımı başarılıydı.",
+        "based_on": "Python Atölyesi (örnek veri)",
+        "unit": "Etkinlik"
+      },
+      {
+        "title": "Siber Güvenlik Derinlemesine Analiz",
+        "why": "Siber Güvenlik Semineri'nin konuşmacı deneyimi ve canlı demo içeriği ilgi çekiciydi.",
+        "based_on": "Siber Güvenlik Semineri",
+        "unit": "Etkinlik"
+      },
+      {
+        "title": "Sektör Röportajları ve Ağ Kurma",
+        "why": "Kariyer Günleri Paneli'nin sektörden konuklar ve ağ kurma molası başarılı bulunmuştu.",
+        "based_on": "Kariyer Günleri Paneli",
+        "unit": "Sponsorluk"
+      }
+    ],
+    "model": "gemma4:e4b",
+    "saved_id": 1
+  },
+  "plan": {
+    "title": "Kasım Siber Güvenlik Çalıştayı Hazırlık Planı",
+    "event_date": "2026-11-15",
+    "tasks": [
+      {
+        "title": "Mekan ve İzinler Ayarlama",
+        "unit": "Yönetim",
+        "owner": "Selin Aydın",
+        "due": "2026-09-30",
+        "why": "Etkinliğin fiziksel altyapısını sağlamak ilk adımdır."
+      },
+      {
+        "title": "Sponsorluk Hedefleri Belirleme",
+        "unit": "Sponsorluk",
+        "owner": "Burak Yıldız",
+        "due": "2026-10-25",
+        "why": "Finansal destek için hedeflerin belirlenmesi gerekir."
+      },
+      {
+        "title": "Konuşmacı ve İçerik Belirleme",
+        "unit": "Etkinlik",
+        "owner": "Mert Demir",
+        "due": "2026-10-31",
+        "why": "İçeriğin belirlenmesi, sponsorluk ve tanıtım materyallerini yönlendirir."
+      },
+      {
+        "title": "Tanıtım Materyali Tasarımı",
+        "unit": "İletişim",
+        "owner": "Zeynep Arslan",
+        "due": "2026-11-01",
+        "why": "Etkinlik duyuruları için görsel materyallerin hazırlanması gerekir."
+      },
+      {
+        "title": "Kayıt Sistemi Kurulumu",
+        "unit": "İletişim",
+        "owner": "Can Öztürk",
+        "due": "2026-11-05",
+        "why": "Katılımcı sayısını takip etmek ve lojistik planlamak için gereklidir."
+      },
+      {
+        "title": "Teknik Altyapı Kontrolü",
+        "unit": "Etkinlik",
+        "owner": "Deniz Çelik",
+        "due": "2026-11-10",
+        "why": "Sunumlar ve teknik ihtiyaçların önceden test edilmesi önemlidir."
+      },
+      {
+        "title": "Sponsorluk Görüşmeleri Başlatma",
+        "unit": "Sponsorluk",
+        "owner": "Burak Yıldız",
+        "due": "2026-11-13",
+        "why": "Tanıtım ve kayıtlar başladıktan sonra sponsorlardan destek alınır."
+      },
+      {
+        "title": "Son Lojistik Kontrolü",
+        "unit": "Yönetim",
+        "owner": "Elif Kaya",
+        "due": "2026-11-14",
+        "why": "Tüm hazırlıkların son kez kontrol edilmesi gerekir."
+      },
+      {
+        "title": "Etkinlik Sonrası Anket Gönderimi",
+        "unit": "İletişim",
+        "owner": "Ece Şahin",
+        "due": "2026-11-22",
+        "why": "Geri bildirim toplamak, gelecekteki etkinlikler için önemlidir."
+      }
+    ],
+    "meetings": [
+      {
+        "title": "İlk Planlama Toplantısı",
+        "units": [
+          "Yönetim",
+          "Etkinlik"
+        ],
+        "date": "2026-10-19",
+        "agenda": "Çalıştayın genel kapsamını, hedeflerini ve bütçe çerçevesini belirlemek."
+      },
+      {
+        "title": "İçerik ve Sponsorluk Stratejisi",
+        "units": [
+          "Etkinlik",
+          "Sponsorluk"
+        ],
+        "date": "2026-10-28",
+        "agenda": "Konuşmacı profillerini netleştirmek ve potansiyel sponsor beklentilerini eşleştirmek."
+      },
+      {
+        "title": "Tanıtım ve Kayıt İncelemesi",
+        "units": [
+          "İletişim",
+          "Yönetim"
+        ],
+        "date": "2026-11-08",
+        "agenda": "Kayıt ilerlemesini gözden geçirmek ve tanıtım kampanyasının etkinliğini değerlendirmek."
+      }
+    ],
+    "model": "gemma4:e4b",
+    "saved_id": 2,
+    "goal": "Kasım ayında 150 kişilik bir siber güvenlik çalıştayı düzenlemek istiyoruz"
+  }
+}

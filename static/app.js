@@ -34,6 +34,8 @@ const I18N = {
     timeline_title: "Yaklaşan tarihler", recent_decisions: "Son kararlar",
     plan_intro: "Etkinliği tarif edin. Gemma, kulübün birimlerini ve üyelerin mevcut iş yükünü dikkate alarak tarihli bir hazırlık planı önerir. Hiçbir şey siz onaylamadan panoya eklenmez.",
     plan_ph: "Örn: 14 Kasım'da 200 kişilik bir siber güvenlik zirvesi yapmak istiyoruz, iki konuşmacı ve bir sponsor hedefliyoruz.",
+    ideas_btn: "Geçmiş etkinliklerime göre fikir öner", ideas_wait: "Gemma geçmiş etkinliklerini inceliyor…", ideas_none: "Fikir üretebilmek için gerçekleşmiş (Gerçekleşti) en az bir etkinlik kaydı gerekli.", ideas_based: "Dayanak", ideas_use: "Bunu planla", ideas_empty: "Gemma kayıtlı etkinliklere dayanan bir fikir üretemedi; tekrar deneyin.",
+    saved_title: "Kayıtlı öneriler", saved_del: "Sil", saved_open: "Aç", saved_plans: "Planlar", saved_ideas: "Fikirler", plan_meetings: "Önerilen hazırlık toplantıları", plan_meet_units: "Toplanması gereken komiteler",
     plan_btn: "Plan öner", plan_wait: "Gemma planı hazırlıyor…", plan_add: n => `Seçili ${n} görevi panoya ekle`, plan_added: n => `${n} görev panoya eklendi`,
     plan_examples: ["3 hafta sonra 150 kişilik bir yapay zeka söyleşisi", "Kasım sonunda 24 saatlik bir hackathon", "Gelecek ay yeni üyeler için tanışma etkinliği"],
     suggested: "öneri",
@@ -169,6 +171,8 @@ const I18N = {
     timeline_title: "Coming up", recent_decisions: "Latest decisions",
     plan_intro: "Describe the event. Gemma proposes a dated preparation plan using your teams and each member's current load. Nothing goes on the board until you approve it.",
     plan_ph: "e.g. We want a 200-person cybersecurity summit on Nov 14 with two speakers and one sponsor.",
+    ideas_btn: "Suggest ideas from my past events", ideas_wait: "Gemma is reviewing your past events…", ideas_none: "At least one held event record is needed to suggest ideas.", ideas_based: "Based on", ideas_use: "Plan this", ideas_empty: "Gemma could not produce an idea tied to a recorded event; try again.",
+    saved_title: "Saved suggestions", saved_del: "Delete", saved_open: "Open", saved_plans: "Plans", saved_ideas: "Ideas", plan_meetings: "Suggested preparation meetings", plan_meet_units: "Teams that should meet",
     plan_btn: "Propose a plan", plan_wait: "Gemma is drafting the plan…", plan_add: n => `Add ${n} selected tasks to the board`, plan_added: n => `${n} tasks added to the board`,
     plan_examples: ["A 150-person AI talk in 3 weeks", "A 24-hour hackathon at the end of November", "A welcome event for new members next month"],
     suggested: "suggested",
@@ -1513,11 +1517,28 @@ function renderPlanView() {
       <p class="muted" style="margin:0">${t("plan_intro")}</p>
       <textarea id="goal" placeholder="${esc(t("plan_ph"))}">${esc(p?.goal || "")}</textarea>
       <div class="suggest" style="margin:0">${t("plan_examples").map(s => `<button type="button" data-ex="${esc(s)}">${esc(s)}</button>`).join("")}</div>
-      <div><button class="primary" id="btn-plan">${t("plan_btn")}</button></div>
+      <div><button class="primary" id="btn-plan">${t("plan_btn")}</button> <button id="btn-ideas">${t("ideas_btn")}</button></div>
+      <div id="ideas-out"></div>
     </div>
+    <div id="saved-out"></div>
     <div id="plan-out">${p ? planHtml(p) : ""}</div>
   </div>`;
   $("#view").querySelectorAll("[data-ex]").forEach(b => (b.onclick = () => { $("#goal").value = b.dataset.ex; }));
+  $("#btn-ideas").onclick = async e => {
+    e.target.disabled = true;
+    $("#ideas-out").innerHTML = `<div class="thinking"><span class="spinner"></span> ${t("ideas_wait")}</div>`;
+    try {
+      const r = await post(`/api/chats/${id}/ideas`, {});
+      $("#ideas-out").innerHTML = r.reason === "no_held_events" ? `<p class="muted">${t("ideas_none")}</p>`
+        : !r.ideas.length ? `<p class="muted">${t("ideas_empty")}</p>`
+        : r.ideas.map((x, i) => `<div class="plan-item" style="margin:8px 0"><div><div class="t">${esc(x.title)}</div>
+            <div class="why">${esc(x.why)}</div><div class="meta"><span class="chip">${t("ideas_based")}: ${esc(x.based_on)}</span>${x.unit ? `<span class="chip">${esc(x.unit)}</span>` : ""}
+            <button data-idea="${i}">${t("ideas_use")}</button></div></div></div>`).join("");
+      loadSaved();
+      $("#ideas-out").querySelectorAll("[data-idea]").forEach(b => (b.onclick = () => { $("#goal").value = r.ideas[Number(b.dataset.idea)].title; $("#goal").focus(); }));
+    } catch (err) { $("#ideas-out").innerHTML = `<p class="muted"> ${esc(err.message)}</p>`; }
+    e.target.disabled = false;
+  };
   $("#btn-plan").onclick = async e => {
     const goal = $("#goal").value.trim();
     if (!goal) return $("#goal").focus();
@@ -1526,11 +1547,35 @@ function renderPlanView() {
     try {
       S.plan = { chatId: id, goal, ...(await post(`/api/chats/${id}/plan`, { goal })) };
       $("#plan-out").innerHTML = planHtml(S.plan);
-      bindPlan();
+      bindPlan(); loadSaved();
     } catch (err) { $("#plan-out").innerHTML = `<p class="muted"> ${esc(err.message)}</p>`; }
     e.target.disabled = false;
   };
   bindPlan();
+  loadSaved();
+}
+
+async function loadSaved() {
+  const id = S.board.chat.id, box = $("#saved-out");
+  if (!box) return;
+  const [plans, ideas] = await Promise.all(["plan", "ideas"].map(k => api(`/api/chats/${id}/saved/${k}`).then(r => r.saved).catch(() => [])));
+  const row = r => `<div class="plan-item" style="margin:6px 0"><div><div class="t">${esc(r.title)}</div>
+    <div class="meta"><span class="chip">${esc(r.created_at.slice(0, 16).replace("T", " "))}</span><span class="chip">${esc(r.model || "")}</span>
+    ${r.kind === "plan" ? `<button data-open="${r.id}">${t("saved_open")}</button>` : ""}<button data-del="${r.id}">${t("saved_del")}</button></div>
+    ${r.kind === "ideas" ? r.body.ideas.map(x => `<div class="why"><b>${esc(x.title)}</b> — ${esc(x.why)} <span class="muted">(${t("ideas_based")}: ${esc(x.based_on)})</span></div>`).join("") : ""}</div></div>`;
+  const all = [...plans.map(r => ({ ...r, kind: "plan" })), ...ideas.map(r => ({ ...r, kind: "ideas" }))];
+  S.saved = Object.fromEntries(all.map(r => [r.id, r]));
+  box.innerHTML = all.length ? `<div class="panel" style="margin-top:16px"><h3>${t("saved_title")}</h3>
+    ${plans.length ? `<h4>${t("saved_plans")}</h4>${plans.map(r => row({ ...r, kind: "plan" })).join("")}` : ""}
+    ${ideas.length ? `<h4>${t("saved_ideas")}</h4>${ideas.map(r => row({ ...r, kind: "ideas" })).join("")}` : ""}</div>` : "";
+  box.querySelectorAll("[data-del]").forEach(b => (b.onclick = async () => { await api(`/api/saved/${b.dataset.del}`, { method: "DELETE" }); loadSaved(); }));
+  box.querySelectorAll("[data-open]").forEach(b => (b.onclick = () => {
+    const r = S.saved[b.dataset.open];
+    S.plan = { chatId: id, goal: r.body.goal || "", ...r.body };
+    $("#goal").value = S.plan.goal;
+    $("#plan-out").innerHTML = planHtml(S.plan); bindPlan();
+    $("#plan-out").scrollIntoView({ behavior: "smooth" });
+  }));
 }
 
 function planHtml(p) {
@@ -1541,7 +1586,11 @@ function planHtml(p) {
       <div><div class="t">${esc(x.title)}</div>${x.why ? `<div class="why">${esc(x.why)}</div>` : ""}
         <div class="meta">${x.unit ? `<span class="chip"> ${esc(x.unit)}</span>` : ""}
           ${x.owner ? `<span class="chip ai">${avatar(x.owner)}${esc(firstName(x.owner))} · ${t("suggested")}</span>` : `<span class="chip none">${t("no_owner")}</span>`}</div></div>
-      <span class="chip">${x.due ? icon("calendar") + " " + fmtDate(x.due) : t("no_due")}</span></label>`).join("")}</div>`;
+      <span class="chip">${x.due ? icon("calendar") + " " + fmtDate(x.due) : t("no_due")}</span></label>`).join("")}</div>
+    ${(p.meetings || []).length ? `<h3 style="margin-top:20px">${t("plan_meetings")}</h3><div class="plan-list">${p.meetings.map((m, i) => `<label class="plan-item" style="margin:0;color:var(--text);font-size:15px;font-weight:400">
+      <input type="checkbox" data-m="${i}" checked><div><div class="t">${esc(m.title)}</div>${m.agenda ? `<div class="why">${esc(m.agenda)}</div>` : ""}
+        <div class="meta">${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}</div></div>
+      <span class="chip">${m.date ? icon("calendar") + " " + fmtDate(m.date) : t("no_due")}</span></label>`).join("")}</div>` : ""}`;
 }
 
 function bindPlan() {
@@ -1552,9 +1601,10 @@ function bindPlan() {
   boxes().forEach(b => (b.onchange = sync));
   btn.onclick = async () => {
     const tasks = boxes().filter(b => b.checked).map(b => S.plan.tasks[Number(b.dataset.i)]);
-    if (!tasks.length) return;
+    const meets = [...document.querySelectorAll("[data-m]")].filter(b => b.checked).map(b => S.plan.meetings[Number(b.dataset.m)]);
+    if (!tasks.length && !meets.length) return;
     btn.disabled = true;
-    await post(`/api/chats/${S.board.chat.id}/plan/accept`, { tasks, event_title: S.plan.title, event_date: S.plan.event_date });
+    await post(`/api/chats/${S.board.chat.id}/plan/accept`, { tasks, meetings: meets, event_title: S.plan.title, event_date: S.plan.event_date });
     toast(t("plan_added")(tasks.length));
     S.plan = null;
     location.hash = `#/c/${S.board.chat.id}/board`;

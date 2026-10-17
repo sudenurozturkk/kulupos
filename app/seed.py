@@ -15,6 +15,7 @@ INSIGHT = DEMO / "seed-insight-tr.json"
 REPORT = DEMO / "seed-report-tr.json"
 MEETINGS = DEMO / "seed-meetings-tr.json"
 MEETING_SUMMARY = DEMO / "seed-meeting-summary-tr.json"
+AI_SAMPLE = DEMO / "seed-ai-tr.json"   # real model output: meeting proposals, event ideas, an event plan
 
 
 def _squash(s: str) -> str:
@@ -69,7 +70,7 @@ def seed_sample(today, force: bool = False) -> int | None:
     return chat_id
 
 
-SAMPLE_VERSION = "3"   # bump when the sample data or its precomputed texts change: older sample clubs are rebuilt
+SAMPLE_VERSION = "4"   # bump when the sample data or its precomputed texts change: older sample clubs are rebuilt
 
 
 def _outdated(chat_id: int) -> bool:
@@ -128,6 +129,7 @@ def _seed_meetings(chat_id: int, today) -> None:
     spec = json.loads(MEETINGS.read_text(encoding="utf-8"))
     db.update_chat(chat_id, unit_members=spec["unit_members"])
     made = {}
+    ai = json.loads(AI_SAMPLE.read_text(encoding="utf-8")) if AI_SAMPLE.exists() else None
     for m in spec["meetings"]:
         when = m.get("date") or (today + timedelta(days=m["date_offset"])).isoformat()
         notes = m.get("notes")
@@ -149,9 +151,17 @@ def _seed_meetings(chat_id: int, today) -> None:
                         source_text=quote(d["src"]))
         for q in m.get("questions", []):
             db.add_item(chat_id, "question", title=q["title"], meeting_id=mid, source_text=quote(q["src"]))
+        if ai and m["key"] == ai["meeting"] and ai["proposals"]:   # what the model really suggested from these notes
+            for p in ai["proposals"]:
+                db.add_item(chat_id, p["kind"], review="proposed", title=p["title"], unit=p.get("unit"),
+                            owner=p.get("owner"), due=p.get("due"), meeting_id=mid, source_text=p.get("source_text"))
+            continue
         for p in m.get("proposed", []):
             db.add_item(chat_id, p["kind"], review="proposed", title=p["title"], unit=p.get("unit"), meeting_id=mid,
                         source_text=quote(p["src"]))
+    if ai:
+        db.save_ai(chat_id, "ideas", "Örnek · geçmiş etkinliklere göre", ai["ideas"], ai["model"], "sample")
+        db.save_ai(chat_id, "plan", ai["plan"]["title"], ai["plan"], ai["model"], "sample")
     if MEETING_SUMMARY.exists():  # written once by scripts/make_sample_meeting_summary.py with the local model
         s = json.loads(MEETING_SUMMARY.read_text(encoding="utf-8"))
         meeting = db.get_meeting(made[s["key"]])

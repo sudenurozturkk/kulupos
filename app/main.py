@@ -345,10 +345,36 @@ async def plan(chat_id: int, body: PlanReq):
         raise HTTPException(503, str(e))
 
 
+@app.post("/api/chats/{chat_id}/ideas")
+async def event_ideas(chat_id: int):
+    """Slow (local model): new event ideas grounded in the club's held events."""
+    _chat_or_404(chat_id)
+    try:
+        return await insights.suggest_events(chat_id, today())
+    except llm.LLMError as e:
+        raise HTTPException(503, str(e))
+
+
+@app.get("/api/chats/{chat_id}/saved/{kind}")
+def saved_ai(chat_id: int, kind: str):
+    """Event ideas / plans the model produced earlier; they stay until deleted."""
+    _chat_or_404(chat_id)
+    if kind not in ("ideas", "plan"):
+        raise HTTPException(404, "unknown kind")
+    return {"saved": db.list_ai(chat_id, kind)}
+
+
+@app.delete("/api/saved/{saved_id}")
+def delete_saved_ai(saved_id: int):
+    db.delete_ai(saved_id)
+    return {"ok": True}
+
+
 class PlanAccept(BaseModel):
     event_title: str | None = None
     event_date: str | None = None
     tasks: list[dict]
+    meetings: list[dict] = []
 
 
 @app.post("/api/chats/{chat_id}/plan/accept")
@@ -362,7 +388,10 @@ def plan_accept(chat_id: int, body: PlanAccept):
     if body.event_title and body.event_date:
         item_id = db.add_item(chat_id, "event", title=body.event_title, due=body.event_date)
         db.update_item(item_id, user=True)
-    return {"added": len(body.tasks)}
+    for m in body.meetings:  # ticked preparation meetings become planned meetings
+        db.add_meeting(chat_id, title=(m.get("title") or "?").strip(), date=meetings.valid_date(m.get("date")),
+                       units=m.get("units") or [], agenda=m.get("agenda") or None, status="planned")
+    return {"added": len(body.tasks), "meetings": len(body.meetings)}
 
 
 @app.get("/api/chats/{chat_id}/export.md", response_class=PlainTextResponse)

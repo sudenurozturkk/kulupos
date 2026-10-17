@@ -101,6 +101,16 @@ CREATE TABLE IF NOT EXISTS event_reports (
     source      TEXT NOT NULL DEFAULT 'ai',   -- ai | sample (shipped, precomputed)
     created_at  TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS ai_saved (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id     INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+    kind        TEXT NOT NULL,   -- ideas | plan
+    title       TEXT NOT NULL,
+    body        TEXT NOT NULL,   -- JSON exactly as the model's checked result was shown
+    model       TEXT,
+    source      TEXT NOT NULL DEFAULT 'ai',   -- ai | sample (shipped, precomputed with the local model)
+    created_at  TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS event_insights (
     chat_id     INTEGER PRIMARY KEY REFERENCES chats(id) ON DELETE CASCADE,
     body        TEXT NOT NULL,
@@ -457,6 +467,25 @@ def save_report(event_id: int, body: str, fingerprint: str, lang: str, model: st
 def get_report(event_id: int) -> dict | None:
     rows = _rows("SELECT * FROM event_reports WHERE event_id = ?", (event_id,))
     return rows[0] if rows else None
+
+
+# ---- saved AI results (event ideas, event plans): kept until the user deletes them ----------------------
+
+def save_ai(chat_id: int, kind: str, title: str, body: dict, model: str | None, source: str = "ai") -> int:
+    with _lock, conn() as c:
+        return c.execute("INSERT INTO ai_saved (chat_id, kind, title, body, model, source, created_at) "
+                         "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                         (chat_id, kind, title, json.dumps(body, ensure_ascii=False), model, source, _now())).lastrowid
+
+
+def list_ai(chat_id: int, kind: str) -> list[dict]:
+    return [{**r, "body": json.loads(r["body"])} for r in _rows(
+        "SELECT * FROM ai_saved WHERE chat_id = ? AND kind = ? ORDER BY id DESC", (chat_id, kind))]
+
+
+def delete_ai(saved_id: int) -> None:
+    with _lock, conn() as c:
+        c.execute("DELETE FROM ai_saved WHERE id = ?", (saved_id,))
 
 
 # ---- period insight (event analysis) ----------------------------------------

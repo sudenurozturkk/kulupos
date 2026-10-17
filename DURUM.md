@@ -55,9 +55,10 @@ Toplantı: tekrarlayan toplantı, toplantıdan etkinliğe bağlama, katılım yo
 - Etkinlik formu, rapor penceresi, komite penceresi ekranda görülmedi (JS sözdizimi ve DOM/odak kontrolleri yapıldı).
 - Canlı Gemma ile arayüzden uçtan uca onay akışı (API düzeyinde denendi).
 
+- G10/G12 ekranları (düğmeler, Geçmiş penceresi, üstü çizili karar) gözle görülmedi; yalnızca `node --check`, API testleri ve HTTP duman testi. Yapay zekâ önerisi onaylanınca karar/soru başlığı değişirse (değişiklik önerisi) geçmişe yazılmaz.
+
 ## Değişmez kurallar (CLAUDE.md)
 1 kaynaksız → işaretli: UYUYOR · 2 otomatik onay yok: UYUYOR · 3 uydurma yok: UYUYOR (rapor sayı denetimi kaba) · 4 geçmiş ≠ güncel: UYUYOR (değişiklik önerisi) · 5 düzeltmeler ezilmez: UYUYOR (testli) · 6 yinelenen: KISMEN · 7 hata çökertmez: UYUYOR (testli) · 8 gizlilik: KISMEN (hata mesajı ≤200 karakter model çıktısı içerebilir, yalnızca yerel DB'de) · 9 çalışmayan düğme yok: KISMEN (tüm düğmeler tek tek denenmedi) · 10 test edilmeyen hazır değil: UYUYOR · 11 mevcut yapı: UYUYOR · 12 tutarlılık: UYUYOR (pano/panel yalnızca onaylı veriden).
 
 ## Sıradaki
 G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)
-- G10/G12 ekranları (düğmeler, Geçmiş penceresi, üstü çizili karar) gözle görülmedi; yalnızca `node --check`, API testleri ve HTTP duman testi. Yapay zekâ önerisi onaylanınca karar/soru başlığı değişirse (değişiklik önerisi) geçmişe yazılmaz.

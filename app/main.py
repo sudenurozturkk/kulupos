@@ -11,11 +11,11 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analyzer, assistant, db, insights, llm, report, seed
+from . import analyzer, assistant, db, export, insights, llm, report, seed
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -294,6 +294,31 @@ def export_md(chat_id: int):
                 f"- {r['title']}" + (f" — {r['due']}" if r["due"] else "") + (f" {r['time']}" if r["time"] else "")
                 for r in rows] + [""]
     return "\n".join(out)
+
+
+@app.get("/api/chats/{chat_id}/export")
+def export_file(chat_id: int, what: str = "tasks", format: str = "csv", status: str | None = None,
+                owner: str | None = None, unit: str | None = None, date_from: str | None = None,
+                date_to: str | None = None):
+    """what = tasks | decisions | questions | summary; format = csv | json (summary is always Markdown)."""
+    chat = _chat_or_404(chat_id)
+    t = today().isoformat()
+    try:
+        if what == "summary":
+            body, ext, mime = export.summary_md(chat_id, status, owner, unit, date_from, date_to, t), "md", "text/markdown"
+        else:
+            rows, filters = export.rows_for(chat_id, what, status, owner, unit, date_from, date_to)
+            if format == "json":
+                body, ext, mime = export.to_json(rows, filters, t), "json", "application/json"
+            elif format == "csv":
+                body, ext, mime = export.to_csv(rows, filters, t), "csv", "text/csv"
+            else:
+                raise export.FilterError("format: csv | json")
+    except export.FilterError as e:
+        raise HTTPException(400, str(e))
+    name = re.sub(r"[^A-Za-z0-9._-]+", "_", f"{chat['name']}-{what}")
+    return Response(body, media_type=f"{mime}; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="{name}.{ext}"'})
 
 
 @app.get("/api/chats/{chat_id}/messages")

@@ -73,7 +73,7 @@ const I18N = {
     sample_tag: "Örnek veri", sample_banner: "Bu panel sahte örnek veriyle dolu; gerçek kulübünüz değil.", sample_clear: "Örnek veriyi temizle",
     sample_confirm: "Örnek kulüp ve içindeki tüm kayıtlar silinsin mi? Gerçek verilerine dokunulmaz.",
     flt_label: "Filtre", flt_clear: "Temizle", flt_open: "Açık görevler", flt_soon: "Yaklaşan işler", flt_overdue: "Gecikmiş görevler",
-    flt_orphans: "Atanmamış görevler", flt_questions: "Açık sorular", dec_final: "Kesinleşti", help_btn: "Nasıl çalışır?",
+    flt_orphans: "Atanmamış görevler", flt_questions: "Açık sorular", dec_final: "Kesinleşti", help_btn: "Nasıl çalışır?", exp_btn: "Dışa aktar", exp_title: "Dışa aktar", exp_what: "Ne aktarılsın?", exp_tasks: "Görevler (CSV)", exp_decisions: "Kararlar", exp_questions: "Açık sorular", exp_summary: "Analiz özeti (Markdown)", exp_format: "Biçim", exp_status: "Durum", exp_all: "Hepsi", exp_open: "Açık", exp_done: "Tamamlandı", exp_owner: "Sorumlu", exp_from: "Başlangıç tarihi", exp_to: "Bitiş tarihi", exp_note: "Yalnızca onaylı kayıtlar aktarılır. Görevlerde tarih aralığı son tarihe, kararlarda ve sorularda kaynak mesaj tarihine uygulanır; seçilen filtreler dosyanın başında yazar.", exp_go: "İndir", exp_bad: "Başlangıç tarihi bitişten sonra olamaz.",
     wl_title: "Pano’ya hoş geldin", wl_ok: "Anladım",
     wl: [
       ["Pano ne yapıyor?", "Kulüp WhatsApp grubunu okur; görev, karar, açık soru ve etkinlikleri kaynak mesajlarıyla birlikte düzenli bir panoya çevirir."],
@@ -195,7 +195,7 @@ const I18N = {
     sample_tag: "Sample data", sample_banner: "This panel is filled with fake sample data; it is not your club.", sample_clear: "Clear sample data",
     sample_confirm: "Delete the sample club and everything in it? Your own data is not touched.",
     flt_label: "Filter", flt_clear: "Clear", flt_open: "Open tasks", flt_soon: "Coming up", flt_overdue: "Overdue tasks",
-    flt_orphans: "Unassigned tasks", flt_questions: "Open questions", dec_final: "Final", help_btn: "How it works",
+    flt_orphans: "Unassigned tasks", flt_questions: "Open questions", dec_final: "Final", help_btn: "How it works", exp_btn: "Export", exp_title: "Export", exp_what: "What to export?", exp_tasks: "Tasks (CSV)", exp_decisions: "Decisions", exp_questions: "Open questions", exp_summary: "Analysis summary (Markdown)", exp_format: "Format", exp_status: "Status", exp_all: "All", exp_open: "Open", exp_done: "Done", exp_owner: "Owner", exp_from: "From date", exp_to: "To date", exp_note: "Only approved records are exported. The date range applies to the due date for tasks and to the source message date for decisions and questions; the chosen filters are written at the top of the file.", exp_go: "Download", exp_bad: "The start date cannot be after the end date.",
     wl_title: "Welcome to Pano", wl_ok: "Got it",
     wl: [
       ["What does Pano do?", "It reads your club’s WhatsApp group and turns tasks, decisions, open questions and events into one clear board, each linked to its source message."],
@@ -460,6 +460,7 @@ function shell(view) {
     <span class="meta">💬 ${c.message_count} ${t("messages")} · 📅 ${range} · 👥 ${b.members.length}</span></div>
     <div class="actions">
       <a class="btn ghost small" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">⤓ Markdown</a>
+      <button class="ghost small" id="btn-export">⤓ ${t("exp_btn")}</button>
       <button class="ghost small" id="btn-help">❔ ${t("help_btn")}</button>
       <button class="ghost small" id="btn-units">👥 ${t("units_btn")}</button>
       <button class="ghost small" id="btn-add-export">⤓ ${t("add_export")}</button>
@@ -516,6 +517,7 @@ function bindShell() {
   };
   $("#btn-units").onclick = manageUnits;
   $("#btn-help").onclick = showWelcome;
+  $("#btn-export").onclick = showExport;
   const clr = $("#btn-clear-sample");
   if (clr) clr.onclick = async () => {
     if (!confirm(t("sample_confirm"))) return;
@@ -788,6 +790,44 @@ function modal(html, bind) {
   m.querySelectorAll("[data-close]").forEach(b => (b.onclick = close));
   bind?.(m, close);
   if (!m.contains(document.activeElement)) (m.querySelector("button.primary") || focusables()[0])?.focus();
+}
+
+function showExport() {
+  const b = S.board, id = b.chat.id;
+  modal(`<h3>${t("exp_title")}</h3>
+    <p class="muted">${t("exp_note")}</p>
+    <label for="x-what">${t("exp_what")}</label>
+    <select id="x-what"><option value="tasks">${t("exp_tasks")}</option><option value="decisions">${t("exp_decisions")}</option>
+      <option value="questions">${t("exp_questions")}</option><option value="summary">${t("exp_summary")}</option></select>
+    <label for="x-format">${t("exp_format")}</label>
+    <select id="x-format"><option value="csv">CSV</option><option value="json">JSON</option></select>
+    <div class="grid2"><div><label for="x-status">${t("exp_status")}</label>
+      <select id="x-status"><option value="">${t("exp_all")}</option><option value="open">${t("exp_open")}</option><option value="done">${t("exp_done")}</option></select></div>
+      <div><label for="x-owner">${t("exp_owner")}</label>
+      <select id="x-owner"><option value="">${t("exp_all")}</option>${b.members.map(m => `<option>${esc(m)}</option>`).join("")}</select></div></div>
+    <div class="grid2"><div><label for="x-from">${t("exp_from")}</label><input type="date" id="x-from"></div>
+      <div><label for="x-to">${t("exp_to")}</label><input type="date" id="x-to"></div></div>
+    <p class="muted" id="x-err" role="alert"></p>
+    <div class="modal-actions"><button data-close>${t("close")}</button><button class="primary" id="x-go">⤓ ${t("exp_go")}</button></div>`, (m, close) => {
+    const what = $("#x-what"), fmt = $("#x-format");
+    const sync = () => {
+      const sum = what.value === "summary";
+      fmt.disabled = sum; if (sum) fmt.value = "csv";
+      $("#x-status").disabled = what.value === "decisions";
+    };
+    what.onchange = sync; sync();
+    $("#x-go").onclick = () => {
+      const from = $("#x-from").value, to = $("#x-to").value;
+      if (from && to && from > to) { $("#x-err").textContent = t("exp_bad"); return; }
+      const q = new URLSearchParams({ what: what.value, format: fmt.value });
+      if (!$("#x-status").disabled && $("#x-status").value) q.set("status", $("#x-status").value);
+      if ($("#x-owner").value) q.set("owner", $("#x-owner").value);
+      if (from) q.set("date_from", from);
+      if (to) q.set("date_to", to);
+      const a = document.createElement("a"); a.href = `/api/chats/${id}/export?${q}`; a.download = ""; document.body.append(a); a.click(); a.remove();
+      close();
+    };
+  });
 }
 
 function editTask(task) {

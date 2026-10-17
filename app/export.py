@@ -42,8 +42,8 @@ def rows_for(chat_id: int, what: str, status: str | None, owner: str | None, uni
     if date_from and date_to and date_from > date_to:
         raise FilterError("date_from > date_to")
     status = status or ("open" if what == "questions" else "all")
-    if status not in ("all", "open", "done", "answered"):
-        raise FilterError("status: all | open | done | answered")
+    if status not in ("all", "open", "done", "answered", "resolved", "invalid"):
+        raise FilterError("status: all | open | done | answered | resolved | invalid")
     msgs = {m["idx"]: m for m in db.get_messages(chat_id)}
     out = []
     for i in db.get_items(chat_id, kind=KINDS[what]):

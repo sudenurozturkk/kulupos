@@ -405,6 +405,17 @@ class ItemPatch(EventFields):
     unit: str | None = None
     status: str | None = None
     review: str | None = None  # approved | rejected
+    note: str | None = None    # why the status changed; goes to the item's history, not onto the item
+
+
+STATUSES = {"question": ("open", "answered", "resolved", "invalid")}   # other kinds: open | done | answered
+
+
+@app.get("/api/items/{item_id}/history")
+def item_history(item_id: int):
+    if not db.get_item(item_id):
+        raise HTTPException(404)
+    return db.get_history(item_id)
 
 
 @app.patch("/api/items/{item_id}")
@@ -414,6 +425,7 @@ def patch_item(item_id: int, body: ItemPatch):
     # "" clears a field; omitted fields stay untouched.
     cur = db.get_item(item_id)
     fields = {k: (None if v == "" else v) for k, v in body.model_dump(exclude_unset=True).items()}
+    note = fields.pop("note", None)
     fields = _clean_event_fields(cur["chat_id"], fields)
     if cur["kind"] != "event" and any(k in fields for k in EVENT_ONLY):
         raise HTTPException(400, "event fields only apply to events")
@@ -422,7 +434,7 @@ def patch_item(item_id: int, body: ItemPatch):
     for required in ("title", "status"):
         if fields.get(required, "") is None:
             del fields[required]
-    if fields.get("status") not in (None, "open", "done", "answered"):
+    if fields.get("status") not in (None, *STATUSES.get(cur["kind"], ("open", "done", "answered"))):
         raise HTTPException(400, "bad status")
     if fields.get("review") not in (None, "approved", "rejected"):
         raise HTTPException(400, "bad review")
@@ -434,6 +446,8 @@ def patch_item(item_id: int, body: ItemPatch):
             raise HTTPException(409, "Kaynak bulunamadı / date unclear: düzenle veya reddet / edit or reject")
     # Approving/rejecting is a decision, not a correction: only real edits lock the item against the AI.
     db.update_item(item_id, user=any(k != "review" for k in fields), **fields)
+    if cur["kind"] == "question" and fields.get("status") not in (None, cur["status"]):
+        db.add_history(item_id, "status", cur["status"], fields["status"], note)
     return db.get_item(item_id)
 
 

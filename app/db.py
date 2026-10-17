@@ -63,6 +63,15 @@ CREATE TABLE IF NOT EXISTS items (
     created_at   TEXT NOT NULL,
     updated_at   TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS item_history (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id    INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    field      TEXT NOT NULL,          -- status | validity | title
+    old        TEXT,
+    new        TEXT,
+    note       TEXT,                   -- optional reason typed by the user
+    created_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS changes (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id    INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
@@ -325,6 +334,16 @@ def update_item(item_id: int, user: bool = False, **fields) -> None:
     cols = ", ".join(f"{k} = ?" for k in fields)
     with _lock, conn() as c:
         c.execute(f"UPDATE items SET {cols} WHERE id = ?", (*fields.values(), item_id))
+
+
+def add_history(item_id: int, field: str, old: str | None, new: str | None, note: str | None = None) -> None:
+    with _lock, conn() as c:
+        c.execute("INSERT INTO item_history (item_id, field, old, new, note, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                  (item_id, field, old, new, (note or "").strip()[:500] or None, _now()))
+
+
+def get_history(item_id: int) -> list[dict]:
+    return _rows("SELECT field, old, new, note, created_at FROM item_history WHERE item_id = ? ORDER BY id", (item_id,))
 
 
 def delete_item(item_id: int) -> None:

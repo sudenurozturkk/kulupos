@@ -110,6 +110,9 @@ const I18N = {
     nothing_missed: "Şimdilik gözden kaçan bir şey yok 🎉",
     decisions: "Kararlar", events: "Takvim",
     none_yet: "Henüz yok",
+    q_resolve: "Çözüldü", q_invalid: "Geçersiz", q_reopen: "Yeniden aç", q_closed: "Kapatılan sorular", q_hist: "Geçmiş", q_hist_none: "Henüz değişiklik yok.",
+    st_name: { open: "Açık", answered: "Cevaplandı", resolved: "Çözüldü", invalid: "Geçersiz", done: "Kesinleşti" },
+    q_note: "Not (isteğe bağlı)", q_save: "Kaydet", q_close_title: s => `Soruyu “${s}” olarak işaretle`,
     no_owner: "sahibi yok", no_due: "tarih yok",
     asked_by: "soran",
     add_task: "Görev ekle", edit_task: "Görevi düzenle",
@@ -239,6 +242,9 @@ const I18N = {
     nothing_missed: "Nothing is slipping through right now 🎉",
     decisions: "Decisions", events: "Calendar",
     none_yet: "Nothing yet",
+    q_resolve: "Resolved", q_invalid: "Not valid", q_reopen: "Reopen", q_closed: "Closed questions", q_hist: "History", q_hist_none: "No changes yet.",
+    st_name: { open: "Open", answered: "Answered", resolved: "Resolved", invalid: "Not valid", done: "Final" },
+    q_note: "Note (optional)", q_save: "Save", q_close_title: s => `Mark the question as “${s}”`,
     no_owner: "no owner", no_due: "no date",
     asked_by: "asked by",
     add_task: "Add task", edit_task: "Edit task",
@@ -690,10 +696,15 @@ function renderBoardView() {
   const m = b.missed;
   const miss = (title, list, fmt) => list.length ? `<h4>${title} (${list.length})</h4><ul class="list">${list.map(fmt).join("")}</ul>` : "";
   const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : "";
+  const closedQ = b.questions.filter(q => q.status !== "open");
+  const qBtns = q => (q.status === "open" || q.status === "answered"
+    ? `<button class="small ghost" data-qset="${q.id}" data-st="resolved">${t("q_resolve")}</button><button class="small ghost" data-qset="${q.id}" data-st="invalid">${t("q_invalid")}</button>`
+    : `<button class="small ghost" data-qset="${q.id}" data-st="open">${t("q_reopen")}</button>`)
+    + `<button class="small ghost" data-qhist="${q.id}">${t("q_hist")}</button>`;
   const taskLi = i => `<li><span class="grow"><a href="javascript:void 0" data-edit="${i.id}">${esc(i.title)}</a>
     <small>${i.owner ? esc(firstName(i.owner)) : t("no_owner")}${i.due ? " · " + fmtDate(i.due) : ""}</small></span>${srcBtn(i)}</li>`;
   const missedHtml = miss(t("m_questions"), m.questions, q => `<li><span class="grow">${esc(q.title)}
-      <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"}</small></span>${srcBtn(q)}</li>`)
+      <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"}</small></span>${srcBtn(q)}${qBtns(q)}</li>`)
     + miss(t("m_orphans"), m.orphans, taskLi) + miss(t("m_overdue"), m.overdue, taskLi) + miss(t("m_soon"), m.soon, taskLi);
 
   $("#view").innerHTML = `
@@ -707,7 +718,9 @@ function renderBoardView() {
   <div class="layout">
     <div class="columns">${F === "questions" ? `<div class="panel" style="grid-column:1/-1"><ul class="list">${
       b.questions.filter(q => q.status === "open").map(q => `<li><span class="grow">${esc(q.title)}
-        <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"}</small></span>${srcBtn(q)}</li>`).join("") || `<li class="muted">${t("none_yet")}</li>`}</ul></div>` : cols}</div>
+        <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"}</small></span>${srcBtn(q)}${qBtns(q)}</li>`).join("") || `<li class="muted">${t("none_yet")}</li>`}</ul>
+        ${closedQ.length ? `<h4>${t("q_closed")} (${closedQ.length})</h4><ul class="list">${closedQ.map(q => `<li><span class="grow">${esc(q.title)}
+        <small>${esc(t("st_name")[q.status] || q.status)}</small></span>${srcBtn(q)}${qBtns(q)}</li>`).join("")}</ul>` : ""}</div>` : cols}</div>
     <aside class="side">
       <div class="panel missed"><h3>⚠️ ${t("missed")}</h3>${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}</div>
       <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}" aria-label="${t("ev_add")}">＋</button></h3>
@@ -740,12 +753,36 @@ function renderBoardView() {
     await patch(`/api/items/${el.dataset.final}`, { status: el.checked ? "done" : "open" });
     await reloadBoard();
   }));
+  view.querySelectorAll("[data-qset]").forEach(el => (el.onclick = () => setQuestionStatus(Number(el.dataset.qset), el.dataset.st)));
+  view.querySelectorAll("[data-qhist]").forEach(el => (el.onclick = () => showHistory(Number(el.dataset.qhist))));
   view.querySelectorAll("[data-ev-edit]").forEach(el => (el.onclick = () => editEvent(b.events.find(x => x.id === Number(el.dataset.evEdit)))));
   view.querySelectorAll("[data-ev-add]").forEach(el => (el.onclick = () => editEvent({})));
   view.querySelectorAll("[data-ev-sample]").forEach(el => (el.onclick = async () => {
     try { const r = await post(`/api/chats/${b.chat.id}/sample-event`); await reloadBoard(); showReport(r.event_id); }
     catch (e) { toast(e.message); }
   }));
+}
+
+// Question status (resolved / not valid / reopen) with an optional note; every change is kept in the item's history.
+function setQuestionStatus(id, status) {
+  const q = S.board.questions.find(x => x.id === id);
+  modal(`<h3>${esc(t("q_close_title")(t("st_name")[status]))}</h3><p>${esc(q ? q.title : "")}</p>
+    <label for="q-note">${t("q_note")}</label><textarea id="q-note" rows="3" maxlength="500"></textarea>
+    <div class="row"><button class="ghost" data-close>✕</button><button class="primary" id="q-save">${t("q_save")}</button></div>`, (m, close) => {
+    m.querySelector("#q-save").onclick = async () => {
+      try { await patch(`/api/items/${id}`, { status, note: m.querySelector("#q-note").value }); close(); await reloadBoard(); }
+      catch (e) { toast(e.message); }
+    };
+  });
+}
+
+async function showHistory(id) {
+  let h = [];
+  try { h = await api(`/api/items/${id}/history`); } catch (e) { return toast(e.message); }
+  const name = v => esc(t("st_name")[v] || v || "—");
+  modal(`<h3>${t("q_hist")}</h3>${h.length ? `<ul class="list">${h.map(x => `<li><span class="grow">${esc(x.created_at.replace("T", " "))}
+    <small>${x.field === "title" ? esc(x.old || "—") + " → " + esc(x.new || "—") : name(x.old) + " → " + name(x.new)}${x.note ? " · " + esc(x.note) : ""}</small></span></li>`).join("")}</ul>` : `<p class="muted">${t("q_hist_none")}</p>`}
+    <div class="row"><button class="primary" data-close>OK</button></div>`);
 }
 
 // Event report. Generation is slow on a local model, so the modal shows the real elapsed time.

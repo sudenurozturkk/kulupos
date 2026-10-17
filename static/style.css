@@ -617,3 +617,15 @@ button.stat .lbl { display: flex; align-items: center; gap: 8px; margin-top: 4px
 .meter { display: inline-block; width: 56px; height: 6px; border-radius: 999px; background: var(--gray-100); overflow: hidden; }
 .meter > span { display: block; height: 100%; background: var(--accent); }
 td.num-late { background: var(--danger-soft); color: var(--danger); }
+
+/* people, committees, meetings */
+.wide-table { width: 100%; }
+.wide-table .atable { min-width: 640px; }
+.avatars { display: inline-flex; align-items: center; }
+.avatars .avatar { width: 24px; height: 24px; margin-left: -6px; border: 2px solid var(--surface); font-size: 10px; }
+.avatars .avatar:first-child { margin-left: 0; }
+.avatar.more { background: var(--gray-200); color: var(--text); }
+.mt-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.meet-page { width: 100%; }
+.meet-page .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 16px; }
+.atable a { display: inline-flex; align-items: center; gap: 8px; }

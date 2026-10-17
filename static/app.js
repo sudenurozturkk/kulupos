@@ -337,6 +337,7 @@ const HUB_I18N = {
     ov_see_board: "Görevlere git", ov_see_events: "Etkinliklere git", ov_see_review: "İncelemeye git",
     sample_hide: "Gizle",
     un_intro: "Komiteler, üye listeleri ve onlara bağlı işler. Sayılar yalnızca girilmiş görev ve etkinlik kayıtlarından gelir.", un_members: "Üyeler (serbest metin)",
+    un_add_member: "Üye ekle",
     un_loose: n => `${n} görev komitesiz.`,
     da_intro: "Sohbeti içeri al, verini dışarı ver. Veri bilgisayardan çıkmaz.", da_import: "İçe aktar", da_new: "Başka sohbet / yeni kulüp",
     da_import_note: "Aynı sohbetin daha yeni bir dışa aktarımı eklenirse yalnızca yeni mesajlar alınır. “Baştan analiz et” modelin tüm sohbeti yeniden okumasını ister (yavaştır); kendi düzeltmelerin ezilmez.",
@@ -365,6 +366,7 @@ const HUB_I18N = {
     ov_see_board: "Open tasks", ov_see_events: "Open events", ov_see_review: "Open review",
     sample_hide: "Hide",
     un_intro: "Committees, their member lists and the work tied to them. Counts come only from entered task and event records.", un_members: "Members (free text)",
+    un_add_member: "Add member",
     un_loose: n => `${n} task(s) without a committee.`,
     da_intro: "Bring a chat in, take your data out. The data never leaves this computer.", da_import: "Import", da_new: "Another chat / new club",
     da_import_note: "Adding a newer export of the same chat only takes the new messages. “Re-analyse from scratch” makes the model read the whole chat again (slow); your own corrections are not overwritten.",
@@ -478,6 +480,12 @@ function avatar(name) {
   if (!name) return "";
   const initials = name.split(/\s+/).map(p => p[0]).slice(0, 2).join("").toUpperCase();
   return `<span class="avatar" style="background:hsl(${hue(name)} 55% 45%)">${esc(initials)}</span>`;
+}
+function avatarStack(text) {
+  const names = String(text || "").split(",").map(s => s.trim()).filter(Boolean);
+  if (!names.length) return "";
+  const shown = names.slice(0, 4), extra = names.length - shown.length;
+  return `<span class="avatars" title="${esc(names.join(", "))}">${shown.map(avatar).join("")}${extra ? `<span class="avatar more">+${extra}</span>` : ""}</span>`;
 }
 const firstName = n => (n || "").split(/\s+/)[0];
 
@@ -681,8 +689,10 @@ function segmentHtml(view) {
 }
 
 function pageActionsHtml(view) {
-  const primary = view === "events"
-    ? `<button type="button" class="primary" id="btn-ev-add">${t("ev_add")}</button>` : "";
+  const primary = view === "events" ? `<button type="button" class="primary" id="btn-ev-add">${t("ev_add")}</button>`
+    : view === "meetings" ? `<button type="button" class="primary" id="mt-add">${t("mt_add")}</button>`
+    : view === "units" ? `<button type="button" class="primary" id="btn-units">${t("units_btn")}</button>`
+    : "";
   return `<div class="page-actions">${primary}<div class="more">
     <button type="button" class="ghost icon-btn" id="btn-more" aria-haspopup="menu" aria-expanded="false" aria-label="${esc(t("more"))}">${icon("dots")}</button>
     <div class="more-menu" id="more-menu" role="menu" hidden>
@@ -791,7 +801,8 @@ function bindDataActions() {
     await api(`/api/chats/${id}`, { method: "DELETE" });
     location.hash = "#/";
   };
-  $("#btn-units").onclick = manageUnits;
+  const unitsBtn = $("#btn-units");
+  if (unitsBtn) unitsBtn.onclick = manageUnits;
   $("#btn-export").onclick = showExport;
 }
 
@@ -1668,10 +1679,10 @@ async function renderPeopleView() {
   catch (e) { view.innerHTML = `<div class="narrow"><p class="muted"> ${esc(e.message)}</p></div>`; return; }
   if (route().view !== "people" || S.board.chat.id !== id) return;
   const rows = d.people.map(p => `<tr><th scope="row"><a href="#/c/${id}/person/${encodeURIComponent(p.name)}">${avatar(p.name)} ${esc(p.name)}</a></th>
-    <td>${p.committees.length ? p.committees.map(esc).join(", ") : dash}</td><td><b>${p.open}</b></td><td>${p.late ? `<b>${p.late}</b>` : "0"}</td><td>${p.done}</td></tr>`).join("");
-  view.innerHTML = `<div class="narrow wide"><p class="muted">${t("pp_intro")}</p><p class="muted small">${t("pp_note")}</p>
-    ${d.people.length ? `<div class="tscroll"><table class="atable"><thead><tr><th>${t("pp_name")}</th><th>${t("pp_committees")}</th><th>${t("pp_open")}</th><th>${t("pp_late")}</th><th>${t("pp_done")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
-      : `<div class="empty"><b>${t("pp_empty")}</b></div>`}</div>`;
+    <td>${p.committees.length ? p.committees.map(esc).join(", ") : dash}</td><td><b>${p.open}</b></td><td class="${p.late > 0 ? "num-late" : ""}">${p.late ? `<b>${p.late}</b>` : "0"}</td><td>${p.done}</td></tr>`).join("");
+  view.innerHTML = `<p class="muted">${t("pp_intro")}</p><p class="muted small">${t("pp_note")}</p>
+    ${d.people.length ? `<div class="tscroll wide-table"><table class="atable"><thead><tr><th>${t("pp_name")}</th><th>${t("pp_committees")}</th><th>${t("pp_open")}</th><th>${t("pp_late")}</th><th>${t("pp_done")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<div class="empty-quiet">${icon("person")}<p>${t("pp_empty")}</p></div>`}`;
 }
 
 async function renderPersonView() {
@@ -1689,7 +1700,7 @@ async function renderPersonView() {
     <small>${x.unit ? esc(x.unit) : t("no_unit")}</small></span>${dueChip(x, p.today)}</li>`;
   const sect = (title, items, fmt) => `<div class="panel"><h3>${title} <span class="n">${items.length}</span></h3>${items.length ? `<ul class="list">${items.map(fmt).join("")}</ul>` : none}</div>`;
   const all = [...p.late, ...p.open, ...p.done];
-  view.innerHTML = `<div class="narrow wide">${back}
+  view.innerHTML = `${back}
     <h2>${avatar(p.name)} ${esc(p.name)}</h2>
     <p class="muted small">${t("pp_note")}</p>
     <div class="panel"><h3>${t("pp_committees")}</h3>${p.committees.length ? `<p>${p.committees.map(esc).join(", ")}</p>` : none}</div>
@@ -1700,8 +1711,7 @@ async function renderPersonView() {
     ${sect(t("pp_events"), p.events, e => `<li><span class="grow"><a href="#/c/${chatId}/event/${e.id}">${esc(e.title)}</a>
       <small>${e.due ? fmtDate(e.due) : "—"} · ${e.role.map(k => t(k === "owner" ? "pp_role_owner" : "pp_role_task")).join(", ")}</small></span></li>`)}
     ${sect(t("pp_meetings"), p.meetings, m => `<li><span class="grow"><a href="#/c/${chatId}/meeting/${m.id}">${esc(m.title)}</a>
-      <small>${m.date ? fmtDate(m.date) : t("mt_nodate")} · ${esc(t("mt_st")[m.status] || m.status)}</small></span></li>`)}
-  </div>`;
+      <small>${m.date ? fmtDate(m.date) : t("mt_nodate")} · ${esc(t("mt_st")[m.status] || m.status)}</small></span></li>`)}`;
   view.querySelectorAll("[data-toggle]").forEach(el => (el.onchange = async () => {
     await patch(`/api/items/${el.dataset.toggle}`, { status: el.checked ? "done" : "open" });
     await reloadBoard();
@@ -1716,15 +1726,18 @@ function renderUnitsView() {
     const tasks = b.tasks.filter(x => x.unit === u), open = tasks.filter(x => x.status === "open");
     const late = open.filter(x => x.due && x.due < b.today).length;
     const evs = b.events.filter(e => (e.event_units || []).includes(u)).length;
-    return `<tr><th scope="row">${esc(u)}</th><td>${members[u] ? esc(members[u]) : dash}</td><td><b>${open.length}</b></td><td>${late ? `<b>${late}</b>` : "0"}</td><td>${evs}</td></tr>`;
+    const who = avatarStack(members[u]) || `<button type="button" class="ghost small" data-add-members>${t("un_add_member")}</button>`;
+    return `<tr><th scope="row">${esc(u)}</th><td>${who}</td><td><b>${open.length}</b></td><td class="${late > 0 ? "num-late" : ""}">${late ? `<b>${late}</b>` : "0"}</td><td>${evs}</td></tr>`;
   }).join("");
   const loose = b.tasks.filter(x => !x.unit || !units.includes(x.unit)).length;
-  $("#view").innerHTML = `<div class="narrow wide"><p class="muted">${t("un_intro")}</p>
-    <div class="row-actions"><button class="primary" id="btn-units">${t("units_btn")}</button></div>
-    ${units.length ? `<div class="tscroll"><table class="atable"><thead><tr><th>${t("tab_units")}</th><th>${t("un_members")}</th><th>${t("pp_open")}</th><th>${t("pp_late")}</th><th>${t("tab_events")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
-      : `<p class="muted">${t("none_yet")}</p>`}
-    ${loose ? `<p class="muted small">${t("un_loose")(loose)}</p>` : ""}</div>`;
-  $("#btn-units").onclick = manageUnits;
+  $("#view").innerHTML = `<p class="muted">${t("un_intro")}</p>
+    ${units.length ? `<div class="tscroll wide-table"><table class="atable"><thead><tr><th>${t("tab_units")}</th><th>${t("un_members")}</th><th>${t("pp_open")}</th><th>${t("pp_late")}</th><th>${t("tab_events")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<div class="empty-quiet">${icon("people")}<p>${t("none_yet")}</p><button type="button" class="ghost" data-add-members>${t("un_add_member")}</button></div>`}
+    ${loose ? `<p class="muted small">${t("un_loose")(loose)}</p>` : ""}`;
+  const openMembers = () => manageUnits();
+  const head = $("#btn-units");
+  if (head) head.onclick = openMembers;
+  $("#view").querySelectorAll("[data-add-members]").forEach(el => (el.onclick = openMembers));
 }
 
 function renderDataView() {
@@ -1785,18 +1798,20 @@ async function render() {
 // Notes are untrusted data: they are shown as plain text (esc) and only reach the model as quoted data.
 async function renderMeetingsView() {
   const id = S.board.chat.id;
-  $("#view").innerHTML = `<div class="narrow"><p class="muted">${t("mt_intro")}</p>
-    <div class="row-actions"><button class="primary" id="mt-add">${t("mt_add")}</button></div>
-    <div id="mt-list"><p class="muted"><span class="spinner"></span></p></div></div>`;
-  $("#mt-add").onclick = () => editMeeting({});
+  $("#view").innerHTML = `<p class="muted">${t("mt_intro")}</p>
+    <div id="mt-list"><p class="muted"><span class="spinner"></span></p></div>`;
+  const add = $("#mt-add");
+  if (add) add.onclick = () => editMeeting({});
   let list = [];
   try { list = await api(`/api/chats/${id}/meetings`); } catch (e) { toast(e.message); }
-  $("#mt-list").innerHTML = list.length ? list.map(m => `<a class="panel meeting-card" href="#/c/${id}/meeting/${m.id}">
-      <b>${esc(m.title)}</b>
-      <div class="meta">${m.date ? `${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
-        <span class="chip ${m.status === "held" ? "" : "ai"}">${t("mt_st")[m.status]}</span>
-        ${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}</div>
-      <small class="muted">${t("mt_counts")(m)}</small></a>`).join("") : `<p class="muted">${t("mt_empty")}</p>`;
+  $("#mt-list").innerHTML = list.length ? `<div class="mt-list">${list.map(m => `<a class="ev-row" href="#/c/${id}/meeting/${m.id}">
+      <span class="ev-title">${esc(m.title)}</span>
+      ${avatarStack(m.attendees)}
+      <span class="muted">${m.date ? `${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : t("mt_nodate")}</span>
+      <span class="chip">${esc(t("mt_st")[m.status] || m.status)}</span>
+      ${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}
+      <span class="muted">${t("mt_counts")(m)}</span></a>`).join("")}</div>`
+    : `<div class="empty-quiet">${icon("people")}<p>${t("mt_empty")}</p></div>`;
 }
 
 function editMeeting(m) {
@@ -1898,10 +1913,10 @@ async function renderMeetingView() {
   const rec = (items, empty) => items.length ? `<ul class="list">${items.map(i => `<li><span class="grow">${esc(i.title)}
       <small>${[i.owner ? icon("person") + " " + esc(i.owner) : (i.kind === "task" ? t("mt_noowner") : ""), i.due ? icon("calendar") + " " + fmtDate(i.due) : ""].filter(Boolean).join(" · ")}</small></span>
       ${i.kind === "task" ? `<span class="chip ${i.status === "done" ? "" : "ai"}">${i.status === "done" ? t("n_done") : t("n_open")}</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${empty}</p>`;
-  $("#view").innerHTML = `<div class="narrow">
+  $("#view").innerHTML = `<div class="meet-page">
     <p><a href="#/c/${chatId}/meetings">${t("tab_meetings")}</a></p>
     <h3>${esc(m.title)}</h3>
-    <div class="meta">${m.date ? `${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
+    <div class="meta">${avatarStack(m.attendees)} ${m.date ? `${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
       <span class="chip ${m.status === "held" ? "" : "ai"}">${t("mt_st")[m.status]}</span>
       ${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}</div>
     ${m.attendees ? `<p><b>${t("mt_attendees")}:</b> ${esc(m.attendees)}</p>` : ""}

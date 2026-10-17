@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>Pano · Sunum</title>
+<style>
+@page { size: 1280px 720px; margin: 0; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; color: #1e1b4b; }
+.s { width: 1280px; height: 720px; padding: 64px 80px; page-break-after: always; position: relative; background: #f5f6fd; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.s.dark { background: linear-gradient(135deg, #1e1b4b, #4338ca 60%, #7c3aed); color: #fff; }
+.k { font-size: 16px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #4f46e5; margin-bottom: 14px; }
+.dark .k { color: #c7d2fe; }
+h1 { font-size: 84px; line-height: 1; margin: 0 0 18px; letter-spacing: -.03em; }
+h2 { font-size: 46px; line-height: 1.1; margin: 0 0 30px; letter-spacing: -.02em; }
+p, li { font-size: 24px; line-height: 1.45; color: #4b5563; margin: 0 0 10px; }
+.dark p, .dark li { color: #e0e7ff; }
+.grid { display: grid; gap: 22px; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.card { background: #fff; border: 1px solid #e3e5f2; border-top: 5px solid #4f46e5; border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px rgba(49,46,129,.08); }
+.card h3 { margin: 0 0 8px; font-size: 25px; }
+.card p { font-size: 20px; margin: 0; }
+.big { font-size: 78px; font-weight: 800; color: #4f46e5; line-height: 1; }
+.flow { display: flex; gap: 14px; align-items: stretch; }
+.flow div { flex: 1; background: #fff; border: 1px solid #e3e5f2; border-radius: 14px; padding: 18px; font-size: 20px; color: #374151; }
+.flow b { display: block; color: #4f46e5; font-size: 22px; margin-bottom: 6px; }
+.arrow { flex: 0 0 auto !important; background: none !important; border: 0 !important; padding: 0 !important; align-self: center; font-size: 34px !important; color: #7c3aed !important; }
+.foot { position: absolute; bottom: 26px; left: 80px; right: 80px; display: flex; justify-content: space-between; font-size: 14px; color: #9ca3af; }
+.dark .foot { color: #a5b4fc; }
+table { border-collapse: collapse; width: 100%; font-size: 22px; }
+td, th { padding: 12px 14px; border-bottom: 1px solid #e3e5f2; text-align: left; }
+th { color: #4f46e5; }
+.warn { color: #b45309; font-weight: 600; }
+.tag { display: inline-block; background: #eef2ff; color: #4338ca; font-weight: 700; border-radius: 99px; padding: 6px 16px; font-size: 18px; margin: 0 8px 8px 0; }
+</style></head><body>
+
+<section class="s dark">
+  <div class="k">Hacktoberfest Elazığ Fest 2026 · Side Hustle</div>
+  <h1>Pano</h1>
+  <p style="font-size:34px;color:#fff;margin-bottom:26px">Kulübün tüm işleri, tek yerde.</p>
+  <p>WhatsApp sohbeti, toplantı notu ve etkinlik verisi → görev, karar ve etkinlik panosu.<br>Yerel <b style="color:#fff">Gemma 4</b> ile, bilgisayardan çıkmadan.</p>
+  <div style="margin-top:24px"><span class="tag" style="background:rgba(255,255,255,.15);color:#fff">Açık kaynak · MIT</span><span class="tag" style="background:rgba(255,255,255,.15);color:#fff">Best Use of Gemma</span></div>
+  <div class="foot"><span>github.com/sudenurozturkk/kulupradar</span><span>1 / 8</span></div>
+</section>
+
+<section class="s">
+  <div class="k">Problem</div>
+  <h2>Kulüpler WhatsApp'ta yürüyor, işler mesajların arasında kayboluyor.</h2>
+  <div class="grid">
+    <div class="card"><h3>Görevler kayboluyor</h3><p>200 mesajlık bir akşamda dağıtılan iş, ertesi hafta kimsenin aklında yok.</p></div>
+    <div class="card"><h3>Tarih değişiyor</h3><p>Etkinlik tarihi iki kez değişiyor, yarısı eskisini hatırlıyor.</p></div>
+    <div class="card"><h3>Sorular cevapsız</h3><p>"Sponsor dosyası kimde?" iki hafta cevapsız kalıyor.</p></div>
+  </div>
+  <div class="foot"><span>Pano</span><span>2 / 8</span></div>
+</section>
+
+<section class="s">
+  <div class="k">Jürinin üç sorusu</div>
+  <h2>Kim için? Hangi sıkıcı iş? Neden açık model?</h2>
+  <div class="grid">
+    <div class="card"><h3>Kim?</h3><p>Kulüp başkanları ve komite sorumluları. Her üniversitede onlarca kulüp, hepsi WhatsApp'ta çalışıyor.</p></div>
+    <div class="card"><h3>Hangi sıkıcı iş?</h3><p>Geriye kaydırıp "kim neyi üstlenmişti, ne karar almıştık?" diye aramak.</p></div>
+    <div class="card"><h3>Neden açık model?</h3><p>Sohbette onlarca öğrencinin adı ve özel mesajı var. Buluta gitmez, kullanım ücreti yok, internetsiz çalışır.</p></div>
+  </div>
+  <div class="foot"><span>Pano</span><span>3 / 8</span></div>
+</section>
+
+<section class="s">
+  <div class="k">Çözüm ve Gemma 4 kullanımı</div>
+  <h2>WhatsApp'ı değiştirmiyoruz, düzenini geri veriyoruz.</h2>
+  <div class="flow">
+    <div><b>1 · İçe aktar</b>WhatsApp .txt/.zip, toplantı notu, etkinlik kaydı</div><div class="arrow">→</div>
+    <div><b>2 · Gemma 4 okur</b>gemma4:e4b, yerel Ollama, JSON şemalı çıktı</div><div class="arrow">→</div>
+    <div><b>3 · Öneri</b>her kayıt kaynak mesaja/not satırına bağlı</div><div class="arrow">→</div>
+    <div><b>4 · Sen onaylarsın</b>onaylanan pano, görev, karar, etkinlik olur</div>
+  </div>
+  <p style="margin-top:26px">Gemma, panonun güncel halini de görür: "bitirdim" görevi kapatır, "31'ine alalım" etkinliği taşır, yinelenen kayıt açmaz.</p>
+  <div class="foot"><span>Pano</span><span>4 / 8</span></div>
+</section>
+
+<section class="s">
+  <div class="k">Güvenlik tasarımı</div>
+  <h2>Küçük model, sıkı kurallar.</h2>
+  <div class="grid" style="grid-auto-flow:row;grid-template-columns:1fr 1fr">
+    <div class="card"><h3>Kaynak şart</h3><p>Kaynağı bulunamayan öneri onaylanamaz.</p></div>
+    <div class="card"><h3>Otomatik onay yok</h3><p>Öneriler ayrı kuyrukta bekler, gerçek sayılara karışmaz.</p></div>
+    <div class="card"><h3>Uydurma yok</h3><p>Bilinmeyen sorumlu/tarih boş kalır. Rapordaki sayı, isim ve alıntı veride yoksa metin reddedilir.</p></div>
+    <div class="card"><h3>Notlar veridir, komut değil</h3><p>Not içindeki "önceki talimatları unut" Gemma'ya emir olmaz.</p></div>
+  </div>
+  <div class="foot"><span>Pano</span><span>5 / 8</span></div>
+</section>
+
+<section class="s">
+  <div class="k">Canlı demo (hesap gerekmez)</div>
+  <h2>FUB3V Yönetim 2026 örnek kulübü</h2>
+  <div class="grid" style="grid-auto-flow:row;grid-template-columns:1fr 1fr">
+    <div class="card"><h3>1 · Kulüp durumu</h3><p>Geciken ve sahipsiz işler, yaklaşan etkinlikler.</p></div>
+    <div class="card"><h3>2 · Görevler</h3><p>Duruma göre pano; karttan kaynak mesaja.</p></div>
+    <div class="card"><h3>3 · AI incelemesi</h3><p>Öneriyi onayla / reddet.</p></div>
+    <div class="card"><h3>4 · Etkinlik ve toplantı</h3><p>Katılım, geri bildirim, rapor, toplantı özeti.</p></div>
+  </div>
+  <div class="foot"><span>Pano</span><span>6 / 8</span></div>
+</section>
+
+<section class="s">
+  <div class="k">Dürüst ölçüm</div>
+  <h2>Ne işe yarıyor, nerede zorlanıyor.</h2>
+  <div class="grid" style="margin-bottom:22px">
+    <div class="card"><div class="big">10/14</div><p>elle yazılmış kontrol (TR demo, 127 mesaj). Önceki koşular: 7 ve 11.</p></div>
+    <div class="card"><div class="big">~230 sn</div><p>RTX 3050 4 GB laptopta analiz süresi, tamamen yerel.</p></div>
+    <div class="card"><div class="big">12/12</div><p>toplantı önerisinin alıntısı notta gerçekten var (2 kısa toplantı).</p></div>
+  </div>
+  <p class="warn">Sınırlar: görev devirlerini ve bazı sorumluları kaçırıyor, sorumlusuz işleri yakalamakta zayıf; iki toplantı doğruluk oranı değil. Bu yüzden otomatik onay yok.</p>
+  <div class="foot"><span>Pano</span><span>7 / 8</span></div>
+</section>
+
+<section class="s dark">
+  <div class="k">Sırada ne var</div>
+  <h2>Şimdi çalışan ve planlanan.</h2>
+  <p><b style="color:#fff">Çalışıyor:</b> sohbet/toplantı/etkinlik analizi, onay kuyruğu, görev panosu, etkinlik raporu, haftalık özet, kişi ve komite sayfaları, giriş/kayıt, TR/EN, 114 otomatik test.</p>
+  <p><b style="color:#fff">Planlı (henüz yok):</b> roller ve çok kullanıcılı veri ayrımı, sistem içi mesajlaşma, toplantı ses kaydı, bütçe/sponsor takibi, dış entegrasyonlar.</p>
+  <p style="margin-top:26px;font-size:30px;color:#fff">Kulüplere ücretsiz, veri kulübün bilgisayarında.</p>
+  <div class="foot"><span>github.com/sudenurozturkk/kulupradar · MIT</span><span>8 / 8</span></div>
+</section>
+</body></html>

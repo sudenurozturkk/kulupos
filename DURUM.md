@@ -74,5 +74,7 @@ Toplantı: tekrarlayan toplantı, toplantıdan etkinliğe bağlama, katılım yo
 
 - 18 Ekim (2): açılışta tanıtım sayfası (Giriş yap / Kayıt ol / Hesapsız demo); `app/auth.py`: PBKDF2 parola, HttpOnly çerez, herkes kayıt olabilir, tüm hesaplar aynı veriyi görür (kullanıcı başına veri ayrımı ve rol YOK); demo ziyaretçisi misafir oturumuyla yalnızca örnek kulübü görür (`/api/chats/{id}` ve liste süzülür; `/api/items`, `/api/events` vb. kimlikle erişim süzülmez, yerel kullanım varsayımı); PANO_AUTH=0 kapatır; testli. Demo kulübü adı FUB3V Yönetim 2026; örnekte 6 etkinlik, 27 görev, 9 karar, 6 açık soru (yeni kayıtlar elle girilmiş sayılır, sohbet kaynağı yok); dönem içgörüsü yeniden üretildi. Kenar çubuğu, kartlar, giriş ekranı için CSS cilası eklendi: **ekranda görülmedi**.
 
+- 18 Ekim (3): `docs/Pano-Sunum.pdf` (8 slayt, 4 dk sunum için; kaynağı `docs/pano-sunum.html`, Chrome headless ile basıldı, PDF gözle kontrol edilmedi) eklendi. Görevler panosu varsayılan olarak duruma göre. `static/pitch.html` eski ve içinde “ilk kullanıcı” yer tutucusu var: sunumda KULLANMA. Son teslim 19 Ekim 09:59 (repo public + MLH formu kullanıcıda; SUBMISSION.md metinleri hazır).
+
 ## Sıradaki
 Toplantıdan etkinliğe doğrudan bağlama · G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)

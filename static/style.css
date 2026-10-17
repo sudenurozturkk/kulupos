@@ -531,3 +531,5 @@ pre.report { overflow-wrap: anywhere; background: var(--surface-2); padding: var
   }
   .sidebar.open { transform: none; box-shadow: var(--shadow-lg); }
 }
+.ico { width: 16px; height: 16px; display: inline-block; vertical-align: -3px; flex: none; }
+.feature .ic .ico, .side-nav .ico { width: 18px; height: 18px; }

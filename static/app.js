@@ -3,20 +3,20 @@
 // ---------------------------------------------------------------- i18n
 const I18N = {
   tr: {
-    eyebrow: "🔒 Gemma 4 · tamamen yerel · açık kaynak",
+    eyebrow: "Gemma 4 · tamamen yerel · açık kaynak",
     hero_h1: ["Kulübün tüm işleri tek yerde:", "sohbet, toplantı notu, etkinlik verisi."],
     hero_lead: "Hepsi yerelde Gemma ile. Görevler mesajların ve toplantı notlarının arasında kayboluyor, etkinlik tarihi iki kez değişiyor, \"sponsor dosyası kimde?\" sorusu iki hafta cevapsız kalıyor. Pano WhatsApp sohbetini, toplantı notlarını ve etkinlik kayıtlarını bu bilgisayarda okur ve tek panoda toplar. WhatsApp yalnızca girdi kaynaklarından biridir.",
-    cta_demo: "✨ Demo kulübü aç", demo_timeout: "Sunucu yanıt vermedi. Eski bir Pano süreci açık olabilir; kapatıp `python -m app` ile yeniden başlatın.", cta_upload: "Kendi grubumu yükle",
-    trust: ["📴 İnternetsiz çalışır", "💸 API anahtarı yok", "🧾 Her kart kaynağına bağlı (mesaj veya not)"],
+    cta_demo: "Demo kulübü aç", demo_timeout: "Sunucu yanıt vermedi. Eski bir Pano süreci açık olabilir; kapatıp `python -m app` ile yeniden başlatın.", cta_upload: "Kendi grubumu yükle",
+    trust: ["İnternetsiz çalışır", "API anahtarı yok", "Her kart kaynağına bağlı (mesaj veya not)"],
     mock_chat: [["Elif", "Salon dilekçesini kim verir?"], ["Deniz", "Ben perşembe veririm"], ["Mert", "Ahmet Bey 24'ünde yok, 31 Ekim olur diyor"], ["Elif", "Tamam karar: söyleşi 31 Ekim 14:00", true]],
-    mock_cards: [["Salon dilekçesi", "Deniz", "Per 8 Eki"], ["Söyleşi → 31 Eki", "Etkinlik", "taşındı"], ["Projeksiyon dilekçesi", "sahibi yok", "⚠️"]],
+    mock_cards: [["Salon dilekçesi", "Deniz", "Per 8 Eki"], ["Söyleşi 31 Eki", "Etkinlik", "taşındı"], ["Projeksiyon dilekçesi", "sahibi yok", ""]],
     feat: [
-      ["📊", "Panel", "Bugün ilgilenilecekler, riskler, yaklaşan etkinlik ve toplantılar tek bakışta. Haftalık özet ve “sohbete sor” da burada."],
-      ["🎪", "Etkinlikler", "Her etkinlik tek sayfada: bağlı görev, karar, soru, toplantı, katılım, geri bildirim ve yalnızca girilen veriden yazılan rapor."],
-      ["🗓️", "Toplantılar", "Notları yapıştırın ya da .txt/.md yükleyin; görev, karar ve sorular önce incelemeye düşer. Özet yalnızca notlardan ve onaylı kayıtlardan yazılır."],
-      ["📌", "Görevler", "Komite bazlı pano ve onay bekleyen AI önerileri (inceleme kuyruğu). Her kayıt geldiği mesaj veya notla birlikte."],
-      ["👤", "Kişiler ve komiteler", "Görev sahiplerinden türeyen kişi sayfaları (yalnızca sayılar, performans yargısı yok) ve komite üye listeleri."],
-      ["⇅", "İçe/Dışa aktar", "WhatsApp dışa aktarımını al, onaylı kayıtları CSV/JSON/Markdown olarak ver. Veri bilgisayardan çıkmaz."],
+      ["chart", "Panel", "Bugün ilgilenilecekler, riskler, yaklaşan etkinlik ve toplantılar tek bakışta. Haftalık özet ve “sohbete sor” da burada."],
+      ["calendar", "Etkinlikler", "Her etkinlik tek sayfada: bağlı görev, karar, soru, toplantı, katılım, geri bildirim ve yalnızca girilen veriden yazılan rapor."],
+      ["calendar", "Toplantılar", "Notları yapıştırın ya da .txt/.md yükleyin; görev, karar ve sorular önce incelemeye düşer. Özet yalnızca notlardan ve onaylı kayıtlardan yazılır."],
+      ["pin", "Görevler", "Komite bazlı pano ve onay bekleyen AI önerileri (inceleme kuyruğu). Her kayıt geldiği mesaj veya notla birlikte."],
+      ["person", "Kişiler ve komiteler", "Görev sahiplerinden türeyen kişi sayfaları (yalnızca sayılar, performans yargısı yok) ve komite üye listeleri."],
+      ["transfer", "İçe/Dışa aktar", "WhatsApp dışa aktarımını al, onaylı kayıtları CSV/JSON/Markdown olarak ver. Veri bilgisayardan çıkmaz."],
     ],
     why_title: "Neden açık model, neden yerel?",
     why_sub: "Bir kulüp sohbetinde onlarca öğrencinin telefon numarası ve özel mesajı var.",
@@ -25,7 +25,7 @@ const I18N = {
     k_open: "Açık görev", k_done: "tamamlandı", k_missed: "Gözden kaçan", k_missed_sub: "soru + sahipsiz iş", k_decisions: "Alınan karar", k_next: "Sıradaki etkinlik", k_days: d => d === 0 ? "bugün" : `${d} gün kaldı`, k_none: "—",
     units_title: "Birimlerin durumu", h_ok: "Yolunda", h_warn: "Dikkat", h_bad: "Gecikme var", h_idle: "Boş",
     n_open: "açık", n_done: "bitti", n_late: "gecikmiş", n_orphan: "sahipsiz",
-    alerts_title: "Riskler ve uyarılar", no_alerts: "Şimdilik risk görünmüyor 🎉",
+    alerts_title: "Riskler ve uyarılar", no_alerts: "Şimdilik risk görünmüyor ",
     a_event: a => `<b>${a.event}</b> etkinliğine ${a.days} gün kaldı`, a_event_sub: a => `${a.open} açık iş${a.orphans ? `, ${a.orphans} tanesinin sahibi yok` : ""}`,
     a_overdue: a => `<b>${a.title}</b> gecikti`, a_overdue_sub: a => `${a.owner ? a.owner.split(" ")[0] : "sahibi yok"} · ${a.due}`,
     a_question: a => `Cevapsız: <b>${a.title}</b>`, a_question_sub: a => `soran ${a.owner ? a.owner.split(" ")[0] : "?"}`,
@@ -34,7 +34,7 @@ const I18N = {
     timeline_title: "Yaklaşan tarihler", recent_decisions: "Son kararlar",
     plan_intro: "Etkinliği tarif edin. Gemma, kulübün birimlerini ve üyelerin mevcut iş yükünü dikkate alarak tarihli bir hazırlık planı önerir. Hiçbir şey siz onaylamadan panoya eklenmez.",
     plan_ph: "Örn: 14 Kasım'da 200 kişilik bir siber güvenlik zirvesi yapmak istiyoruz, iki konuşmacı ve bir sponsor hedefliyoruz.",
-    plan_btn: "🧭 Plan öner", plan_wait: "Gemma planı hazırlıyor…", plan_add: n => `Seçili ${n} görevi panoya ekle`, plan_added: n => `${n} görev panoya eklendi`,
+    plan_btn: "Plan öner", plan_wait: "Gemma planı hazırlıyor…", plan_add: n => `Seçili ${n} görevi panoya ekle`, plan_added: n => `${n} görev panoya eklendi`,
     plan_examples: ["3 hafta sonra 150 kişilik bir yapay zeka söyleşisi", "Kasım sonunda 24 saatlik bir hackathon", "Gelecek ay yeni üyeler için tanışma etkinliği"],
     suggested: "öneri",
     hero_title: "WhatsApp grubundaki karmaşayı panoya çevirin",
@@ -47,7 +47,7 @@ const I18N = {
     try_demo: "Demo sohbetle dene",
     how_export: "WhatsApp'tan nasıl dışa aktarılır?",
     how_steps: ["Grubu açın, grup adına dokunun", "En alttaki <b>Sohbeti dışa aktar</b>'ı seçin", "<b>Medya olmadan</b> deyin, dosyayı bu bilgisayara gönderin"],
-    privacy: "🔒 <b>Veri bu bilgisayardan çıkmaz.</b> Model Ollama ile yerelde çalışır; üye numaraları ve mesajlar hiçbir buluta gönderilmez.",
+    privacy: "<b>Veri bu bilgisayardan çıkmaz.</b> Model Ollama ile yerelde çalışır; üye numaraları ve mesajlar hiçbir buluta gönderilmez.",
     recent: "Önceki gruplar",
     messages: "mesaj",
     health_ok: "Yerel · Gemma 4 hazır",
@@ -58,7 +58,7 @@ const I18N = {
     tab_analysis: "Etkinlik analizi", an_none: "Girilmedi", an_intro: "Sayılar yalnızca girilen etkinlik verisinden hesaplanır (iptal edilenler dışarıda); Gemma gerekmez. Eksik veri “Girilmedi” yazar.",
     an_total: "Etkinlik", an_avg_att: "Ortalama katılım", an_avg_rate: "Ortalama katılım oranı", an_avg_fb: "Ortalama geri bildirim", an_high: "En yüksek katılım", an_low: "En düşük katılım",
     an_low_need: "Karşılaştırma için en az 2 etkinlikte gerçekleşen katılım gerekir.", an_committee: "Komite bazında etkinlik sayısı", an_committee_note: "Birden fazla komiteli etkinlik her komitede sayılır.", an_no_unit: "Komite girilmedi",
-    an_per_event: "Etkinlik başına", an_c_event: "Etkinlik", an_c_rate: "Katılım oranı (gerçekleşen/beklenen)", an_c_conv: "Başvuru → katılım", an_c_budget: "Bütçe sapması", an_c_fb: "Geri bildirim",
+    an_per_event: "Etkinlik başına", an_c_event: "Etkinlik", an_c_rate: "Katılım oranı (gerçekleşen/beklenen)", an_c_conv: "Başvuru katılım", an_c_budget: "Bütçe sapması", an_c_fb: "Geri bildirim",
     an_empty: "Henüz etkinlik yok. Panodan etkinlik ekleyin.", an_insight: "Dönem içgörüsü", an_insight_btn: "Dönem içgörüsü yaz", an_insight_re: "Yeniden yaz",
     an_insight_none: "Henüz içgörü yok. Gemma yalnızca yukarıdaki hesaplanmış sayılardan kısa bir yorum yazar; sayılarda olmayan rakam içeren metin reddedilir.",
     an_wait: "Gemma yerelde yazıyor; bu birkaç dakika sürebilir", an_src_sample: "Örnek veri: önceden hesaplanmış içgörü", an_src_ai: "Gemma yazdı, yalnızca hesaplanan sayılardan", an_stale: "Etkinlik verisi bu içgörüden sonra değişti; yeniden yazın.", an_rejected: "İçgörü reddedildi",
@@ -86,14 +86,14 @@ const I18N = {
     wl_title: "Pano’ya hoş geldin", wl_ok: "Anladım",
     wl: [
       ["Pano ne yapıyor?", "Kulüp WhatsApp grubunu okur; görev, karar, açık soru ve etkinlikleri kaynak mesajlarıyla birlikte düzenli bir panoya çevirir."],
-      ["Hangi dosyayı yüklemeliyim?", "WhatsApp’ta grup → Sohbeti dışa aktar → medyasız. Çıkan .txt (ya da .zip) dosyası. Yüklemeden önce bir ön izleme görürsün."],
+      ["Hangi dosyayı yüklemeliyim?", "WhatsApp’ta grup Sohbeti dışa aktar medyasız. Çıkan .txt (ya da .zip) dosyası. Yüklemeden önce bir ön izleme görürsün."],
       ["Verilerim nereye gidiyor?", "Hiçbir yere. Dosya yalnızca bu bilgisayarda işlenir; analiz yerel Gemma ile yapılır, uzak servise veri gitmez."],
       ["Analiz başladı mı?", "Dosyayı yüklediğinde analiz kendiliğinden başlar; sayfanın üstünde ilerleme çubuğu ve bulunanlar görünür. Bu örnek zaten hazır."],
-      ["Sonuçları nereden kontrol ederim?", "“AI incelemesi” sekmesinden. Gemma’nın önerileri sen onaylayana kadar Pano’ya ve sayılara girmez. Her kartta 💬 ile kaynak mesaj var."],
+      ["Sonuçları nereden kontrol ederim?", "“AI incelemesi” sekmesinden. Gemma’nın önerileri sen onaylayana kadar Pano’ya ve sayılara girmez. Her kartta ile kaynak mesaj var."],
       ["Yapay zekâ hata yaparsa?", "Düzenle, Reddet ya da Onayla. Düzelttiğin kayıt sonraki analizlerde ezilmez, reddedilen geri gelmez; kaynağı bulunamayan öneri onaylanamaz."],
     ],
-    chip_soon: "yakında", tag_conflict: "çelişki", tag_open: "açık", all_clear: "Bugün acil bir şey yok ✓ Gecikmiş, sahipsiz ya da çelişkili kayıt görünmüyor.",
-    empty_col: "Bu komitede görev yok", empty_col_hint: "＋ ile ekleyin ya da AI incelemesini kontrol edin.", src_show: "Kaynağı göster", src_none: "Kaynak mesaj bulunamadı", approve_why_not: "Kaynak mesaj bulunamadığı için onaylanamaz; düzenleyin ya da reddedin.",
+    chip_soon: "yakında", tag_conflict: "çelişki", tag_open: "açık", all_clear: "Bugün acil bir şey yok Gecikmiş, sahipsiz ya da çelişkili kayıt görünmüyor.",
+    empty_col: "Bu komitede görev yok", empty_col_hint: "ile ekleyin ya da AI incelemesini kontrol edin.", src_show: "Kaynağı göster", src_none: "Kaynak mesaj bulunamadı", approve_why_not: "Kaynak mesaj bulunamadığı için onaylanamaz; düzenleyin ya da reddedin.",
     new_proposals: "Yeni öneriler", change_badge: "Değişiklik önerisi", src_of: "Kaynak mesaj",
     review_empty_t: "İncelenecek öneri yok", review_empty_d: "Bir sohbet dosyası yüklediğinizde ya da “Baştan analiz et” dediğinizde Gemma’nın önerileri burada onayınızı bekler. Onaylamadığınız hiçbir şey panoya girmez.",
     approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
@@ -105,11 +105,11 @@ const I18N = {
     everyone: "Herkes",
     show_done: "Bitenleri göster",
     copy_member: n => `${n} için WhatsApp mesajı`,
-    member_msg_head: n => `Selam ${n} 👋 Panoda senin üzerinde görünen işler:`,
-    member_msg_empty: "Şu an açık bir işin yok 🎉",
+    member_msg_head: n => `Selam ${n}, Panoda senin üzerinde görünen işler:`,
+    member_msg_empty: "Şu an açık bir işin yok ",
     missed: "Gözden kaçanlar",
     m_questions: "Cevapsız sorular", m_orphans: "Kimsenin üstlenmediği işler", m_overdue: "Tarihi geçenler", m_soon: "3 gün içinde",
-    nothing_missed: "Şimdilik gözden kaçan bir şey yok 🎉",
+    nothing_missed: "Şimdilik gözden kaçan bir şey yok ",
     decisions: "Kararlar", events: "Takvim",
     none_yet: "Henüz yok",
     q_resolve: "Çözüldü", q_invalid: "Geçersiz", q_reopen: "Yeniden aç", q_closed: "Kapatılan sorular", q_hist: "Geçmiş", q_hist_none: "Henüz değişiklik yok.",
@@ -129,7 +129,7 @@ const I18N = {
     no_new: "Yeni mesaj yok",
     summary_intro: "Son 7 günün özeti: Gemma kısa bir değerlendirme yazar, Pano açık görevleri, cevapsız soruları ve yaklaşan tarihleri ekler. Tek tıkla gruba yapıştırın.",
     summary_btn: "Bu haftanın özetini çıkar", summary_wait: "Gemma özet yazıyor…",
-    copy: "WhatsApp için kopyala", copied: "Kopyalandı ✓ Gruba yapıştırabilirsiniz",
+    copy: "WhatsApp için kopyala", copied: "Kopyalandı Gruba yapıştırabilirsiniz",
     ask_intro: "Sohbette kaybolan bir bilgiyi sorun. Cevap, kaynak mesajlarıyla gelir.",
     ask_ph: "Örn: Salon onaylandı mı?", ask_btn: "Sor", ask_wait: "Gemma mesajlara bakıyor…",
     suggestions: ["Etkinlik ne zaman ve nerede?", "Sponsor karşılığında ne istiyor?", "Hangi işler hâlâ bekliyor?"],
@@ -138,20 +138,20 @@ const I18N = {
     err: "Bir şeyler ters gitti",
   },
   en: {
-    eyebrow: "🔒 Gemma 4 · fully local · open source",
+    eyebrow: "Gemma 4 · fully local · open source",
     hero_h1: ["All of your club's work in one place:", "chat, meeting notes and event data."],
     hero_lead: "All of it local, with Gemma. Tasks get lost between messages and meeting notes, the event date changes twice, and \"who has the sponsor file?\" goes unanswered for two weeks. Pano reads your WhatsApp chat, meeting notes and event records on this computer and gathers them on one board. WhatsApp is just one of the input sources.",
-    cta_demo: "✨ Open the demo club", demo_timeout: "The server did not respond. An old Pano process may still be running; close it and restart with `python -m app`.", cta_upload: "Upload my group",
-    trust: ["📴 Works offline", "💸 No API keys", "🧾 Every card links to its source (message or note)"],
+    cta_demo: "Open the demo club", demo_timeout: "The server did not respond. An old Pano process may still be running; close it and restart with `python -m app`.", cta_upload: "Upload my group",
+    trust: ["Works offline", "No API keys", "Every card links to its source (message or note)"],
     mock_chat: [["Maya", "Who can book the lab?"], ["Leo", "I'll book it today"], ["Noah", "They moved our booth to Oct 30"], ["Maya", "Decision: booth on Friday Oct 30", true]],
-    mock_cards: [["Book the lab", "Leo", "Thu 8 Oct"], ["Fair → Oct 30", "Events", "moved"], ["Print the banner", "no owner", "⚠️"]],
+    mock_cards: [["Book the lab", "Leo", "Thu 8 Oct"], ["Fair Oct 30", "Events", "moved"], ["Print the banner", "no owner", ""]],
     feat: [
-      ["📊", "Dashboard", "What needs attention today, risks, upcoming events and meetings at a glance. The weekly recap and “ask the chat” live here too."],
-      ["🎪", "Events", "Each event on one page: linked tasks, decisions, questions, meetings, attendance, feedback and a report written only from what was entered."],
-      ["🗓️", "Meetings", "Paste notes or upload .txt/.md; tasks, decisions and questions go to review first. The summary is written only from the notes and approved records."],
-      ["📌", "Tasks", "A board per committee plus the AI suggestions waiting for approval (review queue). Every record keeps the message or note it came from."],
-      ["👤", "People and committees", "Person pages derived from task owners (numbers only, no performance verdict) and committee member lists."],
-      ["⇅", "Import / Export", "Bring in a WhatsApp export, take approved records out as CSV/JSON/Markdown. The data never leaves this computer."],
+      ["chart", "Dashboard", "What needs attention today, risks, upcoming events and meetings at a glance. The weekly recap and “ask the chat” live here too."],
+      ["calendar", "Events", "Each event on one page: linked tasks, decisions, questions, meetings, attendance, feedback and a report written only from what was entered."],
+      ["calendar", "Meetings", "Paste notes or upload .txt/.md; tasks, decisions and questions go to review first. The summary is written only from the notes and approved records."],
+      ["pin", "Tasks", "A board per committee plus the AI suggestions waiting for approval (review queue). Every record keeps the message or note it came from."],
+      ["person", "People and committees", "Person pages derived from task owners (numbers only, no performance verdict) and committee member lists."],
+      ["transfer", "Import / Export", "Bring in a WhatsApp export, take approved records out as CSV/JSON/Markdown. The data never leaves this computer."],
     ],
     why_title: "Why an open model, and why local?",
     why_sub: "A club chat holds dozens of students' phone numbers and private messages.",
@@ -160,7 +160,7 @@ const I18N = {
     k_open: "Open tasks", k_done: "done", k_missed: "Slipping through", k_missed_sub: "questions + unowned work", k_decisions: "Decisions", k_next: "Next event", k_days: d => d === 0 ? "today" : `in ${d} days`, k_none: "—",
     units_title: "Team status", h_ok: "On track", h_warn: "Watch", h_bad: "Overdue", h_idle: "Empty",
     n_open: "open", n_done: "done", n_late: "late", n_orphan: "unowned",
-    alerts_title: "Risks and alerts", no_alerts: "No risks right now 🎉",
+    alerts_title: "Risks and alerts", no_alerts: "No risks right now ",
     a_event: a => `<b>${a.event}</b> is in ${a.days} days`, a_event_sub: a => `${a.open} open tasks${a.orphans ? `, ${a.orphans} with no owner` : ""}`,
     a_overdue: a => `<b>${a.title}</b> is overdue`, a_overdue_sub: a => `${a.owner ? a.owner.split(" ")[0] : "no owner"} · ${a.due}`,
     a_question: a => `Unanswered: <b>${a.title}</b>`, a_question_sub: a => `asked by ${a.owner ? a.owner.split(" ")[0] : "?"}`,
@@ -169,7 +169,7 @@ const I18N = {
     timeline_title: "Coming up", recent_decisions: "Latest decisions",
     plan_intro: "Describe the event. Gemma proposes a dated preparation plan using your teams and each member's current load. Nothing goes on the board until you approve it.",
     plan_ph: "e.g. We want a 200-person cybersecurity summit on Nov 14 with two speakers and one sponsor.",
-    plan_btn: "🧭 Propose a plan", plan_wait: "Gemma is drafting the plan…", plan_add: n => `Add ${n} selected tasks to the board`, plan_added: n => `${n} tasks added to the board`,
+    plan_btn: "Propose a plan", plan_wait: "Gemma is drafting the plan…", plan_add: n => `Add ${n} selected tasks to the board`, plan_added: n => `${n} tasks added to the board`,
     plan_examples: ["A 150-person AI talk in 3 weeks", "A 24-hour hackathon at the end of November", "A welcome event for new members next month"],
     suggested: "suggested",
     hero_title: "Turn your club's WhatsApp chaos into a board",
@@ -182,7 +182,7 @@ const I18N = {
     try_demo: "Try a demo chat",
     how_export: "How do I export from WhatsApp?",
     how_steps: ["Open the group and tap its name", "Scroll down and choose <b>Export chat</b>", "Pick <b>Without media</b> and send the file to this computer"],
-    privacy: "🔒 <b>Your data never leaves this computer.</b> The model runs locally with Ollama; member phone numbers and messages are never sent to any cloud.",
+    privacy: "<b>Your data never leaves this computer.</b> The model runs locally with Ollama; member phone numbers and messages are never sent to any cloud.",
     recent: "Previous groups",
     messages: "messages",
     health_ok: "Local · Gemma 4 ready",
@@ -193,7 +193,7 @@ const I18N = {
     tab_analysis: "Event analysis", an_none: "Not entered", an_intro: "Figures are computed only from the entered event data (cancelled events excluded); no model needed. Missing data reads “Not entered”.",
     an_total: "Events", an_avg_att: "Average attendance", an_avg_rate: "Average attendance rate", an_avg_fb: "Average feedback", an_high: "Highest attendance", an_low: "Lowest attendance",
     an_low_need: "Needs actual attendance on at least 2 events to compare.", an_committee: "Events per committee", an_committee_note: "An event with several committees counts in each.", an_no_unit: "No committee entered",
-    an_per_event: "Per event", an_c_event: "Event", an_c_rate: "Attendance rate (actual/expected)", an_c_conv: "Application → attendance", an_c_budget: "Budget deviation", an_c_fb: "Feedback",
+    an_per_event: "Per event", an_c_event: "Event", an_c_rate: "Attendance rate (actual/expected)", an_c_conv: "Application attendance", an_c_budget: "Budget deviation", an_c_fb: "Feedback",
     an_empty: "No events yet. Add events on the board.", an_insight: "Period insight", an_insight_btn: "Write period insight", an_insight_re: "Regenerate",
     an_insight_none: "No insight yet. Gemma writes a short comment from the computed figures above only; text with a figure that is not in them is rejected.",
     an_wait: "Gemma is writing locally; this can take a few minutes", an_src_sample: "Sample data: precomputed insight", an_src_ai: "Written by Gemma from the computed figures only", an_stale: "The event data changed after this insight; regenerate it.", an_rejected: "Insight rejected",
@@ -221,14 +221,14 @@ const I18N = {
     wl_title: "Welcome to Pano", wl_ok: "Got it",
     wl: [
       ["What does Pano do?", "It reads your club’s WhatsApp group and turns tasks, decisions, open questions and events into one clear board, each linked to its source message."],
-      ["Which file do I upload?", "In WhatsApp: group → Export chat → without media. Upload the .txt (or .zip) file. You see a preview before anything is imported."],
+      ["Which file do I upload?", "In WhatsApp: group Export chat without media. Upload the .txt (or .zip) file. You see a preview before anything is imported."],
       ["Where does my data go?", "Nowhere. The file is processed on this computer only; analysis runs on local Gemma and nothing is sent to a remote service."],
       ["Has the analysis started?", "It starts by itself after you upload; a progress bar and the items found so far show at the top of the page. This sample is already done."],
-      ["Where do I check the results?", "In the “AI review” tab. Gemma’s proposals stay out of the board and the numbers until you approve them. Every card has a 💬 source message."],
+      ["Where do I check the results?", "In the “AI review” tab. Gemma’s proposals stay out of the board and the numbers until you approve them. Every card has a source message."],
       ["What if the AI is wrong?", "Edit, Reject or Approve. Your corrections are not overwritten by later analyses and rejected items do not return; proposals without a source cannot be approved."],
     ],
-    chip_soon: "soon", tag_conflict: "conflict", tag_open: "open", all_clear: "Nothing urgent today ✓ No overdue, unassigned or conflicting records.",
-    empty_col: "No tasks in this team", empty_col_hint: "Add one with ＋ or check the AI review.", src_show: "Show source", src_none: "Source message not found", approve_why_not: "Cannot be approved because no source message was found; edit or reject it.",
+    chip_soon: "soon", tag_conflict: "conflict", tag_open: "open", all_clear: "Nothing urgent today No overdue, unassigned or conflicting records.",
+    empty_col: "No tasks in this team", empty_col_hint: "Add one with or check the AI review.", src_show: "Show source", src_none: "Source message not found", approve_why_not: "Cannot be approved because no source message was found; edit or reject it.",
     new_proposals: "New proposals", change_badge: "Change proposal", src_of: "Source message",
     review_empty_t: "Nothing to review", review_empty_d: "When you upload a chat file or choose “Re-analyse”, Gemma’s proposals wait here for your approval. Nothing you do not approve reaches the board.",
     approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
@@ -240,11 +240,11 @@ const I18N = {
     everyone: "Everyone",
     show_done: "Show done",
     copy_member: n => `WhatsApp message for ${n}`,
-    member_msg_head: n => `Hi ${n} 👋 Here's what's on you on the board:`,
-    member_msg_empty: "Nothing open right now 🎉",
+    member_msg_head: n => `Hi ${n}, here's what's on you on the board:`,
+    member_msg_empty: "Nothing open right now ",
     missed: "Slipping through",
     m_questions: "Unanswered questions", m_orphans: "Nobody took these", m_overdue: "Overdue", m_soon: "Due within 3 days",
-    nothing_missed: "Nothing is slipping through right now 🎉",
+    nothing_missed: "Nothing is slipping through right now ",
     decisions: "Decisions", events: "Calendar",
     none_yet: "Nothing yet",
     q_resolve: "Resolved", q_invalid: "Not valid", q_reopen: "Reopen", q_closed: "Closed questions", q_hist: "History", q_hist_none: "No changes yet.",
@@ -264,7 +264,7 @@ const I18N = {
     no_new: "No new messages",
     summary_intro: "A recap of the last 7 days: Gemma writes a short overview, Pano adds open tasks, unanswered questions and upcoming dates. Paste it into the group in one click.",
     summary_btn: "Write this week's recap", summary_wait: "Gemma is writing…",
-    copy: "Copy for WhatsApp", copied: "Copied ✓ Paste it into the group",
+    copy: "Copy for WhatsApp", copied: "Copied Paste it into the group",
     ask_intro: "Ask about something that got buried in the chat. The answer comes with its source messages.",
     ask_ph: "e.g. Did we get the room?", ask_btn: "Ask", ask_wait: "Gemma is looking through the messages…",
     suggestions: ["When and where is the event?", "What does the sponsor want in return?", "Which tasks are still open?"],
@@ -283,7 +283,7 @@ const MEET_I18N = {
     mt_attendees: "Katılımcılar", mt_att_ph: "Ad Soyad, Ad Soyad", mt_fill: "Seçili komitelerin üyelerini ekle", mt_no_members: "Seçili komitelerde üye listesi yok (Komiteler düğmesinden girilir).",
     mt_agenda: "Gündem", mt_notes: "Notlar", mt_upload: ".txt / .md yükle", mt_no_notes: "Not girilmedi.",
     mt_notes_note: "Notlar güvenilmeyen veri sayılır: içindeki “talimatlar” modele komut olmaz. En fazla 100 KB, UTF-8.",
-    mt_counts: m => `${m.tasks} görev · ${m.decisions} karar · ${m.questions} açık soru${m.orphan_tasks ? ` · ⚠️ ${m.orphan_tasks} sorumlusuz` : ""}`,
+    mt_counts: m => `${m.tasks} görev · ${m.decisions} karar · ${m.questions} açık soru${m.orphan_tasks ? ` ·  ${m.orphan_tasks} sorumlusuz` : ""}`,
     mt_tasks: "Bağlı görevler", mt_decisions: "Bağlı kararlar", mt_questions: "Bağlı açık sorular", mt_none: "Henüz onaylı kayıt yok.",
     mt_analyze: "Notlardan öneri üret", mt_an_wait: "Gemma notları okuyor…", mt_elapsed: "geçen süre",
     mt_an_done: s => `${s.tasks} görev, ${s.decisions} karar, ${s.questions} soru önerildi${s.duplicates ? ` · ${s.duplicates} tanesi zaten kayıtlı olduğu için atlandı` : ""}.`,
@@ -291,10 +291,10 @@ const MEET_I18N = {
     mt_pending: n => `AI incelemesinde ${n} öneri bekliyor`, mt_go_review: "İncelemeye git", mt_src_meeting: "Toplantı notu",
     mt_sum_title: "Toplantı özeti", mt_sum_make: "Toplantı özeti", mt_sum_remake: "Özeti yeniden yaz", mt_sum_wait: "Gemma özeti yazıyor…",
     mt_sum_note: "Yalnızca toplantı notlarından ve onaylı bağlı kayıtlardan yazılır; kayıtta olmayan sayı veya isim içeren özet reddedilir.",
-    mt_sum_none: "Henüz özet yok.", mt_sum_stale: "⚠️ ESKİ: notlar, toplantı bilgileri veya onaylı kayıtlar özetten sonra değişti.",
+    mt_sum_none: "Henüz özet yok.", mt_sum_stale: " ESKİ: notlar, toplantı bilgileri veya onaylı kayıtlar özetten sonra değişti.",
     mt_sum_rejected: "Özet reddedildi", mt_sum_cut: "Notların yalnızca ilk 12.000 karakteri özete girdi.", mt_sum_copy: "Kopyala",
     mt_sum_src_sample: "Örnek veri · önceden hesaplanmış özet", mt_sum_src_ai: "Yerel Gemma ile yazıldı",
-    mt_orphans: n => `⚠️ Bu toplantıdan çıkan ${n} görevin sorumlusu yok`, mt_warn_title: "Bilgi: komite üye listesinde olmayan sorumlu",
+    mt_orphans: n => `${icon("alert")} Bu toplantıdan çıkan ${n} görevin sorumlusu yok`, mt_warn_title: "Bilgi: komite üye listesinde olmayan sorumlu",
     mt_warn: w => `<b>${esc(w.owner)}</b> “${esc(w.title)}” görevinin sorumlusu, ama ${w.units.map(esc).join(", ")} komite üye listesinde yok. Engellenmedi; listeyi ya da sorumluyu gözden geçir.`,
     pc_upcoming: "Yaklaşan toplantılar", pc_upcoming_none: "Planlanmış yaklaşan toplantı yok.", pc_held: "Yapıldı ama sorumlusuz görev var",
     pc_held_none: "Yapılan toplantılarda sorumlusuz görev yok.", pc_orphans: n => `${n} sorumlusuz görev`, pc_all: "Tüm toplantılar", pc_nodate: "tarih belirsiz",
@@ -309,7 +309,7 @@ const MEET_I18N = {
     mt_attendees: "Attendees", mt_att_ph: "Name Surname, Name Surname", mt_fill: "Add members of the selected teams", mt_no_members: "The selected teams have no member list (set it under Teams).",
     mt_agenda: "Agenda", mt_notes: "Notes", mt_upload: "Upload .txt / .md", mt_no_notes: "No notes entered.",
     mt_notes_note: "Notes count as untrusted data: any “instructions” inside never become commands for the model. Max 100 KB, UTF-8.",
-    mt_counts: m => `${m.tasks} tasks · ${m.decisions} decisions · ${m.questions} open questions${m.orphan_tasks ? ` · ⚠️ ${m.orphan_tasks} without owner` : ""}`,
+    mt_counts: m => `${m.tasks} tasks · ${m.decisions} decisions · ${m.questions} open questions${m.orphan_tasks ? ` ·  ${m.orphan_tasks} without owner` : ""}`,
     mt_tasks: "Linked tasks", mt_decisions: "Linked decisions", mt_questions: "Linked open questions", mt_none: "No approved records yet.",
     mt_analyze: "Suggest from notes", mt_an_wait: "Gemma is reading the notes…", mt_elapsed: "elapsed",
     mt_an_done: s => `${s.tasks} tasks, ${s.decisions} decisions, ${s.questions} questions suggested${s.duplicates ? ` · ${s.duplicates} skipped (already recorded)` : ""}.`,
@@ -317,10 +317,10 @@ const MEET_I18N = {
     mt_pending: n => `${n} suggestion(s) waiting in AI review`, mt_go_review: "Go to review", mt_src_meeting: "Meeting note",
     mt_sum_title: "Meeting summary", mt_sum_make: "Meeting summary", mt_sum_remake: "Rewrite summary", mt_sum_wait: "Gemma is writing the summary…",
     mt_sum_note: "Written only from the meeting notes and the approved linked records; a summary with figures or names that are not in the record is rejected.",
-    mt_sum_none: "No summary yet.", mt_sum_stale: "⚠️ OUTDATED: the notes, meeting details or approved records changed after this summary.",
+    mt_sum_none: "No summary yet.", mt_sum_stale: " OUTDATED: the notes, meeting details or approved records changed after this summary.",
     mt_sum_rejected: "Summary rejected", mt_sum_cut: "Only the first 12,000 characters of the notes went into the summary.", mt_sum_copy: "Copy",
     mt_sum_src_sample: "Sample data · precomputed summary", mt_sum_src_ai: "Written by local Gemma",
-    mt_orphans: n => `⚠️ ${n} task(s) from this meeting have no owner`, mt_warn_title: "Note: owner not on the committee's member list",
+    mt_orphans: n => `${icon("alert")} ${n} task(s) from this meeting have no owner`, mt_warn_title: "Note: owner not on the committee's member list",
     mt_warn: w => `<b>${esc(w.owner)}</b> owns “${esc(w.title)}” but is not on the member list of ${w.units.map(esc).join(", ")}. Not blocked; review the list or the owner.`,
     pc_upcoming: "Upcoming meetings", pc_upcoming_none: "No upcoming planned meetings.", pc_held: "Held, but tasks without an owner",
     pc_held_none: "No ownerless tasks from held meetings.", pc_orphans: n => `${n} task(s) without owner`, pc_all: "All meetings", pc_nodate: "date unclear",
@@ -386,6 +386,52 @@ const t = key => I18N[lang][key] ?? key;
 // ---------------------------------------------------------------- helpers
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function icon(name) {
+  const paths = {
+    alert: '<path d="M12 9v4M12 17h.01"/><path d="M10.3 4.8 2.8 18a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 4.8a2 2 0 0 0-3.4 0z"/>',
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>',
+    chat: '<path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 1 1 18 0z"/>',
+    pin: '<path d="M12 17v5M9 10.8 8 17h8l-1-6.2M8 10h8l-1-6H9z"/>',
+    chart: '<path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-3"/>',
+    person: '<circle cx="12" cy="8" r="3"/><path d="M5 19c1.5-3 3.8-4.5 7-4.5S17.5 16 19 19"/>',
+    people: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 19c1.2-3 3.2-4.5 6-4.5S13.8 16 15 19M16 14.5c2 .3 3.5 1.5 4.5 4.5"/>',
+    spark: '<path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5z"/>',
+    lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    compass: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 6-6 2 2-6z"/>',
+    note: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8 13h8M8 17h5"/>',
+    search: '<circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/>',
+    check: '<path d="M5 12.5 9.5 17 19 7"/>',
+    close: '<path d="M6 6l12 12M18 6 6 18"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    edit: '<path d="M4 20h4l10-10-4-4L4 16z"/><path d="m13 7 4 4"/>',
+    copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>',
+    download: '<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',
+    upload: '<path d="M12 20V9M7 13l5-5 5 5M5 4h14"/>',
+    target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+    users: '<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2 19c1-3 3-4.5 6-4.5S13 16 14 19M12 14.5c3 0 5 1.5 6 4.5"/>',
+    folder: '<path d="M3 7h6l2 2h10v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 8h.01"/>',
+    file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
+    image: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m21 16-5-4-9 7"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 1-1 1.7V14"/>',
+    refresh: '<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v6h-6"/>',
+    transfer: '<path d="M7 7h11l-3-3M17 17H6l3 3"/>',
+    back: '<path d="M15 6 9 12l6 6"/>',
+    next: '<path d="m9 6 6 6-6 6"/>',
+    coin: '<ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v10c0 1.7 3.1 3 7 3s7-1.3 7-3V7"/>',
+    offline: '<path d="M3 8a12 12 0 0 1 18 0M6 12a8 8 0 0 1 12 0M4 4l16 16"/><circle cx="12" cy="18" r="1"/>',
+    news: '<path d="M5 5h11v14H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M16 8h3v9a2 2 0 0 1-2 2M8 9h5M8 13h5"/>',
+    paperclip: '<path d="m16 8-6.5 6.5a3 3 0 0 1-4-4L12 4a4 4 0 0 1 6 6l-7 7"/>',
+    dots: '<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>',
+    wave: '<path d="M4 14c2-4 4-4 6 0s4 4 6 0 4-4 4 0"/>',
+  };
+  const d = paths[name];
+  if (!d) return "";
+  return `<svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+}
+
 
 async function api(path, opts = {}) {
   const res = await fetch(path, {
@@ -488,21 +534,21 @@ function renderHome() {
         <div class="trust">${t("trust").map(s => `<span>${s}</span>`).join("")}</div>
       </div>
       <div class="mock" aria-hidden="true">
-        <div class="phone"><div class="hd">💬 WhatsApp</div>${t("mock_chat").map(([w, m, me]) =>
+        <div class="phone"><div class="hd">WhatsApp</div>${t("mock_chat").map(([w, m, me]) =>
           `<div class="b ${me ? "me" : ""}"><b style="color:hsl(${hue(w)} 55% 42%)">${w}</b>${m}</div>`).join("")}</div>
-        <div class="arrow">✨</div>
-        <div class="board"><div class="hd"><span>📌 Pano</span><span class="muted">Gemma 4</span></div>${t("mock_cards").map(([ti, o, d], i) =>
+        <div class="arrow"></div>
+        <div class="board"><div class="hd"><span>Pano</span><span class="muted">Gemma 4</span></div>${t("mock_cards").map(([ti, o, d], i) =>
           `<div class="mc"><b>${ti}</b><div class="m"><span class="chip ${i === 2 ? "none" : ""}">${o}</span><span class="chip ${i === 2 ? "overdue" : i === 1 ? "ai" : ""}">${d}</span></div></div>`).join("")}</div>
       </div>
     </div>
     <div class="features">${t("feat").map(([ic, h, p]) =>
-      `<div class="feature"><div class="ic">${ic}</div><h4>${h}</h4><p>${p}</p></div>`).join("")}</div>
+      `<div class="feature"><div class="ic">${icon(ic)}</div><h4>${h}</h4><p>${p}</p></div>`).join("")}</div>
     <h2 class="section-title" id="upload-title">${t("drop")}</h2>
     <p class="section-sub">${t("drop_hint")}</p>
     <div class="upload">
       <div class="panel">
         <div class="drop" id="drop" tabindex="0" role="button">
-          <div class="big">💬 → 📌</div>
+          <div class="big"></div>
           <b>${t("drop")}</b>
           <small>${t("drop_hint")}</small>
         </div>
@@ -512,7 +558,7 @@ function renderHome() {
         <label for="gname">${t("name_label")}</label>
         <input type="text" id="gname" placeholder="FUB3V Yönetim">
         <div class="demo-row">
-          <button class="primary" data-demo="${lang}">✨ ${t("try_demo")}</button>
+          <button class="primary" data-demo="${lang}">${t("try_demo")}</button>
           <button class="ghost" data-demo="${lang === "tr" ? "en" : "tr"}">${lang === "tr" ? "English demo" : "Türkçe demo"}</button>
         </div>
       </div>
@@ -557,10 +603,10 @@ async function upload(f) {
   try { pv = await post("/api/preview", buf); }
   catch (e) { toast(e.message, 5000); return; }
   modal(`<h3>${t("pv_title")}</h3>
-    <p><b>${esc(f.name)}</b><br>💬 ${pv.messages} ${t("pv_msgs")} · 📅 ${fmtDate(pv.first_ts, false)} – ${fmtDate(pv.last_ts, false)} · 👥 ${pv.senders.length} ${t("pv_senders")}</p>
+    <p><b>${esc(f.name)}</b><br>${pv.messages} ${t("pv_msgs")} · ${fmtDate(pv.first_ts, false)} – ${fmtDate(pv.last_ts, false)} · ${pv.senders.length} ${t("pv_senders")}</p>
     <p class="muted">${pv.senders.map(esc).join(", ")}</p>
-    ${pv.skipped_lines ? `<p>⚠️ ${t("pv_skipped")(pv.skipped_lines)}</p>` : ""}
-    ${pv.duplicate_of ? `<p>⚠️ ${t("pv_dup")(esc(pv.duplicate_of.name))}</p>` : ""}
+    ${pv.skipped_lines ? `<p> ${t("pv_skipped")(pv.skipped_lines)}</p>` : ""}
+    ${pv.duplicate_of ? `<p> ${t("pv_dup")(esc(pv.duplicate_of.name))}</p>` : ""}
     <div class="modal-actions"><button data-close>${t("cancel")}</button><button class="primary" id="pv-go">${t("pv_go")}</button></div>`,
   (m, close) => {
     m.querySelector("#pv-go").onclick = async () => {
@@ -626,7 +672,7 @@ function segmentHtml(view) {
 
 function pageActionsHtml() {
   return `<div class="page-actions"><div class="more">
-    <button type="button" class="ghost icon-btn" id="btn-more" aria-haspopup="menu" aria-expanded="false" aria-label="${esc(t("more"))}">⋯</button>
+    <button type="button" class="ghost icon-btn" id="btn-more" aria-haspopup="menu" aria-expanded="false" aria-label="${esc(t("more"))}"></button>
     <div class="more-menu" id="more-menu" role="menu" hidden>
       <button type="button" role="menuitem" id="menu-export">${t("exp_btn")}</button>
       <button type="button" role="menuitem" id="menu-reanalyze">${t("reanalyze")}</button>
@@ -657,7 +703,7 @@ function shell(view) {
 function progressHtml(p) {
   if (!p || p.state === "idle" || p.state === "done") return "";
   if (p.state === "error") {
-    return `<div class="progress error"><div class="progress-top"><span>⚠️ ${t("analysis_error")}</span>
+    return `<div class="progress error"><div class="progress-top"><span> ${t("analysis_error")}</span>
       <button class="small" id="btn-retry">${t("retry")}</button></div><small>${esc(p.error)}</small></div>`;
   }
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
@@ -666,7 +712,7 @@ function progressHtml(p) {
     <div class="progress-top"><span><span class="spinner"></span> ${p.state === "queued" ? t("queued") : t("analyzing")}</span>
     <span class="muted">${p.done}/${p.total} ${t("part")}</span></div>
     <div class="bar"><div style="width:${pct}%"></div></div>
-    <div class="feed">${(p.found || []).slice().reverse().map(f => `<span>${f.kind === "update" ? "↻" : "＋"} ${esc(found[f.kind] || f.kind)}: ${esc(f.text)}</span>`).join("")}</div>
+    <div class="feed">${(p.found || []).slice().reverse().map(f => `<span>${f.kind === "update" ? icon("refresh") : icon("plus")} ${esc(found[f.kind] || f.kind)}: ${esc(f.text)}</span>`).join("")}</div>
   </div>`;
 }
 
@@ -730,7 +776,7 @@ function bindDataActions() {
 }
 
 function showWelcome() {
-  modal(`<h3>👋 ${t("wl_title")}</h3>
+  modal(`<h3>${t("wl_title")}</h3>
     <ol class="welcome">${t("wl").map(([q, a]) => `<li><b>${q}</b><p>${a}</p></li>`).join("")}</ol>
     <div class="modal-actions"><button class="primary" data-close>${t("wl_ok")}</button></div>`, m => {
     m.querySelector("[data-close]").addEventListener("click", () => {
@@ -745,9 +791,9 @@ async function manageUnits() {
     try { await patch(`/api/chats/${c.id}`, body); await render(); manageUnits(); }
     catch (e) { toast(e.message); }
   };
-  modal(`<h3>👥 ${t("units_btn")}</h3>
+  modal(`<h3>${t("units_btn")}</h3>
     <ul class="list">${c.units.map((u, n) => `<li class="unit-row"><input type="text" value="${esc(u)}" data-unit="${n}" aria-label="${esc(u)}">
-      <button class="small ghost danger" data-del="${n}" aria-label="${t("del")}">✕</button>
+      <button class="small ghost danger" data-del="${n}" aria-label="${t("del")}"></button>
       <input type="text" class="unit-members" value="${esc((c.unit_members || {})[u] || "")}" data-members="${n}" placeholder="${t("unit_members_ph")}" aria-label="${esc(u)}: ${t("unit_members_ph")}"></li>`).join("")}</ul>
     <div class="row-actions"><input type="text" id="u-new" placeholder="${t("units_add")}">
       <button class="small primary" id="u-add">${t("units_add_btn")}</button></div>
@@ -767,11 +813,11 @@ async function manageUnits() {
 
 // ---------------------------------------------------------------- board view
 function dueChip(item, today) {
-  if (!item.due) return `<span class="chip none">📅 ${t("no_due")}</span>`;
+  if (!item.due) return `<span class="chip none">${t("no_due")}</span>`;
   const soon = new Date(today + "T12:00:00"); soon.setDate(soon.getDate() + 3);
   const cls = item.status === "done" ? "" : item.due < today ? "overdue" : item.due <= soon.toISOString().slice(0, 10) ? "soon" : "";
   const word = cls === "overdue" ? ` · ${t("n_late")}` : cls === "soon" ? ` · ${t("chip_soon")}` : "";
-  return `<span class="chip ${cls}">${cls === "overdue" ? "⏰" : cls === "soon" ? "⏳" : "📅"} ${fmtDate(item.due)}${word}</span>`;
+  return `<span class="chip ${cls}">${icon(cls === "overdue" || cls === "soon" ? "clock" : "calendar")} ${fmtDate(item.due)}${word}</span>`;
 }
 
 function card(task, today) {
@@ -781,9 +827,9 @@ function card(task, today) {
       <span class="card-title" data-edit="${task.id}">${esc(task.title)}</span>
     </div>
     <div class="card-meta">
-      ${task.owner ? `<span class="chip">${avatar(task.owner)}${esc(firstName(task.owner))}</span>` : `<span class="chip none">🙋 ${t("no_owner")}</span>`}
+      ${task.owner ? `<span class="chip">${avatar(task.owner)}${esc(firstName(task.owner))}</span>` : `<span class="chip none">${t("no_owner")}</span>`}
       ${dueChip(task, today)}
-      ${task.source_idx != null ? `<button class="src" data-src="${task.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : ""}
+      ${task.source_idx != null ? `<button class="src" data-src="${task.source_idx}" title="${t("source")}" aria-label="${t("source")}"></button>` : ""}
     </div>
   </div>`;
 }
@@ -802,14 +848,14 @@ function renderBoardView() {
     const list = tasks.filter(x => (u ? x.unit === u : !x.unit || !b.chat.units.includes(x.unit)));
     return `<div class="column">
       <div class="column-head"><span>${esc(u || t("no_unit"))} <span class="n">${list.length}</span></span>
-        <button data-add="${esc(u)}" title="${t("add_task")}" aria-label="${t("add_task")}">＋</button></div>
+        <button data-add="${esc(u)}" title="${t("add_task")}" aria-label="${t("add_task")}"></button></div>
       ${list.map(x => card(x, b.today)).join("") || `<div class="empty"><b>${t("empty_col")}</b>${t("empty_col_hint")}</div>`}
     </div>`;
   }).join("");
 
   const m = b.missed;
   const miss = (title, list, fmt) => list.length ? `<h4>${title} (${list.length})</h4><ul class="list">${list.map(fmt).join("")}</ul>` : "";
-  const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : "";
+  const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}"></button>` : "";
   const decBtns = d => (d.validity === "valid"
     ? `<button class="small ghost" data-qset="${d.id}" data-field="validity" data-st="changed">${t("val_changed")}</button><button class="small ghost" data-qset="${d.id}" data-field="validity" data-st="cancelled">${t("val_cancelled")}</button>`
     : `<button class="small ghost" data-qset="${d.id}" data-field="validity" data-st="valid">${t("val_valid_btn")}</button>`)
@@ -827,11 +873,11 @@ function renderBoardView() {
 
   $("#view").innerHTML = `
   <div class="filters">
-    ${F ? `<span class="chip ai">${t("flt_label")}: ${t("flt_" + F)} <button class="small" id="clear-flt">✕ ${t("flt_clear")}</button></span>` : ""}
-    <select id="member"><option value="">👥 ${t("everyone")}</option>${b.members.map(n =>
+    ${F ? `<span class="chip ai">${t("flt_label")}: ${t("flt_" + F)} <button class="small" id="clear-flt">${t("flt_clear")}</button></span>` : ""}
+    <select id="member"><option value="">${t("everyone")}</option>${b.members.map(n =>
       `<option ${n === S.member ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
     <label><input type="checkbox" id="showdone" ${S.showDone ? "checked" : ""}> ${t("show_done")}</label>
-    ${S.member ? `<button class="small" id="copy-member">📋 ${t("copy_member")(firstName(S.member))}</button>` : ""}
+    ${S.member ? `<button class="small" id="copy-member">${t("copy_member")(firstName(S.member))}</button>` : ""}
   </div>
   <div class="layout">
     <div class="columns">${F === "questions" ? `<div class="panel" style="grid-column:1/-1"><ul class="list">${
@@ -840,15 +886,15 @@ function renderBoardView() {
         ${closedQ.length ? `<h4>${t("q_closed")} (${closedQ.length})</h4><ul class="list">${closedQ.map(q => `<li><span class="grow">${esc(q.title)}
         <small>${esc(t("st_name")[q.status] || q.status)}</small></span>${srcBtn(q)}${qBtns(q)}</li>`).join("")}</ul>` : ""}</div>` : cols}</div>
     <aside class="side">
-      <div class="panel missed"><h3>⚠️ ${t("missed")}</h3>${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}</div>
-      <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}" aria-label="${t("ev_add")}">＋</button></h3>
+      <div class="panel missed"><h3> ${t("missed")}</h3>${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}</div>
+      <div class="panel"><h3>${t("events")} <button class="small" data-ev-add title="${t("ev_add")}" aria-label="${t("ev_add")}"></button></h3>
         ${b.events.length ? "" : `<p><button class="ghost small" data-ev-sample>${t("ev_sample")}</button></p>`}${b.events.length ? `<ul class="list">${b.events.map(e => {
         const n = b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
         return `<li><span class="grow"><a href="#/c/${b.chat.id}/event/${e.id}"><b>${esc(e.title)}</b></a>
           <small>${e.due ? fmtDate(e.due) : "—"}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.phase ? " · " + esc(t("ph")[e.phase] || e.phase) : ""}${n ? " · " + t("ev_linked")(n) : ""}</small></span>${srcBtn(e)}</li>`;
       }).join("")}</ul>`
         : `<p class="muted">${t("none_yet")}</p>`}</div>
-      <div class="panel"><h3>🧭 ${t("decisions")}</h3>${b.decisions.length ? `<ul class="list">${b.decisions.map(d =>
+      <div class="panel"><h3>${t("decisions")}</h3>${b.decisions.length ? `<ul class="list">${b.decisions.map(d =>
         `<li class="${d.validity !== "valid" ? "muted" : ""}"><input type="checkbox" data-final="${d.id}" ${d.status === "done" ? "checked" : ""} title="${t("dec_final")}" aria-label="${t("dec_final")}"><span class="grow">${d.validity !== "valid" ? `<s>${esc(d.title)}</s> <span class="chip">${esc(t("val_name")[d.validity])}</span>` : esc(d.title)}</span>${srcBtn(d)}${decBtns(d)}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}</div>
     </aside>
   </div>`;
@@ -886,7 +932,7 @@ function setQuestionStatus(id, status, field = "status") {
   const q = S.board.questions.find(x => x.id === id) || S.board.decisions.find(x => x.id === id);
   modal(`<h3>${esc(t("q_close_title")(t(field === "status" ? "st_name" : "val_name")[status]))}</h3><p>${esc(q ? q.title : "")}</p>
     <label for="q-note">${t("q_note")}</label><textarea id="q-note" rows="3" maxlength="500"></textarea>
-    <div class="row"><button class="ghost" data-close>✕</button><button class="primary" id="q-save">${t("q_save")}</button></div>`, (m, close) => {
+    <div class="row"><button class="ghost" data-close></button><button class="primary" id="q-save">${t("q_save")}</button></div>`, (m, close) => {
     m.querySelector("#q-save").onclick = async () => {
       try { await patch(`/api/items/${id}`, { [field]: status, note: m.querySelector("#q-note").value }); close(); await reloadBoard(); }
       catch (e) { toast(e.message); }
@@ -909,10 +955,10 @@ async function showReport(eventId) {
   let timer = null;
   const draw = (m, close, r, extra = "") => {
     const has = r && r.report;
-    m.querySelector(".modal-box").innerHTML = `<h3>📝 ${t("rp_title")}: ${esc(ev ? ev.title : "")}</h3>
+    m.querySelector(".modal-box").innerHTML = `<h3>${t("rp_title")}: ${esc(ev ? ev.title : "")}</h3>
       <p class="muted">${t("rp_note")}</p>
       ${has ? `<p class="muted">${t(r.source === "sample" ? "rp_src_sample" : "rp_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
-        ${r.stale ? `<p>⚠️ ${t("rp_stale")}</p>` : ""}<pre class="report" style="white-space:pre-wrap">${esc(r.report)}</pre>` : `<p>${t("rp_none")}</p>`}
+        ${r.stale ? `<p> ${t("rp_stale")}</p>` : ""}<pre class="report" style="white-space:pre-wrap">${esc(r.report)}</pre>` : `<p>${t("rp_none")}</p>`}
       ${extra}
       <div id="rp-wait"></div>
       <div class="modal-actions">${has ? `<button class="ghost" id="rp-copy">${t("rp_copy")}</button>` : ""}
@@ -968,9 +1014,9 @@ function editEvent(ev) {
     <label>${t("ev_units")}</label>
     <div class="filters">${b.chat.units.map(u => `<label><input type="checkbox" data-vu="${esc(u)}" ${(ev.event_units || []).includes(u) ? "checked" : ""}> ${esc(u)}</label>`).join("")}</div>
     <label>${t("ev_notes")}</label><textarea id="v-notes" rows="3">${esc(ev.notes || "")}</textarea>
-    ${ev.source_idx != null ? `<p><button class="ghost small" id="v-src">💬 ${t("source")}</button></p>` : ""}
+    ${ev.source_idx != null ? `<p><button class="ghost small" id="v-src">${t("source")}</button></p>` : ""}
     <div class="modal-actions">
-      ${isNew ? "" : `<button class="danger ghost left" id="v-del">${t("del")}</button><button class="ghost" id="v-report">📝 ${t("rp_btn")}</button>`}
+      ${isNew ? "" : `<button class="danger ghost left" id="v-del">${t("del")}</button><button class="ghost" id="v-report">${t("rp_btn")}</button>`}
       <button data-close>${t("cancel")}</button><button class="primary" id="v-save">${t("save")}</button>
     </div>`, (m, close) => {
     const q = id => m.querySelector(id);
@@ -1056,7 +1102,7 @@ function showExport() {
     <div class="grid2"><div><label for="x-from">${t("exp_from")}</label><input type="date" id="x-from"></div>
       <div><label for="x-to">${t("exp_to")}</label><input type="date" id="x-to"></div></div>
     <p class="muted" id="x-err" role="alert"></p>
-    <div class="modal-actions"><button data-close>${t("close")}</button><button class="primary" id="x-go">⤓ ${t("exp_go")}</button></div>`, (m, close) => {
+    <div class="modal-actions"><button data-close>${t("close")}</button><button class="primary" id="x-go">${t("exp_go")}</button></div>`, (m, close) => {
     const what = $("#x-what"), fmt = $("#x-format");
     const sync = () => {
       const sum = what.value === "summary";
@@ -1094,7 +1140,7 @@ function editTask(task) {
       <div><label>${t("ev_link")}</label><select id="e-event">${opt("", "—", String(task.event_id ?? ""))}${b.events.map(x => opt(String(x.id), x.title, String(task.event_id ?? ""))).join("")}</select></div>
       <div><label>${t("f_status")}</label><select id="e-status">${opt("open", t("st_open"), task.status || "open")}${opt("done", t("st_done"), task.status)}</select></div>
     </div>
-    ${task.source_idx != null ? `<p><button class="ghost small" id="e-src">💬 ${t("source")}</button></p>` : ""}
+    ${task.source_idx != null ? `<p><button class="ghost small" id="e-src">${t("source")}</button></p>` : ""}
     <div class="modal-actions">
       ${isNew ? "" : `<button class="danger ghost left" id="e-del">${t("del")}</button>`}
       <button data-close>${t("cancel")}</button>
@@ -1131,7 +1177,7 @@ async function showSource(idx) {
       ? `<div class="msg system">${esc(m.text)}</div>`
       : `<div class="msg ${m.idx === idx ? "hl" : ""}" ${m.idx === idx ? 'id="hl"' : ""}>
           <span class="who" style="color:hsl(${hue(m.sender)} 55% 42%)">${esc(m.sender)}</span><span class="when">${fmtTs(m.ts)}</span>
-          <div class="body">${m.kind === "media" ? "🖼️ <i>media</i>" : esc(m.text)}</div></div>`).join("")}</div>
+          <div class="body">${m.kind === "media" ? icon("image") + " <i>media</i>" : esc(m.text)}</div></div>`).join("")}</div>
     <div class="modal-actions"><button data-close>${t("close")}</button></div>`);
   $("#hl")?.scrollIntoView({ block: "center" });
 }
@@ -1139,41 +1185,41 @@ async function showSource(idx) {
 // ---------------------------------------------------------------- summary view
 function renderReviewView() {
   const b = S.board;
-  const kindIc = { task: "📌", question: "❓", decision: "🧭", event: "📅" };
+  const kindIc = { task: "pin", question: "help", decision: "compass", event: "calendar" };
   const quote = src => `<blockquote class="srcbox" aria-label="${t("src_of")}">${src
     ? (src.meeting_id
-      ? `<div class="srcmeta"><b>🗓️ ${t("mt_src_meeting")}</b> · <a href="#/c/${b.chat.id}/meeting/${src.meeting_id}">${esc(src.meeting_title || "")}</a></div><p>${esc(src.text)}</p>`
+      ? `<div class="srcmeta"><b> ${t("mt_src_meeting")}</b> · <a href="#/c/${b.chat.id}/meeting/${src.meeting_id}">${esc(src.meeting_title || "")}</a></div><p>${esc(src.text)}</p>`
       : `<div class="srcmeta"><b>${esc(src.sender || "")}</b> · <time>${fmtTs(src.ts)}</time></div><p>${esc(src.text)}</p>`)
     : `<span class="muted">${t("src_none")}</span>`}</blockquote>`;
   const showSrc = (idx, title) => idx != null
-    ? `<button class="small" data-src="${idx}" aria-label="${t("src_show")}: ${esc(title)}">💬 ${t("src_show")}</button>` : "";
+    ? `<button class="small" data-src="${idx}" aria-label="${t("src_show")}: ${esc(title)}">${t("src_show")}</button>` : "";
   const card = i => {
     const lbl = x => `aria-label="${x}: ${esc(i.title)}"`;
     const noSrc = i.needs_review === 1;
     return `<article class="rcard" data-id="${i.id}">
-      <header><span class="chip ai">${kindIc[i.kind] || ""} ${t("k_" + i.kind)}</span>
-        ${i.needs_review ? `<span class="chip overdue">⚠️ ${t(noSrc ? "no_source" : "date_unclear")}</span>` : ""}</header>
+      <header><span class="chip ai">${icon("spark")} AI</span><span class="chip">${icon(kindIc[i.kind] || "pin")} ${t("k_" + i.kind)}</span>
+        ${i.needs_review ? `<span class="chip overdue"> ${t(noSrc ? "no_source" : "date_unclear")}</span>` : ""}</header>
       <h4 class="rtitle">${esc(i.title)}</h4>
       ${i.owner || i.due || i.unit ? `<p class="rmeta">${[i.owner && esc(firstName(i.owner)), i.due && fmtDate(i.due), i.unit && esc(i.unit)].filter(Boolean).join(" · ")}</p>` : ""}
       ${quote(i.source)}
       <footer class="ractions">
-        <button class="small primary" data-ok="${i.id}" ${lbl(t("approve"))} ${noSrc ? `disabled title="${t("approve_why_not")}"` : ""}>✓ ${t("approve")}</button>
-        <button class="small" data-edit="${i.id}" ${lbl(t("edit"))}>✎ ${t("edit")}</button>
-        <button class="small danger" data-no="${i.id}" ${lbl(t("reject"))}>✕ ${t("reject")}</button>
+        <button class="small primary" data-ok="${i.id}" ${lbl(t("approve"))} ${noSrc ? `disabled title="${t("approve_why_not")}"` : ""}>${t("approve")}</button>
+        <button class="small" data-edit="${i.id}" ${lbl(t("edit"))}>${t("edit")}</button>
+        <button class="small danger" data-no="${i.id}" ${lbl(t("reject"))}>${t("reject")}</button>
         ${showSrc(i.source_idx, i.title)}
       </footer>
       ${noSrc ? `<p class="rwhy">${t("approve_why_not")}</p>` : ""}</article>`;
   };
   const val = v => v == null || v === "" ? "—" : esc(String(v));
   const ccard = c => `<article class="rcard">
-      <header><span class="chip soon">↻ ${t("change_badge")}</span></header>
+      <header><span class="chip soon">${t("change_badge")}</span></header>
       <h4 class="rtitle">${esc(c.item_title)}</h4>
       <ul class="diff">${["status", "owner", "due", "time", "place"].filter(k => k in c.new).map(k =>
-        `<li>${t("f_" + k + "_l")}: ${val(c.old[k])} → <b>${val(c.new[k])}</b></li>`).join("")}</ul>
+        `<li>${t("f_" + k + "_l")}: ${val(c.old[k])} <b>${val(c.new[k])}</b></li>`).join("")}</ul>
       ${quote(c.source)}
       <footer class="ractions">
-        <button class="small primary" data-cok="${c.id}" aria-label="${t("approve")}: ${esc(c.item_title)}">✓ ${t("approve")}</button>
-        <button class="small danger" data-cno="${c.id}" aria-label="${t("reject")}: ${esc(c.item_title)}">✕ ${t("reject")}</button>
+        <button class="small primary" data-cok="${c.id}" aria-label="${t("approve")}: ${esc(c.item_title)}">${t("approve")}</button>
+        <button class="small danger" data-cno="${c.id}" aria-label="${t("reject")}: ${esc(c.item_title)}">${t("reject")}</button>
         ${showSrc(c.source_idx, c.item_title)}
       </footer></article>`;
   const empty = !b.review.length && !b.changes.length;
@@ -1202,8 +1248,8 @@ function renderSummaryView() {
   const cached = S.summary && S.summary.chatId === id ? S.summary : null;
   $("#view").innerHTML = `<div class="narrow">
     <p class="muted">${t("summary_intro")}</p>
-    <div class="row-actions"><button class="primary" id="btn-sum">🗞️ ${t("summary_btn")}</button>
-      ${cached ? `<button id="btn-copy">📋 ${t("copy")}</button>` : ""}</div>
+    <div class="row-actions"><button class="primary" id="btn-sum"> ${t("summary_btn")}</button>
+      ${cached ? `<button id="btn-copy">${t("copy")}</button>` : ""}</div>
     <div id="sum-out">${cached ? `<div class="wa"><div class="bubble mine">${waFormat(cached.text)}</div></div>` : ""}</div>
   </div>`;
   $("#btn-sum").onclick = async e => {
@@ -1213,7 +1259,7 @@ function renderSummaryView() {
       const r = await post(`/api/chats/${id}/summary`, { days: 7 });
       S.summary = { chatId: id, text: r.text };
       renderSummaryView();
-    } catch (err) { $("#sum-out").innerHTML = `<p class="muted">⚠️ ${esc(err.message)}</p>`; e.target.disabled = false; }
+    } catch (err) { $("#sum-out").innerHTML = `<p class="muted"> ${esc(err.message)}</p>`; e.target.disabled = false; }
   };
   $("#sum-out").querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
   const copy = $("#btn-copy");
@@ -1234,13 +1280,13 @@ function memberMessage(name) {
   const b = S.board;
   const mine = b.tasks.filter(x => x.owner === name && x.status === "open")
     .sort((a, c) => (a.due || "9999").localeCompare(c.due || "9999"));
-  const lines = mine.map(x => `• ${x.title}${x.due ? ` (📅 ${fmtDate(x.due)})` : ""}`);
+  const lines = mine.map(x => `• ${x.title}${x.due ? ` (${fmtDate(x.due)})` : ""}`);
   return [t("member_msg_head")(firstName(name)), "", ...(lines.length ? lines : [t("member_msg_empty")]), "", `_${b.chat.name} · Pano_`].join("\n");
 }
 
 // WhatsApp markup preview: *bold* and _italic_
 function waFormat(text) {
-  return esc(text).replace(/\[#(\d+)\]/g, '<button class="small srclink" data-src="$1" aria-label="Kaynak mesaj $1">💬 #$1</button>').replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/(^|\s)_([^_\n]+)_/g, "$1<i>$2</i>");
+  return esc(text).replace(/\[#(\d+)\]/g, '<button class="small srclink" data-src="$1" aria-label="Kaynak mesaj $1">#$1</button>').replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/(^|\s)_([^_\n]+)_/g, "$1<i>$2</i>");
 }
 
 // ---------------------------------------------------------------- ask view
@@ -1262,7 +1308,7 @@ function renderAskView() {
       S.answer = { chatId: id, question, ...r };
       $("#answer").innerHTML = answerHtml(S.answer);
       bindAnswer();
-    } catch (e) { $("#answer").innerHTML = `<p class="muted">⚠️ ${esc(e.message)}</p>`; }
+    } catch (e) { $("#answer").innerHTML = `<p class="muted"> ${esc(e.message)}</p>`; }
   };
   $("#ask-form").onsubmit = e => { e.preventDefault(); ask($("#q").value); };
   $("#view").querySelectorAll("[data-q]").forEach(b => (b.onclick = () => { $("#q").value = b.dataset.q; ask(b.dataset.q); }));
@@ -1289,19 +1335,19 @@ function renderOverview() {
   const pct = k.total ? Math.round((k.done / k.total) * 100) : 0;
   const missed = k.questions + k.orphans;
   const escObj = a => Object.fromEntries(Object.entries(a).map(([key, v]) => [key, typeof v === "string" ? esc(v) : v]));
-  const alertIc = { event: "📅", overdue: "⏰", question: "❓", load: "🏋️" };
+  const alertIc = { event: "calendar", overdue: "clock", question: "help", load: "users" };
   const maxLoad = Math.max(1, ...o.workload.map(w => w.open + w.done));
   const health = { ok: t("h_ok"), warn: t("h_warn"), bad: t("h_bad"), idle: t("h_idle") };
   const waiting = b.chat.status !== "ready";
   const running = waiting || ["running", "queued"].includes(b.progress.state);
   const cards = [
-    { f: "open", ic: "📌", lbl: t("c_tasks"), has: k.total > 0, v: k.open, note: t("c_tasks_note"),
+    { f: "open", ic: "pin", lbl: t("c_tasks"), has: k.total > 0, v: k.open, note: t("c_tasks_note"),
       sub: k.total ? `${k.done} ${t("k_done")} · ${k.total} ${t("c_approved_tasks")}` : t("no_data") },
-    { f: "soon", ic: "⏳", lbl: t("c_soon"), has: k.dated > 0, v: k.upcoming_ids.length, note: t("c_soon_note"),
+    { f: "soon", ic: "clock", lbl: t("c_soon"), has: k.dated > 0, v: k.upcoming_ids.length, note: t("c_soon_note"),
       sub: k.dated ? t("c_soon_sub") : t("c_soon_none") },
-    { f: "questions", ic: "❓", lbl: t("c_q"), has: k.questions_total > 0, v: k.questions, note: t("c_q_note"),
+    { f: "questions", ic: "help", lbl: t("c_q"), has: k.questions_total > 0, v: k.questions, note: t("c_q_note"),
       sub: k.questions_total ? `${k.questions_total} ${t("c_q_total")}` : t("c_q_none") },
-    { f: "review", ic: "🔎", lbl: t("c_ai"), has: !waiting || b.review_total > 0, v: b.review_total, note: t("c_ai_note"),
+    { f: "review", ic: "search", lbl: t("c_ai"), has: !waiting || b.review_total > 0, v: b.review_total, note: t("c_ai_note"),
       cls: b.review_total ? "warn" : "", sub: running ? t(waiting ? "c_ai_waiting" : "c_ai_running") : t("c_ai_sub") },
   ];
   const fo = o.focus;
@@ -1312,7 +1358,7 @@ function renderOverview() {
     ["conflicts", t("f_conflicts"), fo.conflicts, x => `${esc(x.title)}<small>${whyTxt(x)}</small>`],
     ["decisions", t("f_decisions"), fo.decisions, x => `${esc(x.title)}`],
   ];
-  const tags = { overdue: `⏰ ${t("n_late")}`, orphans: `🙋 ${t("n_orphan")}`, conflicts: `⚠️ ${t("tag_conflict")}`, decisions: `🧭 ${t("tag_open")}` };
+  const tags = { overdue: `${t("n_late")}`, orphans: `${t("n_orphan")}`, conflicts: ` ${t("tag_conflict")}`, decisions: `${t("tag_open")}` };
   const allClear = groups.every(g => !g[2].length);
   const focusHtml = allClear ? `<p class="all-clear" style="grid-column:1/-1">${t("all_clear")}</p>` : groups.map(([key, label, list, fmt]) => `<div class="focus-col">
     <h4>${label} <span class="n ${list.length ? "" : "zero"}">${list.length}</span></h4>
@@ -1335,15 +1381,15 @@ function renderOverview() {
       <small>${m.date ? fmtDate(m.date) : t("pc_nodate")} · ${t("pc_orphans")(m.orphans)}</small></span></li>`).join("")}</ul>`
     : `<p class="muted">${t("pc_held_none")}</p>`;
   $("#view").innerHTML = `
-  <div class="panel focus"><h3>🎯 ${t("focus_title")}</h3><div class="focus-grid">${focusHtml}</div></div>
+  <div class="panel focus"><h3>${t("focus_title")}</h3><div class="focus-grid">${focusHtml}</div></div>
   <div class="kpis cards4">${cards.map(c => `
       <div class="kpi card-link ${c.cls || ""}" role="link" tabindex="0" data-card="${c.f}" title="${esc(c.note)}">
-        <div class="lbl">${c.ic} ${c.lbl}</div><div class="val">${c.has ? c.v : "—"}</div>
+        <div class="lbl">${icon(c.ic)} ${c.lbl}</div><div class="val">${c.has ? c.v : "—"}</div>
         <div class="sub">${c.sub}</div><div class="sub note">${c.note}</div></div>`).join("")}</div>
   <p class="muted cards-note">${t("cards_overlap")}</p>
     <div class="ov-grid">
     <div class="ov-col">
-      <div class="panel"><h3>🗂️ ${t("units_title")}</h3>
+      <div class="panel"><h3> ${t("units_title")}</h3>
         <div class="units">${o.units.map(u => `
           <div class="unit ${u.health}" data-unit="${esc(u.name || "")}">
             <div class="nm"><span>${esc(u.name || t("no_unit"))}</span><span class="st">${health[u.health]}</span></div>
@@ -1353,31 +1399,31 @@ function renderOverview() {
               ${u.orphans ? `<span style="color:var(--warn)"><b>${u.orphans}</b> ${t("n_orphan")}</span>` : ""}</div>
           </div>`).join("")}</div>
       </div>
-      <div class="panel"><h3>🚨 ${t("alerts_title")}</h3>
+      <div class="panel"><h3>${t("alerts_title")}</h3>
         ${o.alerts.length ? `<ul class="alerts">${o.alerts.slice(0, 8).map(a => {
           const e = escObj(a);
-          return `<li class="${a.level}"><span class="ic">${alertIc[a.type]}</span><span>${t("a_" + a.type)(e)}<small>${t("a_" + a.type + "_sub")(e)}</small></span></li>`;
+          return `<li class="${a.level}"><span class="ic">${icon(alertIc[a.type])}</span><span>${t("a_" + a.type)(e)}<small>${t("a_" + a.type + "_sub")(e)}</small></span></li>`;
         }).join("")}</ul>` : `<p class="muted">${t("no_alerts")}</p>`}
       </div>
     </div>
     <div class="ov-col">
-      <div class="panel"><h3>🏋️ ${t("load_title")}</h3>
+      <div class="panel"><h3> ${t("load_title")}</h3>
         ${o.workload.length ? o.workload.map(w => `<div class="load-row"><span class="nm">${avatar(w.name)}${esc(firstName(w.name))}</span>
           <div class="load-bar"><div class="o" style="width:${w.open / maxLoad * 100}%"></div><div class="d" style="width:${w.done / maxLoad * 100}%"></div></div>
           <b>${w.open}</b></div>`).join("") + `<div class="legend"><span><i style="background:var(--brand)"></i>${t("l_open")}</span><span><i style="background:var(--ok)"></i>${t("l_done")}</span></div>`
         : `<p class="muted">${t("none_yet")}</p>`}
       </div>
-      <div class="panel"><h3>📅 ${t("up_events")}</h3>${eventsHtml}</div>
-      <div class="panel"><h3>🗓️ ${t("pc_upcoming")}</h3>${meetUpcomingHtml}</div>
-      <div class="panel"><h3>⚠️ ${t("pc_held")}</h3>${meetHeldHtml}</div>
-      <div class="panel"><h3>📥 ${t("imp_title")}</h3>${importsHtml}</div>
-      <div class="panel"><h3>🗓️ ${t("timeline_title")}</h3>
+      <div class="panel"><h3>${t("up_events")}</h3>${eventsHtml}</div>
+      <div class="panel"><h3> ${t("pc_upcoming")}</h3>${meetUpcomingHtml}</div>
+      <div class="panel"><h3> ${t("pc_held")}</h3>${meetHeldHtml}</div>
+      <div class="panel"><h3>${t("imp_title")}</h3>${importsHtml}</div>
+      <div class="panel"><h3> ${t("timeline_title")}</h3>
         ${o.timeline.length ? `<ul class="timeline">${o.timeline.map(r => `<li><span class="d">${fmtDate(r.date, false).replace(" ", "<br>")}</span>
-          <span class="pt ${r.kind}"></span><span>${r.kind === "event" ? "<b>" + esc(r.title) + "</b>" : esc(r.title)}<small>${r.owner ? esc(firstName(r.owner)) : r.kind === "event" ? "📅" : t("no_owner")}</small></span></li>`).join("")}</ul>`
+          <span class="pt ${r.kind}"></span><span>${r.kind === "event" ? "<b>" + esc(r.title) + "</b>" : esc(r.title)}<small>${r.owner ? esc(firstName(r.owner)) : r.kind === "event" ? icon("calendar") : t("no_owner")}</small></span></li>`).join("")}</ul>`
         : `<p class="muted">${t("none_yet")}</p>`}
       </div>
-      <div class="panel"><h3>🧭 ${t("recent_decisions")}</h3>
-        ${b.decisions.length ? `<ul class="list">${b.decisions.slice(-5).reverse().map(d => `<li><span class="grow">${esc(d.title)}</span>${d.source_idx != null ? `<button class="src" data-src="${d.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}
+      <div class="panel"><h3>${t("recent_decisions")}</h3>
+        ${b.decisions.length ? `<ul class="list">${b.decisions.slice(-5).reverse().map(d => `<li><span class="grow">${esc(d.title)}</span>${d.source_idx != null ? `<button class="src" data-src="${d.source_idx}" title="${t("source")}" aria-label="${t("source")}"></button>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}
       </div>
     </div>
   </div>`;
@@ -1401,7 +1447,7 @@ function renderPlanView() {
   const p = S.plan && S.plan.chatId === id ? S.plan : null;
   $("#view").innerHTML = `<div class="narrow">
     <div class="panel planner-box">
-      <h3>🧭 ${t("tab_plan")}</h3>
+      <h3>${t("tab_plan")}</h3>
       <p class="muted" style="margin:0">${t("plan_intro")}</p>
       <textarea id="goal" placeholder="${esc(t("plan_ph"))}">${esc(p?.goal || "")}</textarea>
       <div class="suggest" style="margin:0">${t("plan_examples").map(s => `<button type="button" data-ex="${esc(s)}">${esc(s)}</button>`).join("")}</div>
@@ -1419,7 +1465,7 @@ function renderPlanView() {
       S.plan = { chatId: id, goal, ...(await post(`/api/chats/${id}/plan`, { goal })) };
       $("#plan-out").innerHTML = planHtml(S.plan);
       bindPlan();
-    } catch (err) { $("#plan-out").innerHTML = `<p class="muted">⚠️ ${esc(err.message)}</p>`; }
+    } catch (err) { $("#plan-out").innerHTML = `<p class="muted"> ${esc(err.message)}</p>`; }
     e.target.disabled = false;
   };
   bindPlan();
@@ -1431,9 +1477,9 @@ function planHtml(p) {
     <div class="plan-list">${p.tasks.map((x, i) => `<label class="plan-item" style="margin:0;color:var(--text);font-size:15px;font-weight:400">
       <input type="checkbox" data-i="${i}" checked>
       <div><div class="t">${esc(x.title)}</div>${x.why ? `<div class="why">${esc(x.why)}</div>` : ""}
-        <div class="meta">${x.unit ? `<span class="chip">🗂️ ${esc(x.unit)}</span>` : ""}
-          ${x.owner ? `<span class="chip ai">${avatar(x.owner)}${esc(firstName(x.owner))} · ${t("suggested")}</span>` : `<span class="chip none">🙋 ${t("no_owner")}</span>`}</div></div>
-      <span class="chip">${x.due ? "📅 " + fmtDate(x.due) : t("no_due")}</span></label>`).join("")}</div>`;
+        <div class="meta">${x.unit ? `<span class="chip"> ${esc(x.unit)}</span>` : ""}
+          ${x.owner ? `<span class="chip ai">${avatar(x.owner)}${esc(firstName(x.owner))} · ${t("suggested")}</span>` : `<span class="chip none">${t("no_owner")}</span>`}</div></div>
+      <span class="chip">${x.due ? icon("calendar") + " " + fmtDate(x.due) : t("no_due")}</span></label>`).join("")}</div>`;
 }
 
 function bindPlan() {
@@ -1459,7 +1505,7 @@ async function renderAnalysisView() {
   const view = $("#view");
   view.innerHTML = `<div class="narrow"><p class="muted"><span class="spinner"></span></p></div>`;
   let a;
-  try { a = await api(`/api/chats/${id}/event-analysis`); } catch (e) { view.innerHTML = `<div class="narrow"><p class="muted">⚠️ ${esc(e.message)}</p></div>`; return; }
+  try { a = await api(`/api/chats/${id}/event-analysis`); } catch (e) { view.innerHTML = `<div class="narrow"><p class="muted"> ${esc(e.message)}</p></div>`; return; }
   if (route().view !== "analysis" || S.board.chat.id !== id) return;  // user navigated away while loading
   const no = `<span class="muted">${t("an_none")}</span>`;
   const val = (x, suffix = "") => x == null ? no : `${esc(x)}${suffix}`;
@@ -1493,9 +1539,9 @@ async function renderAnalysisView() {
     const box = $("#an-insight");
     if (!box) return;
     box.innerHTML = `${r.insight ? `<p class="muted">${t(r.source === "sample" ? "an_src_sample" : "an_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
-      ${r.stale ? `<p>⚠️ ${t("an_stale")}</p>` : ""}<p class="insight">${esc(r.insight)}</p>` : `<p class="muted">${t("an_insight_none")}</p>`}
+      ${r.stale ? `<p> ${t("an_stale")}</p>` : ""}<p class="insight">${esc(r.insight)}</p>` : `<p class="muted">${t("an_insight_none")}</p>`}
       ${extra}<div id="an-wait"></div>
-      <div class="row-actions">${r.insight ? `<button class="ghost" id="an-copy">📋 ${t("rp_copy")}</button>` : ""}
+      <div class="row-actions">${r.insight ? `<button class="ghost" id="an-copy">${t("rp_copy")}</button>` : ""}
         <button class="primary" id="an-make">${r.insight ? t("an_insight_re") : t("an_insight_btn")}</button></div>`;
     const cp = $("#an-copy");
     if (cp) cp.onclick = () => copyText(r.insight);
@@ -1528,7 +1574,7 @@ async function renderEventsView() {
     <td>${r.feedback_score != null ? `<b>${r.feedback_score}</b>/5` : dash}</td></tr>`).join("");
   $("#view").innerHTML = `<div class="narrow wide">
     <p class="muted">${t("evs_intro")}</p>
-    <div class="row-actions"><button class="primary" data-ev-add>＋ ${t("ev_add")}</button></div>
+    <div class="row-actions"><button class="primary" data-ev-add>${t("ev_add")}</button></div>
     ${list}
     <h3>${t("cmp_title")}</h3>
     ${cmp.length ? `<p class="muted small">${t("cmp_note")}</p>
@@ -1544,7 +1590,7 @@ async function renderEventsView() {
 
 async function renderEventView() {
   const { chatId, mid: eid } = route(), view = $("#view");
-  const back = `<p><a href="#/c/${chatId}/events">← ${t("tab_events")}</a></p>`;
+  const back = `<p><a href="#/c/${chatId}/events">${t("tab_events")}</a></p>`;
   view.innerHTML = `<div class="narrow wide">${back}<p class="muted"><span class="spinner"></span></p></div>`;
   let p;
   try { p = await api(`/api/events/${eid}/page`); }
@@ -1553,7 +1599,7 @@ async function renderEventView() {
   if (r.view !== "event" || r.mid !== eid) return;  // user navigated away while loading
   const ev = p.event, a = p.attendance, no = `<span class="muted">${t("an_none")}</span>`;
   const val = (x, suffix = "") => x == null || x === "" ? no : `${esc(x)}${suffix}`;
-  const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : "";
+  const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}"></button>` : "";
   const none = `<p class="muted">${t("evp_none")}</p>`;
   const taskLi = x => `<li><input type="checkbox" data-toggle="${x.id}" ${x.status === "done" ? "checked" : ""} aria-label="${t("st_done")}">
     <span class="grow ${x.status === "done" ? "muted" : ""}"><a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a>
@@ -1569,7 +1615,7 @@ async function renderEventView() {
   const hasFb = ev.feedback_score != null || ev.feedback_note || ev.feedback_good || ev.feedback_bad || ev.feedback_comments;
   const nComments = (ev.feedback_comments || "").split("\n").filter(x => x.trim()).length;
   view.innerHTML = `<div class="narrow wide">${back}
-    <div class="row-actions"><h2 style="margin:0" class="grow">${esc(ev.title)}</h2><button class="ghost small" id="evp-edit">✏️ ${t("edit")}</button></div>
+    <div class="row-actions"><h2 style="margin:0" class="grow">${esc(ev.title)}</h2><button class="ghost small" id="evp-edit"> ${t("edit")}</button></div>
     ${sect(t("evp_info"), `<div class="grid2">${kv(t("ev_date"), ev.due ? fmtDate(ev.due) : no)}${kv(t("ev_time"), val(ev.time))}${kv(t("ev_place"), val(ev.place))}
       ${kv(t("ev_owner"), val(ev.owner))}${kv(t("ev_phase"), val(t("ph")[ev.phase] || ev.phase))}${kv(t("ev_type"), val(ev.event_type))}
       ${kv(t("ev_units"), ev.event_units.length ? ev.event_units.map(esc).join(", ") : no)}</div>${ev.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(ev.notes)}</p>` : ""}`)}
@@ -1599,7 +1645,7 @@ function drawEventReport(eid, r, extra = "") {
   if (!box) return;
   box.innerHTML = `<p class="muted">${t("rp_note")}</p>
     ${r.report ? `<p class="muted">${t(r.source === "sample" ? "rp_src_sample" : "rp_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
-      ${r.stale ? `<p>⚠️ ${t("rp_stale")}</p>` : ""}<pre class="report" style="white-space:pre-wrap">${esc(r.report)}</pre>` : `<p>${t("rp_none")}</p>`}
+      ${r.stale ? `<p> ${t("rp_stale")}</p>` : ""}<pre class="report" style="white-space:pre-wrap">${esc(r.report)}</pre>` : `<p>${t("rp_none")}</p>`}
     ${extra}<div id="rp-wait"></div>
     <div class="row-actions">${r.report ? `<button class="ghost" id="rp-copy">${t("rp_copy")}</button>` : ""}
       <button class="primary" id="rp-make">${r.report ? t("rp_remake") : t("rp_make")}</button></div>`;
@@ -1621,7 +1667,7 @@ async function renderPeopleView() {
   view.innerHTML = `<div class="narrow"><p class="muted"><span class="spinner"></span></p></div>`;
   let d;
   try { d = await api(`/api/chats/${id}/people`); }
-  catch (e) { view.innerHTML = `<div class="narrow"><p class="muted">⚠️ ${esc(e.message)}</p></div>`; return; }
+  catch (e) { view.innerHTML = `<div class="narrow"><p class="muted"> ${esc(e.message)}</p></div>`; return; }
   if (route().view !== "people" || S.board.chat.id !== id) return;
   const rows = d.people.map(p => `<tr><th scope="row"><a href="#/c/${id}/person/${encodeURIComponent(p.name)}">${avatar(p.name)} ${esc(p.name)}</a></th>
     <td>${p.committees.length ? p.committees.map(esc).join(", ") : dash}</td><td><b>${p.open}</b></td><td>${p.late ? `<b>${p.late}</b>` : "0"}</td><td>${p.done}</td></tr>`).join("");
@@ -1632,7 +1678,7 @@ async function renderPeopleView() {
 
 async function renderPersonView() {
   const { chatId, arg: name } = route(), view = $("#view");
-  const back = `<p><a href="#/c/${chatId}/people">← ${t("tab_people")}</a></p>`;
+  const back = `<p><a href="#/c/${chatId}/people">${t("tab_people")}</a></p>`;
   view.innerHTML = `<div class="narrow wide">${back}<p class="muted"><span class="spinner"></span></p></div>`;
   let p;
   try { p = await api(`/api/chats/${chatId}/person?name=${encodeURIComponent(name)}`); }
@@ -1676,7 +1722,7 @@ function renderUnitsView() {
   }).join("");
   const loose = b.tasks.filter(x => !x.unit || !units.includes(x.unit)).length;
   $("#view").innerHTML = `<div class="narrow wide"><p class="muted">${t("un_intro")}</p>
-    <div class="row-actions"><button class="primary" id="btn-units">👥 ${t("units_btn")}</button></div>
+    <div class="row-actions"><button class="primary" id="btn-units">${t("units_btn")}</button></div>
     ${units.length ? `<div class="tscroll"><table class="atable"><thead><tr><th>${t("tab_units")}</th><th>${t("un_members")}</th><th>${t("pp_open")}</th><th>${t("pp_late")}</th><th>${t("tab_events")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
       : `<p class="muted">${t("none_yet")}</p>`}
     ${loose ? `<p class="muted small">${t("un_loose")(loose)}</p>` : ""}</div>`;
@@ -1686,14 +1732,14 @@ function renderUnitsView() {
 function renderDataView() {
   const c = S.board.chat;
   $("#view").innerHTML = `<div class="narrow"><p class="muted">${t("da_intro")}</p>
-    <div class="panel"><h3>⤓ ${t("da_import")}</h3><p class="muted small">${t("da_import_note")}</p>
-      <div class="row-actions"><button class="ghost" id="btn-add-export">⤓ ${t("add_export")}</button>
-      <button class="ghost" id="btn-reanalyze">↻ ${t("reanalyze")}</button>
-      <a class="btn ghost" href="#/">＋ ${t("da_new")}</a></div>
+    <div class="panel"><h3>${t("da_import")}</h3><p class="muted small">${t("da_import_note")}</p>
+      <div class="row-actions"><button class="ghost" id="btn-add-export">${t("add_export")}</button>
+      <button class="ghost" id="btn-reanalyze">${t("reanalyze")}</button>
+      <a class="btn ghost" href="#/">${t("da_new")}</a></div>
       <input type="file" id="file2" accept=".txt,.zip" hidden></div>
-    <div class="panel"><h3>⤒ ${t("da_export")}</h3><p class="muted small">${t("da_export_note")}</p>
-      <div class="row-actions"><a class="btn ghost" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">⤓ Markdown</a>
-      <button class="ghost" id="btn-export">⤓ ${t("exp_btn")}</button></div></div>
+    <div class="panel"><h3>${t("da_export")}</h3><p class="muted small">${t("da_export_note")}</p>
+      <div class="row-actions"><a class="btn ghost" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">Markdown</a>
+      <button class="ghost" id="btn-export">${t("exp_btn")}</button></div></div>
     <div class="panel"><h3>${t("da_danger")}</h3><div class="row-actions"><button class="ghost danger" id="btn-delete">${t("delete_chat")}</button></div></div></div>`;
   bindDataActions();
 }
@@ -1742,14 +1788,14 @@ async function render() {
 async function renderMeetingsView() {
   const id = S.board.chat.id;
   $("#view").innerHTML = `<div class="narrow"><p class="muted">${t("mt_intro")}</p>
-    <div class="row-actions"><button class="primary" id="mt-add">＋ ${t("mt_add")}</button></div>
+    <div class="row-actions"><button class="primary" id="mt-add">${t("mt_add")}</button></div>
     <div id="mt-list"><p class="muted"><span class="spinner"></span></p></div></div>`;
   $("#mt-add").onclick = () => editMeeting({});
   let list = [];
   try { list = await api(`/api/chats/${id}/meetings`); } catch (e) { toast(e.message); }
   $("#mt-list").innerHTML = list.length ? list.map(m => `<a class="panel meeting-card" href="#/c/${id}/meeting/${m.id}">
       <b>${esc(m.title)}</b>
-      <div class="meta">${m.date ? `📅 ${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
+      <div class="meta">${m.date ? `${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
         <span class="chip ${m.status === "held" ? "" : "ai"}">${t("mt_st")[m.status]}</span>
         ${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}</div>
       <small class="muted">${t("mt_counts")(m)}</small></a>`).join("") : `<p class="muted">${t("mt_empty")}</p>`;
@@ -1775,9 +1821,9 @@ function editMeeting(m) {
     <label for="m-agenda">${t("mt_agenda")}</label><textarea id="m-agenda" rows="3" maxlength="5000">${esc(m.agenda || "")}</textarea>
     <label for="m-notes">${t("mt_notes")}</label>
     <textarea id="m-notes" rows="8">${esc(m.notes || "")}</textarea>
-    <div class="row-actions"><button type="button" class="ghost small" id="m-file-btn">📄 ${t("mt_upload")}</button>
+    <div class="row-actions"><button type="button" class="ghost small" id="m-file-btn">${t("mt_upload")}</button>
       <input type="file" id="m-file" accept=".txt,.md,text/plain,text/markdown" hidden>
-      <small class="muted" id="m-file-info">${notesSource ? "📎 " + esc(notesSource) : ""}</small></div>
+      <small class="muted" id="m-file-info">${notesSource ? icon("paperclip") + " " + esc(notesSource) : ""}</small></div>
     <p class="muted">${t("mt_notes_note")}</p>
     <div class="modal-actions"><button data-close>${t("cancel")}</button><button class="primary" id="m-save">${t("save")}</button></div>`, (mm, close) => {
     const q = id => mm.querySelector(id);
@@ -1796,7 +1842,7 @@ function editMeeting(m) {
         const r = await post(`/api/chats/${b.chat.id}/meetings/notes-file?filename=${encodeURIComponent(f.name)}`, await f.arrayBuffer());
         q("#m-notes").value = r.text;
         notesSource = f.name;
-        q("#m-file-info").textContent = "📎 " + f.name;
+        q("#m-file-info").textContent = f.name;
       } catch (e) { toast(e.message, 6000); }
       q("#m-file").value = "";
     };
@@ -1823,8 +1869,8 @@ function drawMeetingSummary(mid, r, extra, cut = false) {
       ${r.stale ? `<p><b>${t("mt_sum_stale")}</b></p>` : ""}${cut ? `<p class="muted">${t("mt_sum_cut")}</p>` : ""}
       <pre class="report" style="white-space:pre-wrap">${esc(r.summary).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")}</pre>` : `<p class="muted">${t("mt_sum_none")}</p>`}
     ${extra}<div id="mt-sum-wait"></div>
-    <div class="row-actions">${has ? `<button class="ghost" id="mt-sum-copy">📋 ${t("mt_sum_copy")}</button>` : ""}
-      <button class="primary" id="mt-sum-make">📝 ${has ? t("mt_sum_remake") : t("mt_sum_make")}</button></div>`;
+    <div class="row-actions">${has ? `<button class="ghost" id="mt-sum-copy">${t("mt_sum_copy")}</button>` : ""}
+      <button class="primary" id="mt-sum-make">${has ? t("mt_sum_remake") : t("mt_sum_make")}</button></div>`;
   const cp = $("#mt-sum-copy");
   if (cp) cp.onclick = () => copyText(r.summary);
   $("#mt-sum-make").onclick = async e => {
@@ -1852,27 +1898,27 @@ async function renderMeetingView() {
   try { d.summary = await api(`/api/meetings/${mid}/summary`); } catch { d.summary = null; }
   const m = d.meeting;
   const rec = (items, empty) => items.length ? `<ul class="list">${items.map(i => `<li><span class="grow">${esc(i.title)}
-      <small>${[i.owner ? "👤 " + esc(i.owner) : (i.kind === "task" ? t("mt_noowner") : ""), i.due ? "📅 " + fmtDate(i.due) : ""].filter(Boolean).join(" · ")}</small></span>
+      <small>${[i.owner ? icon("person") + " " + esc(i.owner) : (i.kind === "task" ? t("mt_noowner") : ""), i.due ? icon("calendar") + " " + fmtDate(i.due) : ""].filter(Boolean).join(" · ")}</small></span>
       ${i.kind === "task" ? `<span class="chip ${i.status === "done" ? "" : "ai"}">${i.status === "done" ? t("n_done") : t("n_open")}</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${empty}</p>`;
   $("#view").innerHTML = `<div class="narrow">
-    <p><a href="#/c/${chatId}/meetings">← ${t("tab_meetings")}</a></p>
+    <p><a href="#/c/${chatId}/meetings">${t("tab_meetings")}</a></p>
     <h3>${esc(m.title)}</h3>
-    <div class="meta">${m.date ? `📅 ${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
+    <div class="meta">${m.date ? `${fmtDate(m.date)}${m.time ? " " + esc(m.time) : ""}` : `<span class="chip none">${t("mt_nodate")}</span>`}
       <span class="chip ${m.status === "held" ? "" : "ai"}">${t("mt_st")[m.status]}</span>
       ${m.units.map(u => `<span class="chip">${esc(u)}</span>`).join("")}</div>
     ${m.attendees ? `<p><b>${t("mt_attendees")}:</b> ${esc(m.attendees)}</p>` : ""}
     ${m.agenda ? `<h4>${t("mt_agenda")}</h4><pre class="report" style="white-space:pre-wrap">${esc(m.agenda)}</pre>` : ""}
-    <h4>${t("mt_notes")}${m.notes_source ? ` <small class="muted">📎 ${esc(m.notes_source)}</small>` : ""}</h4>
+    <h4>${t("mt_notes")}${m.notes_source ? ` <small class="muted">${esc(m.notes_source)}</small>` : ""}</h4>
     ${m.notes ? `<pre class="report" style="white-space:pre-wrap">${esc(m.notes)}</pre>` : `<p class="muted">${t("mt_no_notes")}</p>`}
-    <div class="row-actions"><button id="mt-edit">✏️ ${t("mt_edit")}</button>
-      ${d.lines ? `<button class="primary" id="mt-analyze">✨ ${t("mt_analyze")}</button>` : ""}
+    <div class="row-actions"><button id="mt-edit"> ${t("mt_edit")}</button>
+      ${d.lines ? `<button class="primary" id="mt-analyze">${t("mt_analyze")}</button>` : ""}
       <button class="danger ghost" id="mt-del">${t("del")}</button></div>
     <div id="mt-wait"></div>
     ${d.orphan_tasks ? `<p><span class="chip overdue">${t("mt_orphans")(d.orphan_tasks)}</span></p>` : ""}
-    ${d.warnings.length ? `<div class="panel"><b>ℹ️ ${t("mt_warn_title")}</b><ul class="list">${d.warnings.map(w => `<li><span class="grow">${t("mt_warn")(w)}</span></li>`).join("")}</ul></div>` : ""}
-    ${d.notes_changed ? `<p class="muted">⚠️ ${t("mt_an_stale")}</p>` : ""}
-    ${d.proposed ? `<p><span class="chip ai">${t("mt_pending")(d.proposed)}</span> <a href="#/c/${chatId}/review">${t("mt_go_review")} →</a></p>` : ""}
-    <h4>📝 ${t("mt_sum_title")}</h4><p class="muted">${t("mt_sum_note")}</p>
+    ${d.warnings.length ? `<div class="panel"><b> ${t("mt_warn_title")}</b><ul class="list">${d.warnings.map(w => `<li><span class="grow">${t("mt_warn")(w)}</span></li>`).join("")}</ul></div>` : ""}
+    ${d.notes_changed ? `<p class="muted"> ${t("mt_an_stale")}</p>` : ""}
+    ${d.proposed ? `<p><span class="chip ai">${t("mt_pending")(d.proposed)}</span> <a href="#/c/${chatId}/review">${t("mt_go_review")} </a></p>` : ""}
+    <h4>${t("mt_sum_title")}</h4><p class="muted">${t("mt_sum_note")}</p>
     <div id="mt-sum"></div>
     <div id="mt-extra"></div>
     <h4>${t("mt_tasks")}</h4>${rec(d.tasks, t("mt_none"))}

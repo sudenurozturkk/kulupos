@@ -65,12 +65,18 @@ def seed_sample(today, force: bool = False) -> int | None:
     _seed_report(events)
     _seed_meetings(chat_id, today)
     db.update_chat(chat_id, status="ready", analyzed_upto=len(messages) - 1)
+    db.set_meta("sample_version", SAMPLE_VERSION)
     return chat_id
+
+
+SAMPLE_VERSION = "3"   # bump when the sample data or its precomputed texts change: older sample clubs are rebuilt
 
 
 def _outdated(chat_id: int) -> bool:
     """A sample club made before the current sample data: other name, no meetings, or a sample event that should
     carry feedback and a precomputed report but lacks them."""
+    if db.get_meta("sample_version") != SAMPLE_VERSION:
+        return True
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
     if db.get_chat(chat_id)["name"] != spec["chat"]["name"] or not db.get_meetings(chat_id):
         return True

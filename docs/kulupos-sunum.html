@@ -3,119 +3,181 @@
 <style>
 @page { size: 1280px 720px; margin: 0; }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; color: #1e1b4b; }
-.s { width: 1280px; height: 720px; padding: 64px 80px; page-break-after: always; position: relative; background: #f5f6fd; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
-.s.dark { background: linear-gradient(135deg, #1e1b4b, #4338ca 60%, #7c3aed); color: #fff; }
-.k { font-size: 16px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #4f46e5; margin-bottom: 14px; }
-.dark .k { color: #c7d2fe; }
-h1 { font-size: 84px; line-height: 1; margin: 0 0 18px; letter-spacing: -.03em; }
-h2 { font-size: 46px; line-height: 1.1; margin: 0 0 30px; letter-spacing: -.02em; }
-p, li { font-size: 24px; line-height: 1.45; color: #4b5563; margin: 0 0 10px; }
-.dark p, .dark li { color: #e0e7ff; }
-.grid { display: grid; gap: 22px; grid-auto-flow: column; grid-auto-columns: 1fr; }
-.card { background: #fff; border: 1px solid #e3e5f2; border-top: 5px solid #4f46e5; border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px rgba(49,46,129,.08); }
-.card h3 { margin: 0 0 8px; font-size: 25px; }
-.card p { font-size: 20px; margin: 0; }
-.big { font-size: 78px; font-weight: 800; color: #4f46e5; line-height: 1; }
-.flow { display: flex; gap: 14px; align-items: stretch; }
-.flow div { flex: 1; background: #fff; border: 1px solid #e3e5f2; border-radius: 14px; padding: 18px; font-size: 20px; color: #374151; }
-.flow b { display: block; color: #4f46e5; font-size: 22px; margin-bottom: 6px; }
-.arrow { flex: 0 0 auto !important; background: none !important; border: 0 !important; padding: 0 !important; align-self: center; font-size: 34px !important; color: #7c3aed !important; }
-.foot { position: absolute; bottom: 26px; left: 80px; right: 80px; display: flex; justify-content: space-between; font-size: 14px; color: #9ca3af; }
+:root { --ink: #14123a; --muted: #5b5f7a; --brand: #4f46e5; --brand2: #7c3aed; --line: #e3e5f2; --soft: #f3f4fb; --grad: linear-gradient(135deg, #4f46e5, #7c3aed); }
+body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.s { width: 1280px; height: 720px; page-break-after: always; position: relative; overflow: hidden; background: #fff; padding: 56px 72px; display: flex; flex-direction: column; }
+.s.dark { background: radial-gradient(900px 500px at 85% -10%, #6d5dfc 0%, transparent 60%), linear-gradient(135deg, #14123a 0%, #2b2680 100%); color: #fff; }
+.s.soft { background: var(--soft); }
+.kick { font-size: 15px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); margin-bottom: 12px; }
+.dark .kick { color: #c7d2fe; }
+h1 { font-size: 96px; line-height: .98; margin: 0; letter-spacing: -.04em; }
+h2 { font-size: 46px; line-height: 1.08; margin: 0 0 26px; letter-spacing: -.025em; max-width: 980px; }
+h3 { font-size: 24px; margin: 0 0 8px; }
+p { font-size: 21px; line-height: 1.5; color: var(--muted); margin: 0 0 12px; }
+.dark p { color: #d9defc; }
+.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.dark .grad { background: linear-gradient(135deg, #a5b4fc, #f0abfc); -webkit-background-clip: text; background-clip: text; }
+.row { display: flex; gap: 22px; } .grow { flex: 1; }
+.card { background: #fff; border: 1px solid var(--line); border-top: 5px solid var(--brand); border-radius: 18px; padding: 24px; box-shadow: 0 10px 28px rgba(49,46,129,.08); }
+.card p { font-size: 18px; margin: 0; }
+.num { font-size: 64px; font-weight: 800; line-height: 1; letter-spacing: -.03em; color: var(--brand); }
+.pill { display: inline-block; padding: 6px 16px; border-radius: 99px; background: rgba(255,255,255,.14); font-size: 17px; font-weight: 600; margin: 0 10px 10px 0; }
+.soft .pill, .pill.l { background: #eef2ff; color: var(--brand); }
+.shot { border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 24px 60px rgba(30,27,75,.25); overflow: hidden; background: #fff; }
+.shot .bar { height: 26px; background: #eceef8; display: flex; align-items: center; gap: 6px; padding: 0 12px; }
+.shot .bar i { width: 10px; height: 10px; border-radius: 50%; background: #c7cbe0; }
+.shot img { display: block; width: 100%; }
+.foot { position: absolute; bottom: 22px; left: 72px; right: 72px; display: flex; justify-content: space-between; font-size: 13px; color: #9a9db8; }
 .dark .foot { color: #a5b4fc; }
-table { border-collapse: collapse; width: 100%; font-size: 22px; }
-td, th { padding: 12px 14px; border-bottom: 1px solid #e3e5f2; text-align: left; }
-th { color: #4f46e5; }
-.warn { color: #b45309; font-weight: 600; }
-.tag { display: inline-block; background: #eef2ff; color: #4338ca; font-weight: 700; border-radius: 99px; padding: 6px 16px; font-size: 18px; margin: 0 8px 8px 0; }
+.step { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px; flex: 1; font-size: 18px; color: var(--muted); }
+.step b { display: block; font-size: 21px; color: var(--ink); margin-bottom: 6px; }
+.step .n { width: 34px; height: 34px; border-radius: 50%; background: var(--grad); color: #fff; display: grid; place-items: center; font-weight: 700; margin-bottom: 10px; }
+.arrow { align-self: center; font-size: 30px; color: var(--brand2); }
+ul.chk { list-style: none; padding: 0; margin: 0; } ul.chk li { font-size: 21px; color: var(--muted); padding: 7px 0 7px 36px; position: relative; }
+ul.chk li::before { content: "✓"; position: absolute; left: 0; top: 7px; width: 24px; height: 24px; border-radius: 50%; background: #dcfce7; color: #166534; font-weight: 800; font-size: 15px; display: grid; place-items: center; }
+ul.chk.warn li::before { content: "!"; background: #fef3c7; color: #92400e; }
 </style></head><body>
 
+<!-- 1 -->
+<section class="s dark" style="justify-content:center">
+  <div class="kick">Hacktoberfest Elazığ Fest 2026 · Side Hustle</div>
+  <h1>Kulüp<span class="grad">OS</span></h1>
+  <p style="font-size:34px;color:#fff;margin:22px 0 28px;max-width:900px">Öğrenci kulüplerinin işletim sistemi: her şey tek yerde, yapay zekâ analiz eder, veri senin bilgisayarında kalır.</p>
+  <div><span class="pill">Gemma 4 · yerel</span><span class="pill">Açık kaynak · MIT</span><span class="pill">Öğrenciler için ücretsiz</span></div>
+  <div class="foot"><span>github.com/sudenurozturkk/kulupos</span><span>Sudenur Öztürk</span></div>
+</section>
+
+<!-- 2 -->
+<section class="s">
+  <div class="kick">Problem</div>
+  <h2>Kulüp büyüdükçe iş değil, <span class="grad">karmaşa</span> büyüyor.</h2>
+  <div class="row">
+    <div class="card grow"><h3>Her şey farklı yerde</h3><p>Görev bir sohbette, karar birinin defterinde, etkinlik verisi bir tabloda. Neyin nerede olduğu belli değil.</p></div>
+    <div class="card grow"><h3>10+ kişi, çok komite</h3><p>Sorumluluklar karışıyor; kim neyi yapıyor, neyi geciktiriyor görünmüyor.</p></div>
+    <div class="card grow"><h3>Yoğun dönemler</h3><p>Festival, konferans ve etkinlikler üst üste biniyor; hazırlıklar ve sponsor işleri kayıyor.</p></div>
+    <div class="card grow"><h3>Dersler unutuluyor</h3><p>Etkinlik nasıl geçti, neyi düzeltmeli? Sonuçlar analiz edilmeden kayboluyor.</p></div>
+  </div>
+  <div class="foot"><span>KulüpOS</span><span>2 / 11</span></div>
+</section>
+
+<!-- 3 -->
+<section class="s soft">
+  <div class="kick">Çözüm</div>
+  <h2>Kulübün işleri tek çalışma alanında, <span class="grad">yapay zekâ</span> yanında.</h2>
+  <div class="row" style="align-items:center;gap:36px">
+    <div style="width:430px">
+      <ul class="chk">
+        <li>Görev, etkinlik, toplantı, karar, kişi ve komite birbirine bağlı</li>
+        <li>Toplantıda ya da etkinlikte istediğin an bilgi gir</li>
+        <li>Yerelde kalıcı: tek SQLite dosyası, internetsiz</li>
+        <li>Gemma 4 analiz eder, rapor yazar, öneri verir</li>
+      </ul>
+    </div>
+    <div class="shot grow"><div class="bar"><i></i><i></i><i></i></div><img src="img/overview.jpg"></div>
+  </div>
+  <div class="foot"><span>KulüpOS</span><span>3 / 11</span></div>
+</section>
+
+<!-- 4 -->
+<section class="s">
+  <div class="kick">Ürün</div>
+  <h2>Etkinlikten komiteye, hepsi birbirine bağlı.</h2>
+  <div class="row" style="gap:26px">
+    <div class="grow"><div class="shot"><div class="bar"><i></i><i></i><i></i></div><img src="img/events.jpg"></div><p style="margin-top:14px"><b style="color:var(--ink)">Etkinlikler:</b> durum, tarih, hazırlık ilerlemesi.</p></div>
+    <div class="grow"><div class="shot"><div class="bar"><i></i><i></i><i></i></div><img src="img/unit.jpg"></div><p style="margin-top:14px"><b style="color:var(--ink)">Komiteler:</b> üyeler, iş yükü, görevler, etkinlikler.</p></div>
+  </div>
+  <div class="foot"><span>KulüpOS</span><span>4 / 11</span></div>
+</section>
+
+<!-- 5 -->
 <section class="s dark">
-  <div class="k">Hacktoberfest Elazığ Fest 2026 · Side Hustle</div>
-  <h1>KulüpOS</h1>
-  <p style="font-size:34px;color:#fff;margin-bottom:26px">Kulübün işleri tek yerde, yapay zekâyla düzende.</p>
-  <p>Toplantıda ya da etkinlikte istediğin an bilgi gir, yerelde kalsın;<br>yerel <b style="color:#fff">Gemma 4</b> analiz etsin, rapor ve öneri versin. Öğrenciler için ücretsiz.</p>
-  <div style="margin-top:24px"><span class="tag" style="background:rgba(255,255,255,.15);color:#fff">Açık kaynak · MIT</span><span class="tag" style="background:rgba(255,255,255,.15);color:#fff">Best Use of Gemma</span></div>
-  <div class="foot"><span>github.com/sudenurozturkk/kulupos</span><span>1 / 8</span></div>
-</section>
-
-<section class="s">
-  <div class="k">Problem</div>
-  <h2>Kulübün bilgisi dağınık: kim neyi yapıyor, neyin nerede olduğu belli değil.</h2>
-  <div class="grid">
-    <div class="card"><h3>Her şey farklı yerde</h3><p>Görev sohbette, karar notta, etkinlik verisi tabloda. 10+ kişi ve çok komiteyle karışıyor.</p></div>
-    <div class="card"><h3>Yoğun dönemler</h3><p>Festival, konferans ve etkinlikler üst üste; geciken ve sahipsiz iş fark edilmiyor.</p></div>
-    <div class="card"><h3>Öğrenilmeyen dersler</h3><p>Etkinlik nasıl geçti, neyi düzeltmeli? Sonuçlar analiz edilmeden unutuluyor.</p></div>
+  <div class="kick">Gemma 4 gerçekten ne yapıyor</div>
+  <h2>Veriyi okur, <span class="grad">analiz eder, kaydeder.</span></h2>
+  <div class="row" style="align-items:center;gap:34px">
+    <div style="width:470px">
+      <p><b style="color:#fff">Dönem analizi:</b> etkinliklerin sayılarını ve geri bildirimlerini okuyup güçlü yönleri, sorunları ve sonraki etkinlikler için öneriyi yazar.</p>
+      <p><b style="color:#fff">Komite raporu:</b> her komitenin kendi görev, etkinlik ve toplantılarından rapor.</p>
+      <p><b style="color:#fff">Etkinlik raporu, haftalık özet, "Kulübe sor":</b> hepsi kulübün gerçek kayıtlarından; kaynak kayıtları gösterilir.</p>
+      <p><b style="color:#fff">Sonuçlar sistemde saklanır</b> ve veri değişirse "ESKİ" işaretlenir.</p>
+    </div>
+    <div class="shot grow"><div class="bar"><i></i><i></i><i></i></div><img src="img/analysis.jpg"></div>
   </div>
-  <div class="foot"><span>KulüpOS</span><span>2 / 8</span></div>
+  <div class="foot"><span>KulüpOS</span><span>5 / 11</span></div>
 </section>
 
-<section class="s">
-  <div class="k">Jürinin üç sorusu</div>
-  <h2>Kim için? Hangi sıkıcı iş? Neden açık model?</h2>
-  <div class="grid">
-    <div class="card"><h3>Kim?</h3><p>Kulüp başkanları ve komite sorumluları. Her üniversitede onlarca kulüp, hepsi WhatsApp'ta çalışıyor.</p></div>
-    <div class="card"><h3>Hangi sıkıcı iş?</h3><p>"Kim neyi üstlenmişti, ne karar almıştık, geçen etkinlik nasıl geçti?" diye aramak ve rapor yazmak.</p></div>
-    <div class="card"><h3>Neden açık model?</h3><p>Sohbette onlarca öğrencinin adı ve özel mesajı var. Buluta gitmez, kullanım ücreti yok, internetsiz çalışır.</p></div>
+<!-- 6 -->
+<section class="s soft">
+  <div class="kick">Soru sor, kayıtlardan cevap al</div>
+  <h2>"Hangi etkinliğin puanı en düşük, neden?"</h2>
+  <div class="row" style="align-items:center;gap:34px">
+    <div class="shot grow"><div class="bar"><i></i><i></i><i></i></div><img src="img/ask.jpg"></div>
+    <div style="width:380px"><p>Gemma cevabı yalnızca kulüp kayıtlarına dayanarak yazar ve <b style="color:var(--ink)">hangi kayıtlara baktığını</b> gösterir.</p><p>Veride yoksa "yok" der, uydurmaz.</p></div>
   </div>
-  <div class="foot"><span>KulüpOS</span><span>3 / 8</span></div>
+  <div class="foot"><span>KulüpOS</span><span>6 / 11</span></div>
 </section>
 
+<!-- 7 -->
 <section class="s">
-  <div class="k">Çözüm ve Gemma 4 kullanımı</div>
-  <h2>Bilgiyi bir kez gir, yapay zekâ düzenlesin ve analiz etsin.</h2>
-  <div class="flow">
-    <div><b>1 · Gir</b>toplantıda elle; istersen WhatsApp/not yükle</div><div class="arrow">→</div>
-    <div><b>2 · Yerelde saklanır</b>tek SQLite dosyası, internetsiz</div><div class="arrow">→</div>
-    <div><b>3 · Gemma 4 analiz</b>özet, etkinlik analizi, rapor, plan önerisi</div><div class="arrow">→</div>
-    <div><b>4 · Sen onaylarsın</b>AI önerileri kaynaklı, onaysız kesinleşmez</div>
+  <div class="kick">Nasıl çalışır</div>
+  <h2>Hepsi bu bilgisayarda: sunucu, veritabanı, yapay zekâ.</h2>
+  <div class="row" style="margin-top:10px">
+    <div class="step"><div class="n">1</div><b>Arayüz</b>Sade JavaScript. CDN, harici font, API anahtarı yok.</div><div class="arrow">→</div>
+    <div class="step"><div class="n">2</div><b>FastAPI</b>Yalnızca 127.0.0.1. Giriş, kayıt, API.</div><div class="arrow">→</div>
+    <div class="step"><div class="n">3</div><b>SQLite</b>Tek dosya, kalıcı. Kayıtlar, geçmiş, kaydedilen raporlar.</div><div class="arrow">→</div>
+    <div class="step"><div class="n">4</div><b>Ollama + Gemma 4</b>gemma4:e4b, JSON şemalı çıktı, yerel çıkarım.</div>
   </div>
-  <p style="margin-top:26px">Gemma kulübün güncel verisini görür: haftalık özet yazar, etkinlik sonuçlarını karşılaştırır, geciken işleri ve gelecek plan önerilerini sunar. Hepsi gemma4:e4b ile, yerel Ollama üzerinden.</p>
-  <div class="foot"><span>KulüpOS</span><span>4 / 8</span></div>
+  <p style="margin-top:26px">Gemma'nın her cevabı kodda denetlenir: kaynak, kişi, tarih, sayı, alıntı. Veride olmayan bir sayı veya isim geçen metin <b style="color:var(--ink)">reddedilir</b>.</p>
+  <div class="foot"><span>KulüpOS</span><span>7 / 11</span></div>
 </section>
 
-<section class="s">
-  <div class="k">Güvenlik tasarımı</div>
-  <h2>Küçük model, sıkı kurallar.</h2>
-  <div class="grid" style="grid-auto-flow:row;grid-template-columns:1fr 1fr">
-    <div class="card"><h3>Kaynak şart</h3><p>Kaynağı bulunamayan öneri onaylanamaz.</p></div>
-    <div class="card"><h3>Otomatik onay yok</h3><p>Öneriler ayrı kuyrukta bekler, gerçek sayılara karışmaz.</p></div>
-    <div class="card"><h3>Uydurma yok</h3><p>Bilinmeyen sorumlu/tarih boş kalır. Rapordaki sayı, isim ve alıntı veride yoksa metin reddedilir.</p></div>
-    <div class="card"><h3>Notlar veridir, komut değil</h3><p>Not içindeki "önceki talimatları unut" Gemma'ya emir olmaz.</p></div>
+<!-- 8 -->
+<section class="s dark">
+  <div class="kick">Güvenlik tasarımı</div>
+  <h2>Küçük bir model, <span class="grad">sıkı kurallar.</span></h2>
+  <div class="row" style="flex-wrap:wrap">
+    <div class="card" style="width:calc(50% - 11px);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff"><h3>Kaynak şart</h3><p style="color:#d9defc">Kaynağı olmayan yapay zekâ kaydı kesin sayılmaz, onaylanamaz.</p></div>
+    <div class="card" style="width:calc(50% - 11px);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff"><h3>Otomatik onay yok</h3><p style="color:#d9defc">Öneriler ayrı kuyrukta bekler; sen onaylamadan gerçek veri olmaz.</p></div>
+    <div class="card" style="width:calc(50% - 11px);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff"><h3>Uydurma yok</h3><p style="color:#d9defc">Bilinmeyen sorumlu veya tarih boş kalır. Raporlar yalnızca girilmiş veriden yazılır.</p></div>
+    <div class="card" style="width:calc(50% - 11px);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff"><h3>Veri dışarı çıkmaz</h3><p style="color:#d9defc">Bulut yok, mesaj metni günlüğe yazılmaz, notlardaki "talimatlar" komut olmaz.</p></div>
   </div>
-  <div class="foot"><span>KulüpOS</span><span>5 / 8</span></div>
+  <div class="foot"><span>KulüpOS</span><span>8 / 11</span></div>
 </section>
 
+<!-- 9 -->
 <section class="s">
-  <div class="k">Canlı demo (hesap gerekmez)</div>
-  <h2>FUB3V Yönetim 2026 örnek kulübü</h2>
-  <div class="grid" style="grid-auto-flow:row;grid-template-columns:1fr 1fr">
-    <div class="card"><h3>1 · Kulüp durumu</h3><p>Geciken ve sahipsiz işler, yaklaşan etkinlikler.</p></div>
-    <div class="card"><h3>2 · Görevler</h3><p>Duruma göre pano; karttan kaynak mesaja.</p></div>
-    <div class="card"><h3>3 · AI incelemesi</h3><p>Öneriyi onayla / reddet.</p></div>
-    <div class="card"><h3>4 · Etkinlik ve toplantı</h3><p>Katılım, geri bildirim, rapor, toplantı özeti.</p></div>
-  </div>
-  <div class="foot"><span>KulüpOS</span><span>6 / 8</span></div>
-</section>
-
-<section class="s">
-  <div class="k">Dürüst ölçüm</div>
+  <div class="kick">Dürüst ölçüm</div>
   <h2>Ne işe yarıyor, nerede zorlanıyor.</h2>
-  <div class="grid" style="margin-bottom:22px">
-    <div class="card"><div class="big">10/14</div><p>elle yazılmış kontrol (TR demo, 127 mesaj). Önceki koşular: 7 ve 11.</p></div>
-    <div class="card"><div class="big">~230 sn</div><p>RTX 3050 4 GB laptopta analiz süresi, tamamen yerel.</p></div>
-    <div class="card"><div class="big">12/12</div><p>toplantı önerisinin alıntısı notta gerçekten var (2 kısa toplantı).</p></div>
+  <div class="row" style="margin-bottom:18px">
+    <div class="card grow"><div class="num">10/14</div><p>elle yazılmış kontrol (TR demo sohbet, 127 mesaj). Önceki koşular: 7 ve 11.</p></div>
+    <div class="card grow"><div class="num">~4 dk</div><p>(~230 sn) RTX 3050 4 GB laptopta 127 mesajlık analiz, tamamen yerel.</p></div>
+    <div class="card grow"><div class="num">12/12</div><p>toplantı önerisinin alıntısı notta gerçekten var (2 kısa toplantı).</p></div>
+    <div class="card grow"><div class="num">116</div><p>otomatik test (sahte modelle); canlı model ayrı betiklerle denendi.</p></div>
   </div>
-  <p class="warn">Sınırlar: görev devirlerini ve bazı sorumluları kaçırıyor, sorumlusuz işleri yakalamakta zayıf; iki toplantı doğruluk oranı değil. Bu yüzden otomatik onay yok.</p>
-  <div class="foot"><span>KulüpOS</span><span>7 / 8</span></div>
+  <ul class="chk warn"><li>Görev devirlerini ve bazı sorumluları kaçırıyor; bu yüzden otomatik onay yok.</li><li>Uzun üretimler (haftalık özet ~70 sn) küçük bir laptopta yavaş; sonuçlar kaydedilerek tekrar beklenmez.</li></ul>
+  <div class="foot"><span>KulüpOS</span><span>9 / 11</span></div>
 </section>
 
-<section class="s dark">
-  <div class="k">Sırada ne var</div>
-  <h2>Şimdi çalışan ve planlanan.</h2>
-  <p><b style="color:#fff">Çalışıyor:</b> sohbet/toplantı/etkinlik analizi, onay kuyruğu, görev panosu, etkinlik raporu, haftalık özet, kişi ve komite sayfaları, giriş/kayıt, TR/EN, 114 otomatik test.</p>
-  <p><b style="color:#fff">Planlı (henüz yok):</b> roller ve çok kullanıcılı veri ayrımı, sistem içi mesajlaşma, toplantı ses kaydı, bütçe/sponsor takibi, dış entegrasyonlar.</p>
-  <p style="margin-top:26px;font-size:30px;color:#fff">Kulüplere ücretsiz, veri kulübün bilgisayarında.</p>
-  <div class="foot"><span>github.com/sudenurozturkk/kulupos · MIT</span><span>8 / 8</span></div>
+<!-- 10 -->
+<section class="s soft">
+  <div class="kick">Neden açık model, neden ücretsiz</div>
+  <h2>Kulüplerin bütçesi yok, verisi özel.</h2>
+  <div class="row">
+    <div class="card grow"><h3>Gizlilik</h3><p>Öğrencilerin adı ve mesajları bilgisayardan çıkmaz.</p></div>
+    <div class="card grow"><h3>Maliyet</h3><p>Kullanım ücreti yok; istediğin kadar yeniden analiz.</p></div>
+    <div class="card grow"><h3>Çevrimdışı</h3><p>Model indirildikten sonra internetsiz çalışır.</p></div>
+    <div class="card grow"><h3>Kilitlenme yok</h3><p>PANO_MODEL ile istediğin açık modeli tak.</p></div>
+  </div>
+  <p style="margin-top:26px"><b style="color:var(--ink)">Side hustle (planlı):</b> kulüpler için ücretsiz; üniversitelere ve kurumlara kurulum ve destek hizmeti.</p>
+  <div class="foot"><span>KulüpOS</span><span>10 / 11</span></div>
 </section>
+
+<!-- 11 -->
+<section class="s dark" style="justify-content:center">
+  <div class="kick">Sırada</div>
+  <h2 style="font-size:54px">Bugün çalışan: <span class="grad">tek yerde düzen + yerel yapay zekâ.</span></h2>
+  <p><b style="color:#fff">Planlı (henüz yok):</b> roller ve kullanıcı başına veri ayrımı · sistem içi mesajlaşma · toplantı ses kaydı · bütçe ve sponsor takibi · dış entegrasyonlar.</p>
+  <p style="margin-top:26px;font-size:30px;color:#fff">Dene: github.com/sudenurozturkk/kulupos</p>
+  <div class="foot"><span>KulüpOS · MIT</span><span>11 / 11</span></div>
+</section>
+<script>var n=parseInt(location.hash.slice(1));if(n){document.querySelectorAll(".s").forEach(function(e,i){if(i!==n-1)e.style.display="none"})}</script>
 </body></html>

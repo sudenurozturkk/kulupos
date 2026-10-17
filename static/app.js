@@ -445,6 +445,8 @@ function icon(name) {
 }
 
 
+const md = x => esc(x).replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>");
+
 async function api(path, opts = {}) {
   const res = await fetch(path, {
     ...opts,
@@ -1014,7 +1016,7 @@ async function showReport(eventId) {
     m.querySelector(".modal-box").innerHTML = `<h3>${t("rp_title")}: ${esc(ev ? ev.title : "")}</h3>
       <p class="muted">${t("rp_note")}</p>
       ${has ? `<p class="muted">${t(r.source === "sample" ? "rp_src_sample" : "rp_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
-        ${r.stale ? `<p> ${t("rp_stale")}</p>` : ""}<pre class="report" style="white-space:pre-wrap">${esc(r.report)}</pre>` : `<p>${t("rp_none")}</p>`}
+        ${r.stale ? `<p> ${t("rp_stale")}</p>` : ""}<div class="report-text">${md(r.report)}</div>` : `<p>${t("rp_none")}</p>`}
       ${extra}
       <div id="rp-wait"></div>
       <div class="modal-actions">${has ? `<button class="ghost" id="rp-copy">${t("rp_copy")}</button>` : ""}
@@ -1375,7 +1377,7 @@ function renderAskView() {
 function answerHtml(a) {
   return `<div class="wa">
     <div class="bubble mine" style="max-width:420px">${esc(a.question)}</div>
-    <div class="bubble" style="margin-top:8px">${esc(a.answer).replace(/\[#(\d+)\]/g, '<a href="javascript:void 0" data-src="$1">[#$1]</a>').replace(/\[([TEDQM]\d+)\]/g, "")}</div>
+    <div class="bubble" style="margin-top:8px">${md(a.answer).replace(/\[#(\d+)\]/g, '<a href="javascript:void 0" data-src="$1">[#$1]</a>').replace(/\[([TEDQM]\d+)\]/g, "")}</div>
   </div>
   ${(a.records || []).length ? `<h4 class="muted">${lang === "tr" ? "Dayandığı kayıtlar" : "Records used"}</h4><div class="rec-chips">${a.records.map(r => r.href ? `<a class="rec-chip" href="${r.href}">${esc(r.title)}</a>` : `<span class="rec-chip">${esc(r.title)}</span>`).join("")}</div>` : ""}
   ${a.sources.length ? `<h4 class="muted">${t("sources")}</h4><div class="transcript">${a.sources.map(m =>
@@ -1602,7 +1604,7 @@ async function renderAnalysisView() {
     const box = $("#an-insight");
     if (!box) return;
     box.innerHTML = `${r.insight ? `<p class="muted">${t(r.source === "sample" ? "an_src_sample" : "an_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
-      ${r.stale ? `<p> ${t("an_stale")}</p>` : ""}<div class="report-text">${esc(r.insight)}</div>` : `<p class="muted">${t("an_insight_none")}</p>`}
+      ${r.stale ? `<p> ${t("an_stale")}</p>` : ""}<div class="report-text">${md(r.insight)}</div>` : `<p class="muted">${t("an_insight_none")}</p>`}
       ${extra}<div id="an-wait"></div>
       <div class="row-actions">${r.insight ? `<button class="ghost" id="an-copy">${t("rp_copy")}</button>` : ""}
         <button class="primary" id="an-make">${r.insight ? t("an_insight_re") : t("an_insight_btn")}</button></div>`;
@@ -1868,7 +1870,7 @@ async function renderUnitView() {
       ${sect(TR ? "Toplantılar" : "Meetings", mtHtml, p.meetings.length)}
     </div></div></div>`;
   const drawReport = (r, extra = "") => {
-    $("#un-report").innerHTML = `${r.report ? `<p class="muted small">${esc(r.model || "")}${r.created_at ? " · " + esc(r.created_at.replace("T", " ").slice(0, 16)) : ""}</p>${r.stale ? `<p class="stale-note">${t("rp_stale")}</p>` : ""}<div class="report-text">${esc(r.report)}</div>` : `<p>${TR ? "Henüz rapor yok." : "No report yet."}</p>`}
+    $("#un-report").innerHTML = `${r.report ? `<p class="muted small">${esc(r.model || "")}${r.created_at ? " · " + esc(r.created_at.replace("T", " ").slice(0, 16)) : ""}</p>${r.stale ? `<p class="stale-note">${t("rp_stale")}</p>` : ""}<div class="report-text">${md(r.report)}</div>` : `<p>${TR ? "Henüz rapor yok." : "No report yet."}</p>`}
       ${extra}<div id="un-wait"></div><div class="row-actions">${r.report ? `<button class="ghost" id="un-copy">${t("rp_copy")}</button>` : ""}<button class="primary" id="un-make">${r.report ? t("rp_remake") : t("rp_make")}</button></div>`;
     const cp = $("#un-copy");
     if (cp) cp.onclick = () => copyText(r.report);

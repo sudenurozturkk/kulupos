@@ -823,9 +823,11 @@ async function manageUnits() {
 function dueChip(item, today) {
   if (!item.due) return `<span class="chip none">${t("no_due")}</span>`;
   const soon = new Date(today + "T12:00:00"); soon.setDate(soon.getDate() + 3);
-  const cls = item.status === "done" ? "" : item.due < today ? "overdue" : item.due <= soon.toISOString().slice(0, 10) ? "soon" : "";
-  const word = cls === "overdue" ? ` · ${t("n_late")}` : cls === "soon" ? ` · ${t("chip_soon")}` : "";
-  return `<span class="chip ${cls}">${icon(cls === "overdue" || cls === "soon" ? "clock" : "calendar")} ${fmtDate(item.due)}${word}</span>`;
+  const late = item.status !== "done" && item.due < today;
+  const soonish = item.status !== "done" && !late && item.due <= soon.toISOString().slice(0, 10);
+  if (late) return `<span class="due late">${icon("clock")} <time>${fmtDate(item.due)}</time> <span>${t("n_late")}</span></span>`;
+  if (soonish) return `<span class="chip soon">${icon("clock")} ${fmtDate(item.due)} · ${t("chip_soon")}</span>`;
+  return `<span class="chip">${icon("calendar")} ${fmtDate(item.due)}</span>`;
 }
 
 function card(task, today) {
@@ -837,7 +839,7 @@ function card(task, today) {
     <div class="card-meta">
       ${task.owner ? `<span class="chip">${avatar(task.owner)}${esc(firstName(task.owner))}</span>` : `<span class="chip none">${t("no_owner")}</span>`}
       ${dueChip(task, today)}
-      ${task.source_idx != null ? `<button class="src" data-src="${task.source_idx}" title="${t("source")}" aria-label="${t("source")}"></button>` : ""}
+      ${task.source_idx != null ? `<button class="src" data-src="${task.source_idx}" title="${t("source")}" aria-label="${t("source")}">${icon("chat")}</button>` : ""}
     </div>
   </div>`;
 }
@@ -856,14 +858,14 @@ function renderBoardView() {
     const list = tasks.filter(x => (u ? x.unit === u : !x.unit || !b.chat.units.includes(x.unit)));
     return `<div class="column">
       <div class="column-head"><span>${esc(u || t("no_unit"))} <span class="n">${list.length}</span></span>
-        <button data-add="${esc(u)}" title="${t("add_task")}" aria-label="${t("add_task")}"></button></div>
+        <button class="ghost icon-btn" data-add="${esc(u)}" title="${t("add_task")}" aria-label="${t("add_task")}">${icon("plus")}</button></div>
       ${list.map(x => card(x, b.today)).join("") || `<div class="empty"><b>${t("empty_col")}</b>${t("empty_col_hint")}</div>`}
     </div>`;
   }).join("");
 
   const m = b.missed;
   const miss = (title, list, fmt) => list.length ? `<h4>${title} (${list.length})</h4><ul class="list">${list.map(fmt).join("")}</ul>` : "";
-  const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}"></button>` : "";
+  const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}">${icon("chat")}</button>` : "";
   const decBtns = d => (d.validity === "valid"
     ? `<button class="small ghost" data-qset="${d.id}" data-field="validity" data-st="changed">${t("val_changed")}</button><button class="small ghost" data-qset="${d.id}" data-field="validity" data-st="cancelled">${t("val_cancelled")}</button>`
     : `<button class="small ghost" data-qset="${d.id}" data-field="validity" data-st="valid">${t("val_valid_btn")}</button>`)
@@ -879,33 +881,39 @@ function renderBoardView() {
       <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"}</small></span>${srcBtn(q)}${qBtns(q)}</li>`)
     + miss(t("m_orphans"), m.orphans, taskLi) + miss(t("m_overdue"), m.overdue, taskLi) + miss(t("m_soon"), m.soon, taskLi);
 
+  const missedN = m.questions.length + m.orphans.length + m.overdue.length + m.soon.length;
+  const drawerOpen = !!($("#missed-drawer") && !$("#missed-drawer").hidden);
+  const openQs = b.questions.filter(q => q.status === "open");
+  const qList = items => items.map(q => `<li><span class="grow">${esc(q.title)}
+        <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"} · ${esc(t("st_name")[q.status] || q.status)}</small></span>${srcBtn(q)}${qBtns(q)}</li>`).join("");
+  const boardHtml = F === "questions"
+    ? `<div class="column questions"><div class="column-head"><span>${t("flt_questions")} <span class="n">${openQs.length}</span></span></div>
+        <ul class="list">${qList(openQs) || `<li class="muted">${t("none_yet")}</li>`}</ul></div>`
+    : cols;
+  const decisionsHtml = b.decisions.length ? `<ul class="list">${b.decisions.map(d =>
+        `<li class="${d.validity !== "valid" ? "muted" : ""}"><input type="checkbox" data-final="${d.id}" ${d.status === "done" ? "checked" : ""} title="${t("dec_final")}" aria-label="${t("dec_final")}"><span class="grow">${d.validity !== "valid" ? `<s>${esc(d.title)}</s> <span class="chip">${esc(t("val_name")[d.validity])}</span>` : esc(d.title)}</span>${srcBtn(d)}${decBtns(d)}</li>`).join("")}</ul>`
+    : `<p class="muted">${t("none_yet")}</p>`;
+
   $("#view").innerHTML = `
-  <div class="filters">
+  <div class="filters board-filters">
     ${F ? `<span class="chip ai">${t("flt_label")}: ${t("flt_" + F)} <button class="small" id="clear-flt">${t("flt_clear")}</button></span>` : ""}
     <select id="member"><option value="">${t("everyone")}</option>${b.members.map(n =>
       `<option ${n === S.member ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
     <label><input type="checkbox" id="showdone" ${S.showDone ? "checked" : ""}> ${t("show_done")}</label>
     ${S.member ? `<button class="small" id="copy-member">${t("copy_member")(firstName(S.member))}</button>` : ""}
+    <button type="button" class="ghost" id="btn-missed">${icon("alert")} ${t("missed")}${missedN ? ` <span class="side-count">${missedN}</span>` : ""}</button>
   </div>
-  <div class="layout">
-    <div class="columns">${F === "questions" ? `<div class="panel" style="grid-column:1/-1"><ul class="list">${
-      b.questions.filter(q => q.status === "open").map(q => `<li><span class="grow">${esc(q.title)}
-        <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"}</small></span>${srcBtn(q)}${qBtns(q)}</li>`).join("") || `<li class="muted">${t("none_yet")}</li>`}</ul>
-        ${closedQ.length ? `<h4>${t("q_closed")} (${closedQ.length})</h4><ul class="list">${closedQ.map(q => `<li><span class="grow">${esc(q.title)}
-        <small>${esc(t("st_name")[q.status] || q.status)}</small></span>${srcBtn(q)}${qBtns(q)}</li>`).join("")}</ul>` : ""}</div>` : cols}</div>
-    <aside class="side">
-      <div class="panel missed"><h3> ${t("missed")}</h3>${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}</div>
-      <div class="panel"><h3>${t("events")} <button class="small" data-ev-add title="${t("ev_add")}" aria-label="${t("ev_add")}"></button></h3>
-        ${b.events.length ? "" : `<p><button class="ghost small" data-ev-sample>${t("ev_sample")}</button></p>`}${b.events.length ? `<ul class="list">${b.events.map(e => {
-        const n = b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
-        return `<li><span class="grow"><a href="#/c/${b.chat.id}/event/${e.id}"><b>${esc(e.title)}</b></a>
-          <small>${e.due ? fmtDate(e.due) : "—"}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.phase ? " · " + esc(t("ph")[e.phase] || e.phase) : ""}${n ? " · " + t("ev_linked")(n) : ""}</small></span>${srcBtn(e)}</li>`;
-      }).join("")}</ul>`
-        : `<p class="muted">${t("none_yet")}</p>`}</div>
-      <div class="panel"><h3>${t("decisions")}</h3>${b.decisions.length ? `<ul class="list">${b.decisions.map(d =>
-        `<li class="${d.validity !== "valid" ? "muted" : ""}"><input type="checkbox" data-final="${d.id}" ${d.status === "done" ? "checked" : ""} title="${t("dec_final")}" aria-label="${t("dec_final")}"><span class="grow">${d.validity !== "valid" ? `<s>${esc(d.title)}</s> <span class="chip">${esc(t("val_name")[d.validity])}</span>` : esc(d.title)}</span>${srcBtn(d)}${decBtns(d)}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}</div>
-    </aside>
-  </div>`;
+  <div class="board-scroll"><div class="columns">${boardHtml}</div></div>
+  <div class="drawer-back" id="drawer-back" ${drawerOpen ? "" : "hidden"}></div>
+  <aside class="drawer" id="missed-drawer" aria-label="${esc(t("missed"))}" ${drawerOpen ? "" : "hidden"}>
+    <div class="drawer-head"><h3>${icon("alert")} ${t("missed")}</h3>
+      <button type="button" class="ghost icon-btn" id="drawer-close" aria-label="${esc(t("close"))}">${icon("close")}</button></div>
+    <div class="drawer-body">
+      ${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}
+      ${closedQ.length ? `<details class="compact"><summary>${t("q_closed")} (${closedQ.length})</summary><ul class="list">${qList(closedQ)}</ul></details>` : ""}
+      <h3>${t("decisions")}</h3>${decisionsHtml}
+    </div>
+  </aside>`;
 
   $("#member").onchange = e => { S.member = e.target.value; renderBoardView(); };
   const cf = $("#clear-flt");
@@ -913,6 +921,10 @@ function renderBoardView() {
   const cm = $("#copy-member");
   if (cm) cm.onclick = () => copyText(memberMessage(S.member));
   $("#showdone").onchange = e => { S.showDone = e.target.checked; renderBoardView(); };
+  const closeDrawer = () => { const d = $("#missed-drawer"), back = $("#drawer-back"); if (d) d.hidden = true; if (back) back.hidden = true; };
+  $("#btn-missed").onclick = () => { $("#missed-drawer").hidden = false; $("#drawer-back").hidden = false; };
+  $("#drawer-close").onclick = closeDrawer;
+  $("#drawer-back").onclick = closeDrawer;
   const view = $("#view");
   view.querySelectorAll("[data-toggle]").forEach(el => (el.onchange = async () => {
     await patch(`/api/items/${el.dataset.toggle}`, { status: el.checked ? "done" : "open" });
@@ -1932,6 +1944,8 @@ document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   const menu = $("#more-menu");
   if (menu && !menu.hidden) { menu.hidden = true; $("#btn-more")?.setAttribute("aria-expanded", "false"); return; }
+  const drawer = $("#missed-drawer");
+  if (drawer && !drawer.hidden) { drawer.hidden = true; const back = $("#drawer-back"); if (back) back.hidden = true; return; }
   closeSidebar();
 });
 document.addEventListener("click", e => {

@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analysis, analyzer, assistant, auth, db, export, insights, llm, meetings, people, report, seed
+from . import analysis, analyzer, assistant, auth, db, units as unitmod, export, insights, llm, meetings, people, report, seed
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -678,6 +678,31 @@ async def event_insight(chat_id: int):
                                   "unsupported": e.unsupported})
     db.save_insight(chat_id, r["insight"], r["fingerprint"], lang, r["model"])
     return {**stats, **analysis.insight_view(stats, db.get_insight(chat_id))}
+
+
+@app.get("/api/chats/{chat_id}/unit")
+def unit_page(chat_id: int, name: str):
+    chat = _chat_or_404(chat_id)
+    if name not in chat["units"]:
+        raise HTTPException(404, "Komite bulunamadı / committee not found")
+    return {**unitmod.page(chat_id, name, today().isoformat()), "report": unitmod.view(chat_id, name, today().isoformat())}
+
+
+@app.post("/api/chats/{chat_id}/unit/report")
+async def unit_report(chat_id: int, name: str):
+    """Slow (local model). Saved in the database; goes stale when the committee's records change."""
+    chat = _chat_or_404(chat_id)
+    if name not in chat["units"]:
+        raise HTTPException(404, "Komite bulunamadı / committee not found")
+    try:
+        r = await unitmod.generate(chat_id, name, today().isoformat(), report.language_of(chat_id) if db.get_messages(chat_id) else "tr")
+    except llm.LLMError as e:
+        raise HTTPException(503, str(e))
+    except report.ReportRejected as e:
+        raise HTTPException(422, {"message": "Rapor, veride olmayan rakamlar içerdiği için reddedildi / report rejected: figures not in the data",
+                                  "unsupported": e.unsupported})
+    db.save_unit_report(chat_id, name, r["report"], r["fingerprint"], "tr", r["model"])
+    return unitmod.view(chat_id, name, today().isoformat())
 
 
 # ---- meetings --------------------------------------------------------------------

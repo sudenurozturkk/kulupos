@@ -55,7 +55,7 @@ const I18N = {
     health_down: "Ollama kapalı",
     tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", units_btn: "Komiteler", units_add: "Yeni komite adı", units_add_btn: "Ekle", unit_members_ph: "Üyeler (virgülle ayır, serbest metin)", units_note: "Silinen komitenin görevleri “Komitesiz” sütununa düşer.", ev_add: "Etkinlik ekle", ev_edit: "Etkinliği düzenle", ev_type: "Tür", ev_date: "Tarih", ev_time: "Saat", ev_place: "Mekân", ev_owner: "Sorumlu",
     ev_units: "Komiteler", ev_phase: "Durum", ev_exp: "Beklenen katılımcı", ev_act: "Gerçekleşen katılımcı", ev_bud_est: "Bütçe tahmini", ev_bud_act: "Gerçekleşen bütçe", ev_apps: "Başvuru sayısı", ev_fb_score: "Geri bildirim puanı (1-5, isteğe bağlı)", ev_fb_note: "Kısa geri bildirim notu",
-    tab_analysis: "Etkinlik analizi", an_none: "Girilmedi", an_intro: "Sayılar yalnızca girilen etkinlik verisinden hesaplanır (iptal edilenler dışarıda); Gemma gerekmez. Eksik veri “Girilmedi” yazar.",
+    tab_analysis: "Etkinlik analizi", an_none: "—", an_intro: "Sayılar yalnızca girilen etkinlik verisinden hesaplanır (iptal edilenler dışarıda); Gemma gerekmez. Eksik veri “Girilmedi” yazar.",
     an_total: "Etkinlik", an_avg_att: "Ortalama katılım", an_avg_rate: "Ortalama katılım oranı", an_avg_fb: "Ortalama geri bildirim", an_high: "En yüksek katılım", an_low: "En düşük katılım",
     an_low_need: "Karşılaştırma için en az 2 etkinlikte gerçekleşen katılım gerekir.", an_committee: "Komite bazında etkinlik sayısı", an_committee_note: "Birden fazla komiteli etkinlik her komitede sayılır.", an_no_unit: "Komite girilmedi",
     an_per_event: "Etkinlik başına", an_c_event: "Etkinlik", an_c_rate: "Katılım oranı (gerçekleşen/beklenen)", an_c_conv: "Başvuru katılım", an_c_budget: "Bütçe sapması", an_c_fb: "Geri bildirim",
@@ -190,7 +190,7 @@ const I18N = {
     health_down: "Ollama is not running",
     tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", units_btn: "Teams", units_add: "New team name", units_add_btn: "Add", unit_members_ph: "Members (comma separated, free text)", units_note: "Tasks of a deleted team move to the “no team” column.", ev_add: "Add event", ev_edit: "Edit event", ev_type: "Type", ev_date: "Date", ev_time: "Time", ev_place: "Venue", ev_owner: "Owner",
     ev_units: "Teams", ev_phase: "Status", ev_exp: "Expected attendees", ev_act: "Actual attendees", ev_bud_est: "Budget estimate", ev_bud_act: "Actual budget", ev_apps: "Applications", ev_fb_score: "Feedback score (1-5, optional)", ev_fb_note: "Short feedback note",
-    tab_analysis: "Event analysis", an_none: "Not entered", an_intro: "Figures are computed only from the entered event data (cancelled events excluded); no model needed. Missing data reads “Not entered”.",
+    tab_analysis: "Event analysis", an_none: "—", an_intro: "Figures are computed only from the entered event data (cancelled events excluded); no model needed. Missing data reads “Not entered”.",
     an_total: "Events", an_avg_att: "Average attendance", an_avg_rate: "Average attendance rate", an_avg_fb: "Average feedback", an_high: "Highest attendance", an_low: "Lowest attendance",
     an_low_need: "Needs actual attendance on at least 2 events to compare.", an_committee: "Events per committee", an_committee_note: "An event with several committees counts in each.", an_no_unit: "No committee entered",
     an_per_event: "Per event", an_c_event: "Event", an_c_rate: "Attendance rate (actual/expected)", an_c_conv: "Application attendance", an_c_budget: "Budget deviation", an_c_fb: "Feedback",
@@ -659,7 +659,7 @@ const TITLE = {
   overview: "tab_overview", summary: "tab_summary", ask: "tab_ask",
   events: "tab_events", event: "tab_events", analysis: "tab_analysis", plan: "tab_plan",
   meetings: "tab_meetings", meeting: "tab_meetings", board: "nav_tasks", review: "tab_review",
-  people: "tab_people", person: "tab_people", units: "tab_units", data: "nav_data",
+  people: "tab_people", person: "tab_people", units: "tab_units", unit: "tab_units", data: "nav_data",
 };
 
 function renderSideNav() {
@@ -672,7 +672,7 @@ function renderSideNav() {
   const here = S.board && S.board.chat.id === id ? S.board : null;
   const reviewN = here ? here.review.length + here.changes.length : 0;
   const missedN = here ? Object.values(here.missed).reduce((n, l) => n + l.length, 0) : 0;
-  const on = v => v === view || (v === "events" && view === "event") || (v === "people" && view === "person") || (v === "meetings" && view === "meeting");
+  const on = v => v === view || (v === "events" && view === "event") || (v === "people" && view === "person") || (v === "units" && view === "unit") || (v === "meetings" && view === "meeting");
   nav.innerHTML = SIDE.map(g => `<div class="side-label">${t(g.label)}</div>` + g.items.map(([v, key]) => {
     const n = v === "review" ? reviewN : v === "board" ? missedN : 0;
     return `<a href="#/c/${id}/${v}" class="${on(v) ? "active" : ""}"><span>${t(key)}</span>${n ? `<span class="side-count">${n}</span>` : ""}</a>`;
@@ -1582,6 +1582,9 @@ async function renderAnalysisView() {
     <td>${dev(r)}</td>
     <td>${r.feedback_score != null ? `<b>${r.feedback_score}</b>/5` : no}${r.feedback_note ? `<div class="muted small">${esc(r.feedback_note)}</div>` : ""}</td></tr>`).join("");
   view.innerHTML = `<div class="narrow wide">
+    ${a.total ? `<section class="panel ai-panel"><div class="panel-head"><div><h3>${lang === "tr" ? "Yapay zekâ dönem analizi" : "AI period analysis"}</h3>
+      <p class="muted small">${lang === "tr" ? "Gemma, etkinliklerin sayılarını ve geri bildirimlerini okuyup güçlü yönleri, sorunları ve sonraki etkinlikler için önerileri yazar. Sonuç kaydedilir; veri değişirse ESKİ işaretlenir." : "Gemma reads the event figures and feedback and writes strengths, problems and suggestions for the next events. The result is saved and marked OUTDATED when data changes."}</p></div></div>
+      <div id="an-insight"></div></section>` : ""}
     <p class="muted">${t("an_intro")}</p>
     ${a.total ? `<div class="kpis">
       ${kpi(t("an_total"), a.total)}${kpi(t("an_avg_att"), val(a.avg_attendees), a.with_attendance ? `${a.with_attendance}/${a.total}` : "")}
@@ -1592,14 +1595,14 @@ async function renderAnalysisView() {
     <ul class="list">${a.committees.map(c => `<li><span class="grow">${c.unit ? esc(c.unit) : t("an_no_unit")}</span><b>${c.events}</b></li>`).join("")}</ul>
     <h3>${t("an_per_event")}</h3>
     <div class="tscroll"><table class="atable"><thead><tr><th>${t("an_c_event")}</th><th>${t("an_c_rate")}</th><th>${t("an_c_conv")}</th><th>${t("an_c_budget")}</th><th>${t("an_c_fb")}</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <h3>${t("an_insight")}</h3><div id="an-insight"></div>` : `<div class="empty"><b>${t("an_empty")}</b></div>`}</div>`;
+` : `<div class="empty"><b>${t("an_empty")}</b></div>`}</div>`;
   if (!a.total) return;
   let timer = null;
   const draw = (r, extra = "") => {
     const box = $("#an-insight");
     if (!box) return;
     box.innerHTML = `${r.insight ? `<p class="muted">${t(r.source === "sample" ? "an_src_sample" : "an_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
-      ${r.stale ? `<p> ${t("an_stale")}</p>` : ""}<p class="insight">${esc(r.insight)}</p>` : `<p class="muted">${t("an_insight_none")}</p>`}
+      ${r.stale ? `<p> ${t("an_stale")}</p>` : ""}<div class="report-text">${esc(r.insight)}</div>` : `<p class="muted">${t("an_insight_none")}</p>`}
       ${extra}<div id="an-wait"></div>
       <div class="row-actions">${r.insight ? `<button class="ghost" id="an-copy">${t("rp_copy")}</button>` : ""}
         <button class="primary" id="an-make">${r.insight ? t("an_insight_re") : t("an_insight_btn")}</button></div>`;
@@ -1803,22 +1806,87 @@ async function renderPersonView() {
 // ---------------------------------------------------------------- committees and import/export pages
 function renderUnitsView() {
   const b = S.board, units = b.chat.units, members = b.chat.unit_members || {};
-  const rows = units.map(u => {
-    const tasks = b.tasks.filter(x => x.unit === u), open = tasks.filter(x => x.status === "open");
+  const TR = lang === "tr";
+  const cards = units.map(u => {
+    const tasks = b.tasks.filter(x => x.unit === u), open = tasks.filter(x => x.status !== "done");
     const late = open.filter(x => x.due && x.due < b.today).length;
     const evs = b.events.filter(e => (e.event_units || []).includes(u)).length;
-    const who = avatarStack(members[u]) || `<button type="button" class="ghost small" data-add-members>${t("un_add_member")}</button>`;
-    return `<tr><th scope="row">${esc(u)}</th><td>${who}</td><td><b>${open.length}</b></td><td class="${late > 0 ? "num-late" : ""}">${late ? `<b>${late}</b>` : "0"}</td><td>${evs}</td></tr>`;
+    const pr = tasks.length ? Math.round((tasks.length - open.length) / tasks.length * 100) : 0;
+    const who = avatarStack(members[u]) || `<span class="muted small">${TR ? "Üye girilmemiş" : "No members yet"}</span>`;
+    return `<a class="uc" href="#/c/${b.chat.id}/unit/${encodeURIComponent(u)}">
+      <span class="uc-top"><b>${esc(u)}</b><span class="uc-arrow">→</span></span>
+      <span class="uc-who">${who}</span>
+      <span class="pc-stats"><span><b>${open.length}</b>${t("pp_open")}</span><span class="${late ? "late" : ""}"><b>${late}</b>${t("pp_late")}</span><span><b>${evs}</b>${TR ? "Etkinlik" : "Events"}</span></span>
+      <span class="ev-prog"><span class="com-bar"><i style="width:${pr}%"></i></span><small>${pr}%</small></span></a>`;
   }).join("");
   const loose = b.tasks.filter(x => !x.unit || !units.includes(x.unit)).length;
-  $("#view").innerHTML = `<p class="muted">${t("un_intro")}</p>
-    ${units.length ? `<div class="tscroll wide-table"><table class="atable"><thead><tr><th>${t("tab_units")}</th><th>${t("un_members")}</th><th>${t("pp_open")}</th><th>${t("pp_late")}</th><th>${t("tab_events")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
-      : `<div class="empty-quiet">${icon("people")}<p>${t("none_yet")}</p><button type="button" class="ghost" data-add-members>${t("un_add_member")}</button></div>`}
+  $("#view").innerHTML = `<p class="muted">${TR ? "Bir komiteye tıkla: üyeleri, görevleri, etkinlikleri, toplantıları ve yapay zekâ komite raporu orada." : "Open a committee to see its members, tasks, events, meetings and the AI committee report."}</p>
+    ${units.length ? `<div class="uc-grid">${cards}</div>` : `<div class="empty-quiet">${icon("people")}<p>${t("none_yet")}</p><button type="button" class="ghost" data-add-members>${t("un_add_member")}</button></div>`}
     ${loose ? `<p class="muted small">${t("un_loose")(loose)}</p>` : ""}`;
   const openMembers = () => manageUnits();
   const head = $("#btn-units");
   if (head) head.onclick = openMembers;
   $("#view").querySelectorAll("[data-add-members]").forEach(el => (el.onclick = openMembers));
+}
+
+async function renderUnitView() {
+  const { chatId, arg: name } = route(), view = $("#view"), TR = lang === "tr";
+  const back = `<p><a href="#/c/${chatId}/units">${t("tab_units")}</a></p>`;
+  view.innerHTML = `<div class="evp">${back}<p class="muted"><span class="spinner"></span></p></div>`;
+  let p;
+  try { p = await api(`/api/chats/${chatId}/unit?name=${encodeURIComponent(name)}`); }
+  catch { location.hash = `#/c/${chatId}/units`; return; }
+  if (route().view !== "unit" || route().arg !== name) return;
+  const tile = (l, v, cls = "") => `<div class="tile ${cls}"><span>${l}</span><b>${v}</b></div>`;
+  const taskLi = x => `<li><input type="checkbox" data-toggle="${x.id}" ${x.status === "done" ? "checked" : ""} aria-label="${t("st_done")}">
+    <span class="grow ${x.status === "done" ? "muted" : ""}"><a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a>
+    <small>${x.owner ? esc(firstName(x.owner)) : t("no_owner")}${p.event_of[x.id] ? " · " + esc(p.event_of[x.id]) : ""}</small></span>${dueChip(x, p.today)}</li>`;
+  const open = p.tasks.filter(x => x.status !== "done"), done = p.tasks.filter(x => x.status === "done");
+  const none = `<p class="muted">${t("evp_none")}</p>`;
+  const sect = (title, body, n) => `<section class="panel"><h3>${title}${n != null ? ` <span class="n">${n}</span>` : ""}</h3>${body}</section>`;
+  const load = p.owners.map(o => ({ o, open: open.filter(x => x.owner === o).length, done: done.filter(x => x.owner === o).length }));
+  const loadHtml = load.length ? `<ul class="com-list">${load.map(r => `<li><span class="com-name"><a href="#/c/${chatId}/person/${encodeURIComponent(r.o)}">${esc(firstName(r.o))}</a></span>
+    <span class="com-bar"><i style="width:${Math.round(r.done / (r.open + r.done) * 100)}%"></i></span><span class="com-n">${r.open} / ${r.done}</span></li>`).join("")}</ul>` : none;
+  const evHtml = p.events.length ? `<ul class="list">${p.events.map(e => `<li><span class="grow"><a href="#/c/${chatId}/event/${e.id}">${esc(e.title)}</a>
+    <small>${e.due ? fmtDate(e.due) : "—"} · ${esc(t("ph")[e.phase] || "")}${e.feedback_score != null ? " · " + e.feedback_score + "/5" : ""}</small></span></li>`).join("")}</ul>` : none;
+  const mtHtml = p.meetings.length ? `<ul class="list">${p.meetings.map(m => `<li><span class="grow"><a href="#/c/${chatId}/meeting/${m.id}">${esc(m.title)}</a>
+    <small>${m.date ? fmtDate(m.date) : t("mt_nodate")} · ${esc(t("mt_st")[m.status] || m.status)}</small></span></li>`).join("")}</ul>` : none;
+  const who = p.members.length ? p.members.map(m => `<span class="meta-chip">${avatar(m)} ${esc(m)}</span>`).join("") : `<span class="meta-chip">${TR ? "Üye girilmemiş" : "No members yet"}</span>`;
+  view.innerHTML = `<div class="evp">${back}
+    <section class="evp-hero"><div class="grow"><div class="evp-title"><h2>${esc(p.unit)}</h2></div><div class="meta-chips">${who}</div></div>
+      <button class="hero-btn" id="un-members">${TR ? "Üyeleri düzenle" : "Edit members"}</button></section>
+    <div class="tiles">${tile(t("pp_open"), p.open)}${tile(t("pp_late"), p.late, p.late ? "bad" : "")}${tile(t("pp_done"), p.done)}${tile(TR ? "Sahipsiz" : "No owner", p.orphans)}${tile(TR ? "Etkinlik" : "Events", p.events.length)}${tile(TR ? "Toplantı" : "Meetings", p.meetings.length)}</div>
+    <section class="panel ai-panel"><div class="panel-head"><div><h3>${TR ? "Yapay zekâ komite raporu" : "AI committee report"}</h3>
+      <p class="muted small">${TR ? "Gemma, yalnızca bu komitenin görev, etkinlik ve toplantı kayıtlarından yazar. Rapor kaydedilir; veri değişirse ESKİ işaretlenir." : "Gemma writes only from this committee's records. The report is saved and marked OUTDATED when the data changes."}</p></div></div>
+      <div id="un-report"></div></section>
+    <div class="evp-grid"><div class="stack">
+      ${sect(TR ? "Açık görevler" : "Open tasks", open.length ? `<ul class="list">${open.map(taskLi).join("")}</ul>` : none, open.length)}
+      ${sect(TR ? "Tamamlananlar" : "Done", done.length ? `<ul class="list">${done.map(taskLi).join("")}</ul>` : none, done.length)}
+    </div><div class="stack">
+      ${sect(TR ? "İş yükü (açık / biten)" : "Workload (open / done)", loadHtml)}
+      ${sect(TR ? "Etkinlikler" : "Events", evHtml, p.events.length)}
+      ${sect(TR ? "Toplantılar" : "Meetings", mtHtml, p.meetings.length)}
+    </div></div></div>`;
+  const drawReport = (r, extra = "") => {
+    $("#un-report").innerHTML = `${r.report ? `<p class="muted small">${esc(r.model || "")}${r.created_at ? " · " + esc(r.created_at.replace("T", " ").slice(0, 16)) : ""}</p>${r.stale ? `<p class="stale-note">${t("rp_stale")}</p>` : ""}<div class="report-text">${esc(r.report)}</div>` : `<p>${TR ? "Henüz rapor yok." : "No report yet."}</p>`}
+      ${extra}<div id="un-wait"></div><div class="row-actions">${r.report ? `<button class="ghost" id="un-copy">${t("rp_copy")}</button>` : ""}<button class="primary" id="un-make">${r.report ? t("rp_remake") : t("rp_make")}</button></div>`;
+    const cp = $("#un-copy");
+    if (cp) cp.onclick = () => copyText(r.report);
+    $("#un-make").onclick = async e => {
+      const t0 = Date.now(); e.target.disabled = true;
+      const tick = () => { const w = $("#un-wait"); if (w) w.innerHTML = `<div class="progress"><div class="progress-top"><span><span class="spinner"></span> ${t("rp_wait")}</span><span class="muted">${Math.round((Date.now() - t0) / 1000)} s</span></div></div>`; };
+      tick(); const timer = setInterval(tick, 1000);
+      try { const next = await post(`/api/chats/${chatId}/unit/report?name=${encodeURIComponent(name)}`); clearInterval(timer); drawReport(next); }
+      catch (err) { clearInterval(timer); drawReport(r, `<div class="progress error"><b>${t("rp_rejected")}</b><br><small>${esc(err.message)}</small></div>`); }
+    };
+  };
+  drawReport(p.report);
+  $("#un-members").onclick = () => manageUnits();
+  view.querySelectorAll("[data-toggle]").forEach(el => (el.onchange = async () => {
+    await patch(`/api/items/${el.dataset.toggle}`, { status: el.checked ? "done" : "open" });
+    await reloadBoard();
+  }));
+  view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(p.tasks.find(x => x.id === Number(el.dataset.edit)))));
 }
 
 function renderDataView() {
@@ -1836,7 +1904,7 @@ function renderDataView() {
   bindDataActions();
 }
 
-const VIEWS = { units: renderUnitsView, data: renderDataView, people: renderPeopleView, person: renderPersonView, events: renderEventsView, event: renderEventView, meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
+const VIEWS = { units: renderUnitsView, unit: renderUnitView, data: renderDataView, people: renderPeopleView, person: renderPersonView, events: renderEventsView, event: renderEventView, meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
 
 // ---------------------------------------------------------------- render & polling
 function startPolling(chatId) {

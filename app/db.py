@@ -82,6 +82,16 @@ CREATE TABLE IF NOT EXISTS changes (
     review     TEXT NOT NULL DEFAULT 'proposed',  -- proposed | approved | rejected
     created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS unit_reports (
+    chat_id     INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+    unit        TEXT NOT NULL,
+    body        TEXT NOT NULL,
+    fingerprint TEXT NOT NULL,
+    lang        TEXT,
+    model       TEXT,
+    created_at  TEXT NOT NULL,
+    PRIMARY KEY (chat_id, unit)
+);
 CREATE TABLE IF NOT EXISTS event_reports (
     event_id    INTEGER PRIMARY KEY REFERENCES items(id) ON DELETE CASCADE,
     body        TEXT NOT NULL,
@@ -459,6 +469,17 @@ def save_insight(chat_id: int, body: str, fingerprint: str, lang: str, model: st
 
 def get_insight(chat_id: int) -> dict | None:
     rows = _rows("SELECT * FROM event_insights WHERE chat_id = ?", (chat_id,))
+    return rows[0] if rows else None
+
+
+def save_unit_report(chat_id: int, unit: str, body: str, fingerprint: str, lang: str, model: str | None) -> None:
+    with _lock, conn() as c:
+        c.execute("INSERT OR REPLACE INTO unit_reports (chat_id, unit, body, fingerprint, lang, model, created_at) "
+                  "VALUES (?, ?, ?, ?, ?, ?, ?)", (chat_id, unit, body, fingerprint, lang, model, _now()))
+
+
+def get_unit_report(chat_id: int, unit: str) -> dict | None:
+    rows = _rows("SELECT * FROM unit_reports WHERE chat_id = ? AND unit = ?", (chat_id, unit))
     return rows[0] if rows else None
 
 

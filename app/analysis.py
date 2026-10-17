@@ -34,6 +34,7 @@ def event_row(e: dict) -> dict:
         "budget_dev_pct": None if dev is None else _pct(abs(dev), est) if est and est > 0 else None,
         "budget_dev_sign": None if dev is None else (1 if dev > 0 else -1 if dev < 0 else 0),
         "feedback_score": e["feedback_score"], "feedback_note": e["feedback_note"],
+        "feedback_good": e.get("feedback_good"), "feedback_bad": e.get("feedback_bad"),
     }
 
 
@@ -111,7 +112,9 @@ def facts_text(stats: dict, lang: str) -> str:
                if r["budget_dev_pct"] is not None else ""))
         lines.append(f"- {r['title']} [{r['phase'] or no}]: expected {v(r['expected'])}, actual {v(r['actual'])}, applications {v(r['applications'])}, "
                      f"attendance rate {v(r['attendance_pct'], '%')}, application-to-attendance {v(r['conversion_pct'], '%')}, "
-                     f"budget deviation {dev}, feedback {v(r['feedback_score'])}")
+                     f"budget deviation {dev}, feedback {v(r['feedback_score'])}"
+                     + (f"; went well: {r['feedback_good']}" if r.get("feedback_good") else "")
+                     + (f"; fell short: {r['feedback_bad']}" if r.get("feedback_bad") else ""))
     return "\n".join(lines)
 
 
@@ -119,9 +122,12 @@ def _prompt(lang: str, facts: str, extra: str = "") -> list[dict]:
     language = "Turkish" if lang == "tr" else "English"
     no = NO[lang]
     system = (
-        f"You write a short comment (3 to 5 sentences, plain text, no lists, no emojis) in {language} on a student "
-        f"club's events, for the club board. Use ONLY the computed figures below. Where a figure says \"{no}\", say "
-        f"it was not entered or leave it out; never guess, estimate, round, or invent names, numbers or causes. "
+        f"You write a period analysis (plain text, no emojis, about 8 to 12 sentences) in {language} on a student "
+        f"club's events, for the club board, with four short headings: Genel görünüm, Güçlü yönler, Sorunlar, Sonraki "
+        f"etkinlikler için öneriler (write the headings in {language}). Use ONLY the computed figures and feedback texts "
+        f"below. Where a figure says \"{no}\", say it was not entered or leave it out; never guess, estimate, round, or "
+        f"invent names, numbers or causes. Recommendations must follow from the feedback texts and figures (for example a "
+        f"repeated problem). "
         f"Do not compute anything new: no extra percentages, sums or differences. Copy figures exactly as written. "
         f"Only events marked [held] have taken place; the others are planned, so do not describe them as done."
     )

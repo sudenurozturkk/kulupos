@@ -202,3 +202,26 @@ def test_ask_uses_club_records_and_returns_cited_records(client, monkeypatch):
     r = client.post(f"/api/chats/{cid}/ask", json={"question": "En düşük puanlı etkinlik?"}).json()
     assert "feedback score 3.9" in seen["p"] and "TASK" in seen["p"] and "MEETING" in seen["p"]
     assert r["records"] and r["records"][0]["title"] == "Siber Güvenlik Semineri" and r["records"][0]["href"]
+
+
+def test_unit_page_and_saved_ai_report(client, monkeypatch):
+    from app import llm
+    cid = client.post("/api/seed").json()["chat_id"]
+    p = client.get(f"/api/chats/{cid}/unit", params={"name": "Sponsorluk"}).json()
+    assert p["unit"] == "Sponsorluk" and p["tasks"] and p["report"]["report"] is None
+    assert client.get(f"/api/chats/{cid}/unit", params={"name": "Yok"}).status_code == 404
+
+    async def fake(messages, *a, **k):
+        return "Durum: Sponsorluk komitesinin işleri sürüyor."
+    monkeypatch.setattr(llm, "chat", fake)
+    r = client.post(f"/api/chats/{cid}/unit/report", params={"name": "Sponsorluk"}).json()
+    assert r["report"].startswith("Durum") and r["stale"] is False
+    assert client.get(f"/api/chats/{cid}/unit", params={"name": "Sponsorluk"}).json()["report"]["report"]   # saved
+    first = next(t for t in p["tasks"] if t["status"] != "done")
+    client.patch(f"/api/items/{first['id']}", json={"status": "done"})
+    assert client.get(f"/api/chats/{cid}/unit", params={"name": "Sponsorluk"}).json()["report"]["stale"] is True
+
+    async def invented(messages, *a, **k):
+        return "Komite 777 görev tamamladı."
+    monkeypatch.setattr(llm, "chat", invented)
+    assert client.post(f"/api/chats/{cid}/unit/report", params={"name": "Sponsorluk"}).status_code == 422

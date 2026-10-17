@@ -588,3 +588,14 @@ button.stat .lbl { display: flex; align-items: center; gap: 8px; margin-top: 4px
 .drawer-body h3, .drawer-body h4 { margin: 16px 0 4px; font-size: 13px; font-weight: 600; }
 .drawer-body details.compact summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; font-weight: 500; }
 #btn-missed .side-count { margin-left: 4px; }
+
+/* one-line sample strip: hide does not delete */
+.sample-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: nowrap; min-height: 40px; margin: 0 0 12px; padding: 0 12px;
+  border: 1px solid var(--warn); border-radius: 8px; background: var(--warn-soft);
+  color: var(--warn); font-size: 13px; font-weight: 500;
+}
+.sample-banner span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sample-banner b { font-weight: 600; }
+.sample-actions { display: flex; gap: 8px; flex: none; }

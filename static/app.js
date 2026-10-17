@@ -335,6 +335,7 @@ const HUB_I18N = {
     ov_clear: "Gecikmiş, sahipsiz, çelişkili kayıt veya açık karar yok.",
     ov_ai: "Son AI önerileri", ov_empty_ai: "Onay bekleyen öneri yok.",
     ov_see_board: "Görevlere git", ov_see_events: "Etkinliklere git", ov_see_review: "İncelemeye git",
+    sample_hide: "Gizle",
     un_intro: "Komiteler, üye listeleri ve onlara bağlı işler. Sayılar yalnızca girilmiş görev ve etkinlik kayıtlarından gelir.", un_members: "Üyeler (serbest metin)",
     un_loose: n => `${n} görev komitesiz.`,
     da_intro: "Sohbeti içeri al, verini dışarı ver. Veri bilgisayardan çıkmaz.", da_import: "İçe aktar", da_new: "Başka sohbet / yeni kulüp",
@@ -362,6 +363,7 @@ const HUB_I18N = {
     ov_clear: "No overdue, unassigned or conflicting records, and no open decisions.",
     ov_ai: "Recent AI suggestions", ov_empty_ai: "No proposals waiting for approval.",
     ov_see_board: "Open tasks", ov_see_events: "Open events", ov_see_review: "Open review",
+    sample_hide: "Hide",
     un_intro: "Committees, their member lists and the work tied to them. Counts come only from entered task and event records.", un_members: "Members (free text)",
     un_loose: n => `${n} task(s) without a committee.`,
     da_intro: "Bring a chat in, take your data out. The data never leaves this computer.", da_import: "Import", da_new: "Another chat / new club",
@@ -691,8 +693,11 @@ function pageActionsHtml() {
 function shell(view) {
   const b = S.board, c = b.chat;
   const range = c.first_ts ? `${fmtDate(c.first_ts, false)} – ${fmtDate(c.last_ts, false)}` : "";
-  const sample = c.is_sample ? `<div class="sample-banner"><span><b>${t("sample_tag")}</b> · ${t("sample_banner")}</span>
-    <button class="small danger" id="btn-clear-sample">${t("sample_clear")}</button></div>` : "";
+  let sampleHidden = false;
+  try { sampleHidden = sessionStorage.getItem("pano.sample.hide." + c.id) === "1"; } catch { /* keep it visible */ }
+  const sample = c.is_sample && !sampleHidden ? `<div class="sample-banner" id="sample-banner"><span>${icon("info")} <b>${t("sample_tag")}</b> · ${t("sample_banner")}</span>
+    <span class="sample-actions"><button type="button" class="ghost small" id="btn-dismiss-sample">${t("sample_hide")}</button>
+    <button type="button" class="small danger" id="btn-clear-sample">${t("sample_clear")}</button></span></div>` : "";
   return `
   ${sample}
   <header class="page-head">
@@ -734,6 +739,11 @@ function bindShell() {
     await api("/api/sample", { method: "DELETE" });
     S.seedTried = true;
     location.hash = "#/";
+  };
+  const hideSample = $("#btn-dismiss-sample");
+  if (hideSample) hideSample.onclick = () => {
+    try { sessionStorage.setItem("pano.sample.hide." + id, "1"); } catch { /* hiding still works this view */ }
+    $("#sample-banner")?.remove();
   };
   document.querySelectorAll(".side-nav a, .segment a").forEach(a => a.addEventListener("click", () => { S.taskFilter = null; closeSidebar(); }));
   const more = $("#btn-more"), menu = $("#more-menu");

@@ -82,11 +82,21 @@ CREATE TABLE IF NOT EXISTS event_reports (
     source      TEXT NOT NULL DEFAULT 'ai',   -- ai | sample (shipped, precomputed)
     created_at  TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS event_insights (
+    chat_id     INTEGER PRIMARY KEY REFERENCES chats(id) ON DELETE CASCADE,
+    body        TEXT NOT NULL,
+    fingerprint TEXT NOT NULL,   -- hash of the computed figures the text was written from
+    lang        TEXT NOT NULL,
+    model       TEXT,
+    source      TEXT NOT NULL DEFAULT 'ai',   -- ai | sample (shipped, precomputed)
+    created_at  TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS items_chat ON items(chat_id, kind);
 """
 
 EVENT_COLUMNS = {"event_type": "TEXT", "phase": "TEXT", "event_units": "TEXT", "attendees_expected": "INTEGER",
                  "attendees_actual": "INTEGER", "budget_est": "REAL", "budget_actual": "REAL", "notes": "TEXT",
+                 "applications": "INTEGER", "feedback_score": "REAL", "feedback_note": "TEXT",
                  "event_id": "INTEGER REFERENCES items(id) ON DELETE SET NULL"}
 
 _lock = threading.RLock()
@@ -373,6 +383,19 @@ def save_report(event_id: int, body: str, fingerprint: str, lang: str, model: st
 
 def get_report(event_id: int) -> dict | None:
     rows = _rows("SELECT * FROM event_reports WHERE event_id = ?", (event_id,))
+    return rows[0] if rows else None
+
+
+# ---- period insight (event analysis) ----------------------------------------
+
+def save_insight(chat_id: int, body: str, fingerprint: str, lang: str, model: str | None, source: str = "ai") -> None:
+    with _lock, conn() as c:
+        c.execute("INSERT OR REPLACE INTO event_insights (chat_id, body, fingerprint, lang, model, source, created_at) "
+                  "VALUES (?, ?, ?, ?, ?, ?, ?)", (chat_id, body, fingerprint, lang, model, source, _now()))
+
+
+def get_insight(chat_id: int) -> dict | None:
+    rows = _rows("SELECT * FROM event_insights WHERE chat_id = ?", (chat_id,))
     return rows[0] if rows else None
 
 

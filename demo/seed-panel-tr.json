@@ -9,10 +9,14 @@
   "events": [
     {"key": "soylesi", "title": "Yapay Zeka ile Kariyer Söyleşisi", "due": 14, "time": "14:00", "place": "B-201",
      "owner": "Elif Kaya", "event_type": "söyleşi", "phase": "confirmed", "event_units": ["Etkinlik", "İletişim"],
-     "src": "Tamam karar: söyleşi"},
+     "attendees_expected": 120, "applications": 85, "src": "Tamam karar: söyleşi"},
     {"key": "toplanti", "title": "Online hazırlık toplantısı", "due": 6, "time": "18:00", "place": "Meet",
      "owner": "Elif Kaya", "event_type": "toplantı", "phase": "planning", "event_units": ["Yönetim"],
-     "src": "online hazırlık toplantısı"}
+     "src": "online hazırlık toplantısı"},
+    {"key": "atolye", "title": "Python Atölyesi (örnek veri)", "due": -21, "time": "13:00", "place": "Bilgisayar Lab",
+     "owner": "Mert Demir", "event_type": "atölye", "phase": "held", "event_units": ["Etkinlik", "İletişim"],
+     "attendees_expected": 60, "attendees_actual": 48, "applications": 72, "budget_est": 1200, "budget_actual": 1350,
+     "feedback_score": 4, "feedback_note": "Uygulama bölümü beğenildi, süre kısa kaldı.", "src": ""}
   ],
   "tasks": [
     {"title": "Salon için SKS'ye dilekçe ver", "owner": "Deniz Çelik", "unit": "Etkinlik", "status": "done", "event": "soylesi", "src": "Dilekçeyi verdim"},

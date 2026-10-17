@@ -52,7 +52,14 @@ const I18N = {
     health_nomodel: "Model yok: ollama pull",
     health_down: "Ollama kapalı",
     tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", units_btn: "Komiteler", units_add: "Yeni komite adı", units_add_btn: "Ekle", units_note: "Silinen komitenin görevleri “Komitesiz” sütununa düşer.", ev_add: "Etkinlik ekle", ev_edit: "Etkinliği düzenle", ev_type: "Tür", ev_date: "Tarih", ev_time: "Saat", ev_place: "Mekân", ev_owner: "Sorumlu",
-    ev_units: "Komiteler", ev_phase: "Durum", ev_exp: "Beklenen katılımcı", ev_act: "Gerçekleşen katılımcı", ev_bud_est: "Bütçe tahmini", ev_bud_act: "Gerçekleşen bütçe",
+    ev_units: "Komiteler", ev_phase: "Durum", ev_exp: "Beklenen katılımcı", ev_act: "Gerçekleşen katılımcı", ev_bud_est: "Bütçe tahmini", ev_bud_act: "Gerçekleşen bütçe", ev_apps: "Başvuru sayısı", ev_fb_score: "Geri bildirim puanı (1-5, isteğe bağlı)", ev_fb_note: "Kısa geri bildirim notu",
+    tab_analysis: "Etkinlik analizi", an_none: "Girilmedi", an_intro: "Sayılar yalnızca girilen etkinlik verisinden hesaplanır (iptal edilenler dışarıda); Gemma gerekmez. Eksik veri “Girilmedi” yazar.",
+    an_total: "Etkinlik", an_avg_att: "Ortalama katılım", an_avg_rate: "Ortalama katılım oranı", an_avg_fb: "Ortalama geri bildirim", an_high: "En yüksek katılım", an_low: "En düşük katılım",
+    an_low_need: "Karşılaştırma için en az 2 etkinlikte gerçekleşen katılım gerekir.", an_committee: "Komite bazında etkinlik sayısı", an_committee_note: "Birden fazla komiteli etkinlik her komitede sayılır.", an_no_unit: "Komite girilmedi",
+    an_per_event: "Etkinlik başına", an_c_event: "Etkinlik", an_c_rate: "Katılım oranı (gerçekleşen/beklenen)", an_c_conv: "Başvuru → katılım", an_c_budget: "Bütçe sapması", an_c_fb: "Geri bildirim",
+    an_empty: "Henüz etkinlik yok. Panodan etkinlik ekleyin.", an_insight: "Dönem içgörüsü", an_insight_btn: "Dönem içgörüsü yaz", an_insight_re: "Yeniden yaz",
+    an_insight_none: "Henüz içgörü yok. Gemma yalnızca yukarıdaki hesaplanmış sayılardan kısa bir yorum yazar; sayılarda olmayan rakam içeren metin reddedilir.",
+    an_wait: "Gemma yerelde yazıyor; bu birkaç dakika sürebilir", an_src_sample: "Örnek veri: önceden hesaplanmış içgörü", an_src_ai: "Gemma yazdı, yalnızca hesaplanan sayılardan", an_stale: "Etkinlik verisi bu içgörüden sonra değişti; yeniden yazın.", an_rejected: "İçgörü reddedildi",
     ev_notes: "Notlar", ev_none: "Etkinlik yok", ev_linked: n => `${n} bağlı iş`, ev_link: "Etkinlik",
     ph: { idea: "Fikir", planning: "Planlanıyor", confirmed: "Kesinleşti", held: "Gerçekleşti", cancelled: "İptal" }, rp_btn: "Rapor", rp_title: "Etkinlik raporu", rp_make: "Gemma ile rapor üret", rp_remake: "Yeniden üret", rp_none: "Henüz rapor yok.",
     rp_wait: "Gemma yerelde yazıyor; bu birkaç dakika sürebilir", rp_elapsed: "geçen süre", rp_stale: "Etkinlik verisi bu rapordan sonra değişti; raporu yeniden üretin.",
@@ -174,7 +181,14 @@ const I18N = {
     health_nomodel: "Model missing: ollama pull",
     health_down: "Ollama is not running",
     tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", units_btn: "Teams", units_add: "New team name", units_add_btn: "Add", units_note: "Tasks of a deleted team move to the “no team” column.", ev_add: "Add event", ev_edit: "Edit event", ev_type: "Type", ev_date: "Date", ev_time: "Time", ev_place: "Venue", ev_owner: "Owner",
-    ev_units: "Teams", ev_phase: "Status", ev_exp: "Expected attendees", ev_act: "Actual attendees", ev_bud_est: "Budget estimate", ev_bud_act: "Actual budget",
+    ev_units: "Teams", ev_phase: "Status", ev_exp: "Expected attendees", ev_act: "Actual attendees", ev_bud_est: "Budget estimate", ev_bud_act: "Actual budget", ev_apps: "Applications", ev_fb_score: "Feedback score (1-5, optional)", ev_fb_note: "Short feedback note",
+    tab_analysis: "Event analysis", an_none: "Not entered", an_intro: "Figures are computed only from the entered event data (cancelled events excluded); no model needed. Missing data reads “Not entered”.",
+    an_total: "Events", an_avg_att: "Average attendance", an_avg_rate: "Average attendance rate", an_avg_fb: "Average feedback", an_high: "Highest attendance", an_low: "Lowest attendance",
+    an_low_need: "Needs actual attendance on at least 2 events to compare.", an_committee: "Events per committee", an_committee_note: "An event with several committees counts in each.", an_no_unit: "No committee entered",
+    an_per_event: "Per event", an_c_event: "Event", an_c_rate: "Attendance rate (actual/expected)", an_c_conv: "Application → attendance", an_c_budget: "Budget deviation", an_c_fb: "Feedback",
+    an_empty: "No events yet. Add events on the board.", an_insight: "Period insight", an_insight_btn: "Write period insight", an_insight_re: "Regenerate",
+    an_insight_none: "No insight yet. Gemma writes a short comment from the computed figures above only; text with a figure that is not in them is rejected.",
+    an_wait: "Gemma is writing locally; this can take a few minutes", an_src_sample: "Sample data: precomputed insight", an_src_ai: "Written by Gemma from the computed figures only", an_stale: "The event data changed after this insight; regenerate it.", an_rejected: "Insight rejected",
     ev_notes: "Notes", ev_none: "No event", ev_linked: n => `${n} linked`, ev_link: "Event",
     ph: { idea: "Idea", planning: "Planning", confirmed: "Confirmed", held: "Held", cancelled: "Cancelled" }, rp_btn: "Report", rp_title: "Event report", rp_make: "Write report with Gemma", rp_remake: "Regenerate", rp_none: "No report yet.",
     rp_wait: "Gemma is writing locally; this can take a few minutes", rp_elapsed: "elapsed", rp_stale: "The event data changed after this report; regenerate it.",
@@ -265,6 +279,9 @@ async function api(path, opts = {}) {
   if (!res.ok) {
     let detail = res.statusText;
     try { detail = (await res.json()).detail || detail; } catch {}
+    if (detail && typeof detail === "object") {  // 422 from report/insight checks: {message, unsupported}
+      detail = (detail.message || res.statusText) + (detail.unsupported?.length ? " — " + detail.unsupported.join(", ") : "");
+    }
     throw new Error(detail);
   }
   return res.json();
@@ -474,6 +491,7 @@ function shell(view) {
     <a href="#/c/${c.id}/board" class="${view === "board" ? "active" : ""}">📌 ${t("tab_board")}${missedCount ? `<span class="count">${missedCount}</span>` : ""}</a>
     <a href="#/c/${c.id}/review" class="${view === "review" ? "active" : ""}">🔎 ${t("tab_review")}${b.review.length + b.changes.length ? `<span class="count">${b.review.length + b.changes.length}</span>` : ""}</a>
     <a href="#/c/${c.id}/plan" class="${view === "plan" ? "active" : ""}">🧭 ${t("tab_plan")}<span class="new">AI</span></a>
+    <a href="#/c/${c.id}/analysis" class="${view === "analysis" ? "active" : ""}">📈 ${t("tab_analysis")}</a>
     <a href="#/c/${c.id}/summary" class="${view === "summary" ? "active" : ""}">🗞️ ${t("tab_summary")}</a>
     <a href="#/c/${c.id}/ask" class="${view === "ask" ? "active" : ""}">💬 ${t("tab_ask")}</a>
   </nav>
@@ -709,7 +727,7 @@ async function showReport(eventId) {
 function editEvent(ev) {
   const b = S.board, isNew = !ev.id;
   const opt = (v, label, sel) => `<option value="${esc(v)}" ${v === sel ? "selected" : ""}>${esc(label)}</option>`;
-  const num = (id, label, v, step = "1") => `<div><label>${label}</label><input type="number" min="0" step="${step}" id="${id}" value="${v ?? ""}"></div>`;
+  const num = (id, label, v, step = "1", min = "0", max = "") => `<div><label>${label}</label><input type="number" min="${min}" ${max ? `max="${max}"` : ""} step="${step}" id="${id}" value="${v ?? ""}"></div>`;
   modal(`<h3>${isNew ? t("ev_add") : t("ev_edit")}</h3>
     <label>${t("f_title")}</label><input type="text" id="v-title" value="${esc(ev.title || "")}">
     <div class="grid2">
@@ -722,7 +740,9 @@ function editEvent(ev) {
         ${ev.owner && !b.members.includes(ev.owner) ? opt(ev.owner, ev.owner, ev.owner) : ""}</select></div>
       ${num("v-exp", t("ev_exp"), ev.attendees_expected)}${num("v-act", t("ev_act"), ev.attendees_actual)}
       ${num("v-best", t("ev_bud_est"), ev.budget_est, "any")}${num("v-bact", t("ev_bud_act"), ev.budget_actual, "any")}
+      ${num("v-apps", t("ev_apps"), ev.applications)}${num("v-fbs", t("ev_fb_score"), ev.feedback_score, "0.1", "1", "5")}
     </div>
+    <label>${t("ev_fb_note")}</label><input type="text" id="v-fbn" value="${esc(ev.feedback_note || "")}">
     <label>${t("ev_units")}</label>
     <div class="filters">${b.chat.units.map(u => `<label><input type="checkbox" data-vu="${esc(u)}" ${(ev.event_units || []).includes(u) ? "checked" : ""}> ${esc(u)}</label>`).join("")}</div>
     <label>${t("ev_notes")}</label><textarea id="v-notes" rows="3">${esc(ev.notes || "")}</textarea>
@@ -744,6 +764,7 @@ function editEvent(ev) {
         title: q("#v-title").value.trim(), event_type: q("#v-type").value, phase: q("#v-phase").value,
         due: q("#v-due").value, time: q("#v-time").value, place: q("#v-place").value, owner: q("#v-owner").value,
         attendees_expected: n("#v-exp"), attendees_actual: n("#v-act"), budget_est: n("#v-best"), budget_actual: n("#v-bact"),
+        applications: n("#v-apps"), feedback_score: n("#v-fbs"), feedback_note: q("#v-fbn").value,
         event_units: [...m.querySelectorAll("[data-vu]:checked")].map(x => x.dataset.vu), notes: q("#v-notes").value,
       };
       if (!body.title) return;
@@ -1193,7 +1214,65 @@ function bindPlan() {
   };
 }
 
-const VIEWS = { overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
+// ---------------------------------------------------------------- event analysis view
+async function renderAnalysisView() {
+  const id = S.board.chat.id;
+  const view = $("#view");
+  view.innerHTML = `<div class="narrow"><p class="muted"><span class="spinner"></span></p></div>`;
+  let a;
+  try { a = await api(`/api/chats/${id}/event-analysis`); } catch (e) { view.innerHTML = `<div class="narrow"><p class="muted">⚠️ ${esc(e.message)}</p></div>`; return; }
+  if (route().view !== "analysis" || S.board.chat.id !== id) return;  // user navigated away while loading
+  const no = `<span class="muted">${t("an_none")}</span>`;
+  const val = (x, suffix = "") => x == null ? no : `${esc(x)}${suffix}`;
+  const kpi = (l, v, sub = "") => `<div class="kpi"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${sub}</div></div>`;
+  const ev = r => r ? `${esc(r.title)} <span class="muted">(${r.actual})</span>` : no;
+  const dev = r => {
+    if (r.budget_dev == null) return no;
+    const sign = r.budget_dev > 0 ? "+" : "";
+    return `${sign}${r.budget_dev}${r.budget_dev_pct != null ? ` <span class="muted">(${r.budget_dev_sign > 0 ? "+" : r.budget_dev_sign < 0 ? "−" : ""}${r.budget_dev_pct}%)</span>` : ""}`;
+  };
+  const rows = a.events.map(r => `<tr><th scope="row">${esc(r.title)}<div class="muted small">${esc(t("ph")[r.phase] || "")}</div></th>
+    <td>${r.actual == null && r.expected == null ? no : `${val(r.actual)} / ${val(r.expected)}`}${r.attendance_pct != null ? ` <b>${r.attendance_pct}%</b>` : ""}</td>
+    <td>${r.conversion_pct != null ? `${r.actual} / ${r.applications} <b>${r.conversion_pct}%</b>` : no}</td>
+    <td>${dev(r)}</td>
+    <td>${r.feedback_score != null ? `<b>${r.feedback_score}</b>/5` : no}${r.feedback_note ? `<div class="muted small">${esc(r.feedback_note)}</div>` : ""}</td></tr>`).join("");
+  view.innerHTML = `<div class="narrow wide">
+    <p class="muted">${t("an_intro")}</p>
+    ${a.total ? `<div class="kpis">
+      ${kpi(t("an_total"), a.total)}${kpi(t("an_avg_att"), val(a.avg_attendees), a.with_attendance ? `${a.with_attendance}/${a.total}` : "")}
+      ${kpi(t("an_avg_rate"), val(a.avg_attendance_pct, "%"))}${kpi(t("an_avg_fb"), val(a.avg_feedback))}</div>
+    <div class="grid2"><div class="card"><b>${t("an_high")}</b><p>${ev(a.highest)}</p></div>
+      <div class="card"><b>${t("an_low")}</b><p>${ev(a.lowest)}</p>${!a.lowest && a.highest ? `<p class="muted small">${t("an_low_need")}</p>` : ""}</div></div>
+    <h3>${t("an_committee")}</h3><p class="muted small">${t("an_committee_note")}</p>
+    <ul class="list">${a.committees.map(c => `<li><span class="grow">${c.unit ? esc(c.unit) : t("an_no_unit")}</span><b>${c.events}</b></li>`).join("")}</ul>
+    <h3>${t("an_per_event")}</h3>
+    <div class="tscroll"><table class="atable"><thead><tr><th>${t("an_c_event")}</th><th>${t("an_c_rate")}</th><th>${t("an_c_conv")}</th><th>${t("an_c_budget")}</th><th>${t("an_c_fb")}</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <h3>${t("an_insight")}</h3><div id="an-insight"></div>` : `<div class="empty"><b>${t("an_empty")}</b></div>`}</div>`;
+  if (!a.total) return;
+  let timer = null;
+  const draw = (r, extra = "") => {
+    const box = $("#an-insight");
+    if (!box) return;
+    box.innerHTML = `${r.insight ? `<p class="muted">${t(r.source === "sample" ? "an_src_sample" : "an_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
+      ${r.stale ? `<p>⚠️ ${t("an_stale")}</p>` : ""}<p class="insight">${esc(r.insight)}</p>` : `<p class="muted">${t("an_insight_none")}</p>`}
+      ${extra}<div id="an-wait"></div>
+      <div class="row-actions">${r.insight ? `<button class="ghost" id="an-copy">📋 ${t("rp_copy")}</button>` : ""}
+        <button class="primary" id="an-make">${r.insight ? t("an_insight_re") : t("an_insight_btn")}</button></div>`;
+    const cp = $("#an-copy");
+    if (cp) cp.onclick = () => copyText(r.insight);
+    $("#an-make").onclick = async e => {
+      const t0 = Date.now(); e.target.disabled = true;
+      const tick = () => { const w = $("#an-wait"); if (w) w.innerHTML = `<div class="progress"><div class="progress-top"><span><span class="spinner"></span> ${t("an_wait")}</span>
+        <span class="muted">${t("rp_elapsed")}: ${Math.round((Date.now() - t0) / 1000)} s</span></div></div>`; };
+      tick(); timer = setInterval(tick, 1000);
+      try { const next = await post(`/api/chats/${id}/event-analysis/insight`); clearInterval(timer); draw(next); }
+      catch (err) { clearInterval(timer); draw(r, `<div class="progress error"><b>${t("an_rejected")}</b><br><small>${esc(err.message)}</small></div>`); }
+    };
+  };
+  draw(a);
+}
+
+const VIEWS = { analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
 
 // ---------------------------------------------------------------- render & polling
 function startPolling(chatId) {

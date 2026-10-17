@@ -274,6 +274,13 @@ label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); 
 
 /* ---------- planner / summary / ask ---------- */
 .narrow { max-width: 860px; }
+.narrow.wide { max-width: 1040px; }
+.muted.small { font-size: 12.5px; }
+.tscroll { overflow-x: auto; }
+.atable { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--surface); }
+.atable th, .atable td { text-align: left; padding: 9px 10px; border-top: 1px solid var(--border); vertical-align: top; }
+.atable thead th { color: var(--muted); font-size: 12.5px; border-top: none; }
+.insight { white-space: pre-wrap; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
 .planner-box { display: flex; flex-direction: column; gap: 10px; }
 .plan-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin: 18px 0 10px; }
 .plan-head h3 { margin: 0; }

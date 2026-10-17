@@ -27,10 +27,11 @@ def test_empty_database_gets_a_labelled_sample_panel(client):
     b = board(client, r["chat_id"])
     assert b["chat"]["is_sample"] == 1 and b["chat"]["status"] == "ready"
     assert b["chat"]["units"] == ["Yönetim", "Etkinlik", "İletişim", "Sponsorluk"]
-    assert len(b["tasks"]) == 11 and len(b["decisions"]) == 4 and len(b["events"]) == 2
+    assert len(b["tasks"]) == 11 and len(b["decisions"]) == 4 and len(b["events"]) == 3
     assert sum(1 for q in b["questions"] if q["status"] == "open") == 3
     # every approved card points at a real source message; the unsourced proposal is flagged
-    assert all(i["source_idx"] is not None for i in [*b["tasks"], *b["questions"], *b["decisions"], *b["events"]])
+    assert all(i["source_idx"] is not None for i in [*b["tasks"], *b["questions"], *b["decisions"], *b["events"]]
+               if "(örnek veri)" not in i["title"])  # the held sample event is hand-entered data, not from the chat
     assert len(b["review"]) == 3 and sum(1 for i in b["review"] if i["needs_review"] == 1) == 1
     # AI proposals are counted apart from real tasks
     assert b["review_total"] == 3 and all(i["review"] == "approved" for i in b["tasks"])

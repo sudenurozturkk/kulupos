@@ -1,7 +1,7 @@
 # DURUM — KulüpRadar / Pano
 
 Güncelleme: 2026-10-17 · Kaynak: koddaki mevcut hal (`app/`, `static/`, `tests/`). Etiketler: YAPILDI · KISMEN · YOK · DOĞRULANMADI.
-Doğrulama: `python -m pytest tests -q` (42 test, sahte LLM, Ollama gerekmez) · `scripts/eval_demo.py` (TR demo, 127 mesaj: **10/14, ~230 sn**; önceki koşular 7/14 ve 11/14; EN demo hiç koşulmadı) · gerçek Gemma ile elle API denemesi (analiz → öneri kuyruğu → onay → yeniden başlatma sonrası kalıcılık).
+Doğrulama: `python -m pytest tests -q` (55 test, sahte LLM, Ollama gerekmez) · `scripts/eval_demo.py` (TR demo, 127 mesaj: **10/14, ~230 sn**; önceki koşular 7/14 ve 11/14; EN demo hiç koşulmadı) · gerçek Gemma ile elle API denemesi (analiz → öneri kuyruğu → onay → yeniden başlatma sonrası kalıcılık).
 Donanım notu: Gemma 4 e4b, RTX 3050 4 GB laptopta ~4 dk / 127 mesaj; bu yüzden örnek veri ve önceden hesaplanmış örnek rapor var.
 
 ## YAPILDI (testli)
@@ -17,6 +17,9 @@ Donanım notu: Gemma 4 e4b, RTX 3050 4 GB laptopta ~4 dk / 127 mesaj; bu yüzden
 - Ana panel (OZELLIKLER 8): filtreli listeye giden kartlar, AI önerisi gerçek görev sayısından ayrı, "bugün ilgilenilecekler", komite iş yükü, yaklaşan etkinlikler, son içe aktarımlar; veri yoksa "—" (G8a).
 - İlk açılış: boş veritabanında sahte örnek panel ("Örnek veri", tek tıkla temizlenir, geri gelmez); 6 soruluk karşılama (G8a).
 - Tasarım: tek açık tema, CSS değişkenleri, metinli rozetler, kaynak alıntılı inceleme kartları, diyalog odak yönetimi (G8b/c).
+- Haftalık özet: "Tamamlananlar" yalnızca pencerede çözülen/kullanıcının işaretlediği görevleri alır; maddelerde kaynak mesaj bağlantısı (G14).
+- Dışa aktarma: görev CSV, karar/açık soru CSV veya JSON, analiz özeti Markdown; yalnızca onaylı kayıtlar, kaynak metni korunur, `= + - @` ile başlayan hücreler `'` ile etkisizleştirilir, filtre/tarih aralığı dosyada yazar (G11).
+- Etkinlik analizi: başvuru sayısı, geri bildirim puanı/notu alanları (eski veritabanları göçle), kodun hesapladığı katılım oranı / başvuru→katılım / bütçe sapması / ortalama / en yüksek-düşük / komite sayıları; eksik veri "Girilmedi"; "Dönem içgörüsü" yalnızca hesaplanan sayılardan, sayı denetimli; örnek kulüpte "gerçekleşti" etkinlik + önceden hesaplanmış içgörü (G18).
 - Yerel çalışma: sunucu `127.0.0.1`, harici CDN/font yok.
 
 ## KISMEN
@@ -25,8 +28,6 @@ Donanım notu: Gemma 4 e4b, RTX 3050 4 GB laptopta ~4 dk / 127 mesaj; bu yüzden
 - Açık soru: model "cevaplandı" işaretler (artık öneri olarak); kullanıcı "çözüldü/geçersiz" düğmesi yok.
 - Kanıt: tek kaynak mesaj; çoklu kaynak yok.
 - Takvim: yaklaşan liste ve panel; ay/hafta görünümü, çakışma uyarısı yok.
-- Haftalık özet: çalışıyor; maddelerde kaynak bağlantısı yok. Eski notta "Tamamlananlar" hatası vardı, yeniden kontrol edilmedi.
-- Dışa aktarma: yalnızca Markdown (CSV/JSON yok).
 - Yinelenenler: bulanık eşleşmeyle otomatik atlanır; kullanıcıya öneri/çelişki uyarısı yok.
 - Etkinlik raporu: sayı denetimi rakam grubu düzeyinde; gerçek modelle yalnızca örnek etkinlikte denendi.
 - AI değerlendirmesi: tek elle etiketli TR demo; EN kontrol listesi var ama koşulmadı.
@@ -36,6 +37,7 @@ Kulüp profili · evrensel arama · alt görev/bağımlılık/yorum günlüğü 
 
 ## DOĞRULANMADI
 - Arayüz: otomatik UI testi yok; yalnızca Chrome'da elle bakıldı. 390 px genişlik iframe ile ölçüldü, gerçek telefon denenmedi; ekran okuyucu denenmedi.
+- Dışa aktarma penceresi, Etkinlik analizi ekranı ve yeni form alanları ekranda görülmedi (yalnızca `node --check` ve API testleri). Etkinlik raporunun girdisine yeni alanlar eklenmedi.
 - Etkinlik formu, rapor penceresi, komite penceresi ekranda görülmedi (JS sözdizimi ve DOM/odak kontrolleri yapıldı).
 - Canlı Gemma ile arayüzden uçtan uca onay akışı (API düzeyinde denendi).
 
@@ -43,4 +45,4 @@ Kulüp profili · evrensel arama · alt görev/bağımlılık/yorum günlüğü 
 1 kaynaksız → işaretli: UYUYOR · 2 otomatik onay yok: UYUYOR · 3 uydurma yok: UYUYOR (rapor sayı denetimi kaba) · 4 geçmiş ≠ güncel: UYUYOR (değişiklik önerisi) · 5 düzeltmeler ezilmez: UYUYOR (testli) · 6 yinelenen: KISMEN · 7 hata çökertmez: UYUYOR (testli) · 8 gizlilik: KISMEN (hata mesajı ≤200 karakter model çıktısı içerebilir, yalnızca yerel DB'de) · 9 çalışmayan düğme yok: KISMEN (tüm düğmeler tek tek denenmedi) · 10 test edilmeyen hazır değil: UYUYOR · 11 mevcut yapı: UYUYOR · 12 tutarlılık: UYUYOR (pano/panel yalnızca onaylı veriden).
 
 ## Sıradaki
-G10 soru "çözüldü/geçersiz" · G11 CSV/JSON dışa aktarma · G12 karar durumu ve geçmiş · G13 yinelenen/çelişki önerisi · G14 haftalık özet düzeltmesi (+kaynak bağlantısı) · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)
+G10 soru "çözüldü/geçersiz" · G12 karar durumu ve geçmiş · G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)

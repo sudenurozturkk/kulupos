@@ -15,7 +15,7 @@ from fastapi.responses import PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analyzer, assistant, db, export, insights, llm, report, seed
+from . import analysis, analyzer, assistant, db, export, insights, llm, report, seed
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -328,8 +328,8 @@ def messages(chat_id: int, around: int, radius: int = 4):
 
 
 PHASES = ("idea", "planning", "confirmed", "held", "cancelled")
-NUMERIC = ("attendees_expected", "attendees_actual", "budget_est", "budget_actual")
-EVENT_ONLY = ("phase", "event_type", "event_units", *NUMERIC)
+NUMERIC = ("attendees_expected", "attendees_actual", "budget_est", "budget_actual", "applications")
+EVENT_ONLY = ("phase", "event_type", "event_units", "feedback_score", "feedback_note", *NUMERIC)
 
 
 class EventFields(BaseModel):
@@ -342,6 +342,9 @@ class EventFields(BaseModel):
     attendees_actual: int | None = None
     budget_est: float | None = None
     budget_actual: float | None = None
+    applications: int | None = None
+    feedback_score: float | None = None  # 1-5, optional
+    feedback_note: str | None = None
     notes: str | None = None
     event_id: int | None = None  # link a task/decision to an event
 
@@ -356,6 +359,8 @@ def _clean_event_fields(chat_id: int, fields: dict) -> dict:
     for k in NUMERIC:
         if fields.get(k) is not None and fields[k] < 0:
             raise HTTPException(400, f"{k} must be >= 0")
+    if fields.get("feedback_score") is not None and not 1 <= fields["feedback_score"] <= 5:
+        raise HTTPException(400, "feedback_score must be between 1 and 5")
     if fields.get("event_id") is not None:
         ev = db.get_item(fields["event_id"])
         if not ev or ev["kind"] != "event" or ev["chat_id"] != chat_id:
@@ -487,6 +492,34 @@ async def make_event_report(event_id: int):
                                   "unsupported": e.unsupported})
     db.save_report(event_id, r["report"], r["fingerprint"], lang, r["model"])
     return _report_view(ev, db.get_report(event_id))
+
+
+@app.get("/api/chats/{chat_id}/event-analysis")
+def event_analysis(chat_id: int):
+    """Figures computed by code from approved events (no model). `insight` = the saved model comment, if any."""
+    _chat_or_404(chat_id)
+    stats = analysis.compute(db.get_items(chat_id))
+    return {**stats, **analysis.insight_view(stats, db.get_insight(chat_id))}
+
+
+@app.post("/api/chats/{chat_id}/event-analysis/insight")
+async def event_insight(chat_id: int):
+    """Slow (local model): the UI shows elapsed time. The text may only contain the computed figures."""
+    _chat_or_404(chat_id)
+    stats = analysis.compute(db.get_items(chat_id))
+    if not stats["total"]:
+        raise HTTPException(400, "Henüz etkinlik yok / no events yet")
+    lang = report.language_of(chat_id)
+    try:
+        r = await analysis.generate(stats, lang)
+    except llm.LLMError as e:
+        raise HTTPException(503, str(e))
+    except report.ReportRejected as e:
+        raise HTTPException(422, {"message": "İçgörü, hesaplanan sayılarda olmayan rakamlar içerdiği için reddedildi / "
+                                             "insight rejected: it contained figures that are not in the computed data",
+                                  "unsupported": e.unsupported})
+    db.save_insight(chat_id, r["insight"], r["fingerprint"], lang, r["model"])
+    return {**stats, **analysis.insight_view(stats, db.get_insight(chat_id))}
 
 
 SAMPLE_EVENT = ROOT / "demo" / "sample-event.json"

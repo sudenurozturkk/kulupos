@@ -5,12 +5,13 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
-from . import db
+from . import analysis, db, report
 from .analyzer import norm
 from .parser import parse_chat, read_export
 
 DEMO = Path(__file__).resolve().parent.parent / "demo"
 SPEC = DEMO / "seed-panel-tr.json"
+INSIGHT = DEMO / "seed-insight-tr.json"
 
 
 def _squash(s: str) -> str:
@@ -39,7 +40,9 @@ def seed_sample(today) -> int | None:
         events[e["key"]] = db.add_item(
             chat_id, "event", title=e["title"], due=due(e["due"]), time=e["time"], place=e["place"],
             owner=e["owner"], event_type=e["event_type"], phase=e["phase"], event_units=e["event_units"],
-            source_idx=find(e["src"]))
+            source_idx=find(e["src"]),
+            **{k: e[k] for k in ("attendees_expected", "attendees_actual", "applications", "budget_est",
+                                 "budget_actual", "feedback_score", "feedback_note") if k in e})
     for t in spec["tasks"]:
         db.add_item(chat_id, "task", title=t["title"], owner=t.get("owner"), unit=t.get("unit"),
                     due=due(t.get("due")), status=t.get("status", "open"), source_idx=find(t["src"]),
@@ -53,8 +56,18 @@ def seed_sample(today) -> int | None:
     for p in spec["proposed"]:
         db.add_item(chat_id, p["kind"], review="proposed", title=p["title"], owner=p.get("owner"),
                     unit=p.get("unit"), source_idx=find(p.get("src")), needs_review=p.get("needs_review", 0))
+    _seed_insight(chat_id)
     db.update_chat(chat_id, status="ready", analyzed_upto=len(messages) - 1)
     return chat_id
+
+
+def _seed_insight(chat_id: int) -> None:
+    """Precomputed period comment (written once by scripts/make_sample_insight.py with the local model)."""
+    if not INSIGHT.exists():
+        return
+    spec = json.loads(INSIGHT.read_text(encoding="utf-8"))
+    facts = analysis.facts_text(analysis.compute(db.get_items(chat_id)), spec["lang"])
+    db.save_insight(chat_id, spec["insight"], report.fingerprint(facts), spec["lang"], spec.get("model"), "sample")
 
 
 def clear_sample() -> int:

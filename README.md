@@ -81,7 +81,7 @@ Requirements: [Ollama](https://ollama.com/download), Python 3.10+, roughly 8 GB 
 
 ```bash
 ollama pull gemma4:e4b          # tested tag
-git clone <this repo> && cd <repo>
+git clone https://github.com/sudenurozturkk/kulupradar && cd kulupradar
 pip install -r requirements.txt
 python -m app                   # http://127.0.0.1:8000  (PANO_PORT=8010 if 8000 is taken)
 ```

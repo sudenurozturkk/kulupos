@@ -1,64 +1,46 @@
-# DURUM — OZELLIKLER.md'ye göre mevcut kod (17 Ekim, ~20:45)
+# DURUM — KulüpRadar / Pano
 
-Etiketler: YAPILDI · KISMEN · YOK · BOZUK · DOĞRULANMADI. Doğrulama: `pytest` (7 test geçti, sadece parser), `scripts/eval_demo.py` (TR demo 10–11/14), elle API testi (özet, sor, plan çalıştı).
-Yapı: `app/` (parser, db, llm, analyzer, assistant, insights, main), `static/` (tek sayfa JS), `scripts/eval_demo.py`, `tests/test_parser.py`, `demo/` (TR + EN sahte sohbet).
+Güncelleme: 2026-10-17 · Kaynak: koddaki mevcut hal (`app/`, `static/`, `tests/`). Etiketler: YAPILDI · KISMEN · YOK · DOĞRULANMADI.
+Doğrulama: `python -m pytest tests -q` (42 test, sahte LLM, Ollama gerekmez) · `scripts/eval_demo.py` (TR demo, 127 mesaj: **10/14, ~230 sn**; önceki koşular 7/14 ve 11/14; EN demo hiç koşulmadı) · gerçek Gemma ile elle API denemesi (analiz → öneri kuyruğu → onay → yeniden başlatma sonrası kalıcılık).
+Donanım notu: Gemma 4 e4b, RTX 3050 4 GB laptopta ~4 dk / 127 mesaj; bu yüzden örnek veri ve önceden hesaplanmış örnek rapor var.
 
-## P0
-- 3.1 Dosya yükleme — KISMEN: .txt/.zip + sürükle-bırak var (`main.py:upload`, `app.js:upload`). Boş/geçersiz dosya reddi var (gönderen bulunamazsa 400). Boyut sınırı YOK, ön izleme YOK, tekrar yükleme uyarısı YOK, iptal YOK.
-- 3.2 WhatsApp ayrıştırıcı — KISMEN: Android/iOS, TR/EN, çok satırlı, sistem/medya/silinmiş ayrımı, 12/24 saat (`parser.py`, 7 test). Ayrıştırılamayan satırları RAPORLAMA YOK; kaç mesaj okundu bilgisi sadece toplam sayı.
-- 4.1 Bilgi türleri (görev/karar/soru/etkinlik) — YAPILDI: `analyzer.py` SCHEMA; eval 10–11/14.
-- 4.2 Görev çıkarma alanları — KISMEN: başlık, sorumlu, birim, son tarih, kaynak, durum var. Açıklama, öncelik, etkinlik bağı, bağımlılık, belirsizlik işareti, onay durumu YOK.
-- 4.3 Karar kaydı — KISMEN: kısa karar + kaynak mesaj var; durum/geçmiş/önceki karar ilişkisi YOK.
-- 4.5 Tarih yönetimi — KISMEN: modele takvim verilir, `valid_date` aralığı doğrular. Belirsiz/çelişkili tarih işaretleme YOK; "12/11" belirsizliği işaretlenmiyor.
-- 4.6 Kanıt — KISMEN: her kartta tek kaynak mesaj + çevresi (`/messages`). Kaynaksız çıkarım işaretlenmiyor (`source_idx` NULL kalabilir); çoklu kaynak YOK.
-- 4.7 Yerel model/hata toleransı — KISMEN: `llm.health`, Ollama model seçimi (`PANO_MODEL`), bozuk JSON'da 1 yeniden deneme, 30'luk pencere, ilerleme. Model sürümü kaydı YOK, analiz iptali YOK. Ollama kapalıyken davranış DOĞRULANMADI. Yarıda kalan analiz sunucu yeniden başlayınca "analyzing" takılabilir: DOĞRULANMADI.
-- 5.1 Görev listesi — KISMEN: birim sütunlu pano, üye filtresi, elle ekle/düzenle/sil, bitti işaretleme. Arama, sıralama, durum/öncelik filtresi, görev geçmişi YOK.
-- Öneri → onay/düzenle/reddet akışı (15.3 adım 8) — YOK: AI çıktısı doğrudan "open" kayıt oluyor. En büyük P0 eksiği.
-- Kalıcı saklama — YAPILDI: SQLite `data/pano.db`, sunucu yeniden başlayınca veri duruyor.
-- 11.1 Yerel çalışma — YAPILDI: sunucu 127.0.0.1, CDN yok, grup silme (`DELETE /api/chats`). Silme kapsamı açıklaması YOK; hata günlüğüne mesaj sızması DOĞRULANMADI (hata metni modelin ilk 200 karakterini içerebilir).
-- 12.1 İlk kullanım akışı — KISMEN: ana sayfa, demo butonu, dışa aktarma adımları, gizlilik notu var. Açılışta dolu panel YOK (kullanıcı butona basıyor).
-- 8.1 Kontrol paneli — KISMEN: `insights.overview` + "Kulüp durumu" (KPI, birim sağlığı, risk, iş yükü, yaklaşan). "AI incelemesi", "bugün ilgilenilecekler", "son içe aktarımlar" bölümleri YOK.
-- 15.1 Parser testleri — KISMEN: 7 test; boş dosya, çok büyük dosya, hatalı satır, tekrar yükleme YOK.
-- 15.2 AI testleri — KISMEN: `eval_demo.py` (TR 14, EN 13 kontrol; EN hiç çalıştırılmadı). Bozuk JSON testi YOK.
-- 15.3 Uçtan uca test — YOK: otomatik test yok; akış elle denendi.
-- Model kapalı hata yönetimi — DOĞRULANMADI: rozet + `LLMError` var, Ollama durdurulup denenmedi.
-- README / lisans — YAPILDI. Demo/teslim materyalleri — KISMEN: ekran görüntüsü yok, DEV yazısı yok, `static/pitch.html` taslak (commit dışı).
+## YAPILDI (testli)
+- Dosya yükleme: .txt/.zip, 5 MB sınırı, boş dosya reddi, SHA-256 ile "daha önce içe aktarıldı" uyarısı, `/api/preview` ön izleme (mesaj sayısı, tarih aralığı, gönderenler, atlanan satır).
+- Ayrıştırıcı: Android/iOS, TR/EN, çok satırlı, sistem/medya/silinmiş ayrımı, geçersiz tarih çökmez.
+- Öneri → onay: AI kayıtları `proposed`; yalnızca onaylılar pano/sayı/özette. Onayla/Düzenle/Reddet, reddedilen geri gelmez (G1).
+- Değişiklik önerisi: AI, onaylı kaydı doğrudan değiştirmez; eski → yeni değer + kaynakla kuyruğa girer (G1b).
+- Kaynaksız / tarihi belirsiz bayrağı; kaynaksız öneri onaylanamaz (G2).
+- Hata dayanıklılığı: Ollama kapalı, bozuk JSON, yarım kalan analiz → anlaşılır hata, "tekrar dene" kaldığı yerden devam eder (G4).
+- Komiteler: ekle / yeniden adlandır (görevler korunur) / sil (görevler "Komitesiz"e); modele giden liste güncel (G5).
+- Etkinlik kaydı (elle): tür, durum, tarih/saat/mekân, sorumlu, komiteler, katılımcı, bütçe, notlar; görev/karar bağlantısı API'de (G6).
+- Etkinlik raporu: yalnızca girilen veriden, boş alan "Girilmedi", veride olmayan sayı → ret; örnek etkinlik için hazır rapor (G7).
+- Ana panel (OZELLIKLER 8): filtreli listeye giden kartlar, AI önerisi gerçek görev sayısından ayrı, "bugün ilgilenilecekler", komite iş yükü, yaklaşan etkinlikler, son içe aktarımlar; veri yoksa "—" (G8a).
+- İlk açılış: boş veritabanında sahte örnek panel ("Örnek veri", tek tıkla temizlenir, geri gelmez); 6 soruluk karşılama (G8a).
+- Tasarım: tek açık tema, CSS değişkenleri, metinli rozetler, kaynak alıntılı inceleme kartları, diyalog odak yönetimi (G8b/c).
+- Yerel çalışma: sunucu `127.0.0.1`, harici CDN/font yok.
 
-## P1
-- 2.1 Kulüp profili — YOK (yalnızca grup adı). 2.2 Birim yönetimi — KISMEN: birimler yüklemede girilir, `PATCH /api/chats` var, arayüzde düzenleme YOK. 2.3 Roller — YOK (kasıtlı, 2.3).
-- 3.3 İçe aktarım geçmişi — KISMEN: grup listesi, durum, yeni dışa aktarım ekleme (`/import`, yalnızca yeni mesajlar). Dosya parmak izi YOK.
-- 4.4 Açık soru takibi — KISMEN: model "cevaplandı" işaretliyor; kullanıcı "çözüldü/geçersiz" düğmesi YOK.
-- 5.5 Alt görev/bağımlılık — YOK. 5.6 Yorum/etkinlik günlüğü — YOK.
-- 6.1 Etkinlik kaydı — KISMEN: sohbetten ad/tarih/saat/mekân; elle form, tür, durum, katılımcı, bütçe YOK.
-- 6.2 Hazırlık listesi — KISMEN: `insights.plan_event` AI plan önerir, seçilenleri panoya ekler (şablon kaydı YOK).
-- 6.3 Takvim — KISMEN: "yaklaşan tarihler" zaman çizelgesi; ay/hafta görünümü, çakışma uyarısı YOK.
-- 7.1/7.2 Birimler arası görev/bekleyen yanıt — YOK (görev tek birime bağlı).
-- 9.1 Evrensel arama — YOK. 9.3 Yinelenen/çelişki — KISMEN: bulanık eşleşmeyle otomatik atlama var, kullanıcıya öneri/çelişki uyarısı YOK.
-- 10.1 Temel raporlar — KISMEN: haftalık özet. 10.2 Dışa aktarma — KISMEN: Markdown var, CSV/JSON YOK.
-- 13.1 Konuşma özeti — KISMEN: haftalık özet çalışıyor (32 sn); maddelerde kaynak bağlantısı YOK. BOZUK: "Tamamlananlar" `resolved_idx` boş görevleri de alıyor (`assistant.py`).
-- Komiteler (varsayılan 4 + düzenleme) — YOK: varsayılan birimler Yönetim/Etkinlik/Sosyal Medya/Sponsorluk/Teknik.
-- Başkan paneli, etkinlik raporu (yalnızca girilen veriden) — YOK.
+## KISMEN
+- Görev listesi: panelden filtre (açık/yaklaşan/gecikmiş/atanmamış) ve üye filtresi var; arama, sıralama, öncelik yok.
+- Karar: "Kesinleşti" kutusu var; geçmiş ve önceki karar ilişkisi yok.
+- Açık soru: model "cevaplandı" işaretler (artık öneri olarak); kullanıcı "çözüldü/geçersiz" düğmesi yok.
+- Kanıt: tek kaynak mesaj; çoklu kaynak yok.
+- Takvim: yaklaşan liste ve panel; ay/hafta görünümü, çakışma uyarısı yok.
+- Haftalık özet: çalışıyor; maddelerde kaynak bağlantısı yok. Eski notta "Tamamlananlar" hatası vardı, yeniden kontrol edilmedi.
+- Dışa aktarma: yalnızca Markdown (CSV/JSON yok).
+- Yinelenenler: bulanık eşleşmeyle otomatik atlanır; kullanıcıya öneri/çelişki uyarısı yok.
+- Etkinlik raporu: sayı denetimi rakam grubu düzeyinde; gerçek modelle yalnızca örnek etkinlikte denendi.
+- AI değerlendirmesi: tek elle etiketli TR demo; EN kontrol listesi var ama koşulmadı.
 
-## P2 (tek satır)
-Sohbete sor (`assistant.ask`) ve iş yükü görünümü KISMEN var; sohbet karşılaştırma, özel iş akışları, bildirim, mesajlaşma YOK.
+## YOK
+Kulüp profili · evrensel arama · alt görev/bağımlılık/yorum günlüğü · birimler arası görev/bekleyen yanıt · bildirim/mesajlaşma · giriş/rol sistemi (bilerek yok, sahte yetki istenmiyor) · kararı etkinliğe bağlamak için arayüz (yalnızca API).
 
-## Bölüm 17 — 12 değişmez kural
-1. Kaynaksız kayıt yok — UYMUYOR (kaynaksız kayıt işaretlenmiyor).
-2. AI otomatik onaylanmaz — UYMUYOR (her şey doğrudan açık görev).
-3. Belirsiz bilgi uydurulmaz — KISMEN (boş sorumlu/tarih bırakılıyor; plan önerisi AI üretimi ama onay yok).
-4. Geçmiş ≠ güncel durum — UYMUYOR (etkinlik tarihi güncellenince eski değer saklanmıyor).
-5. Kullanıcı düzeltmeleri korunur — UYUYOR (`user_edited`, analyzer atlıyor; test YOK).
-6. Yinelenenler denetlenir — UYMUYOR (sessiz otomatik atlama, kullanıcıya gösterilmiyor).
-7. Hata yönetimi — KISMEN UYUYOR (analiz hatası UI'da; DB/dosya/model-kapalı DOĞRULANMADI).
-8. Gizlilik — UYUYOR.
-9. Görünen her işlev çalışır — UYUYOR (tüm düğmeler tek tek DOĞRULANMADI).
-10. Test edilmeyen hazır sayılmaz — KISMEN (README sınırları yazıyor; E2E test yok).
-11. Yapı korunur — UYUYOR.
-12. Tutarlılık — KISMEN UYUYOR (özet "Tamamlananlar" hatası).
+## DOĞRULANMADI
+- Arayüz: otomatik UI testi yok; yalnızca Chrome'da elle bakıldı. 390 px genişlik iframe ile ölçüldü, gerçek telefon denenmedi; ekran okuyucu denenmedi.
+- Etkinlik formu, rapor penceresi, komite penceresi ekranda görülmedi (JS sözdizimi ve DOM/odak kontrolleri yapıldı).
+- Canlı Gemma ile arayüzden uçtan uca onay akışı (API düzeyinde denendi).
 
-## Bilinen ortam sorunları
-Port 8000'i ölü bir süreç tutuyor (8010 kullanılıyor). Gemma 4 E4B bu laptopta (RTX 3050 4 GB) ~5 token/sn: 127 mesajlık analiz ~6 dk, plan ~75 sn.
+## Değişmez kurallar (CLAUDE.md)
+1 kaynaksız → işaretli: UYUYOR · 2 otomatik onay yok: UYUYOR · 3 uydurma yok: UYUYOR (rapor sayı denetimi kaba) · 4 geçmiş ≠ güncel: UYUYOR (değişiklik önerisi) · 5 düzeltmeler ezilmez: UYUYOR (testli) · 6 yinelenen: KISMEN · 7 hata çökertmez: UYUYOR (testli) · 8 gizlilik: KISMEN (hata mesajı ≤200 karakter model çıktısı içerebilir, yalnızca yerel DB'de) · 9 çalışmayan düğme yok: KISMEN (tüm düğmeler tek tek denenmedi) · 10 test edilmeyen hazır değil: UYUYOR · 11 mevcut yapı: UYUYOR · 12 tutarlılık: UYUYOR (pano/panel yalnızca onaylı veriden).
 
-## Sayım
-P0: YAPILDI 3 · KISMEN 11 · YOK 2 · BOZUK 0 · DOĞRULANMADI 1 (model kapalı).
-P1: YAPILDI 0 · KISMEN 11 · YOK 8 · BOZUK 1 (özet "Tamamlananlar").
+## Sıradaki
+G10 soru "çözüldü/geçersiz" · G11 CSV/JSON dışa aktarma · G12 karar durumu ve geçmiş · G13 yinelenen/çelişki önerisi · G14 haftalık özet düzeltmesi (+kaynak bağlantısı) · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)

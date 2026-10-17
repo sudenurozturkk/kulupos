@@ -40,6 +40,7 @@ def test_ai_items_wait_for_approval(env, monkeypatch):
     assert {i["title"] for i in b["review"]} == {"Afiş hazırla", "Salon dilekçesini kim verir?"}
 
     task = next(i for i in b["review"] if i["kind"] == "task")
+    assert task["source"]["sender"] == "Ayşe" and "Afişi ben yaparım" in task["source"]["text"]  # quoted on the card
     client.patch(f"/api/items/{task['id']}", json={"review": "approved"})
     b = client.get(f"/api/chats/{chat['id']}/board").json()
     assert [t["title"] for t in b["tasks"]] == ["Afiş hazırla"]

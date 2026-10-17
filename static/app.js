@@ -84,7 +84,10 @@ const I18N = {
       ["Yapay zekâ hata yaparsa?", "Düzenle, Reddet ya da Onayla. Düzelttiğin kayıt sonraki analizlerde ezilmez, reddedilen geri gelmez; kaynağı bulunamayan öneri onaylanamaz."],
     ],
     chip_soon: "yakında", tag_conflict: "çelişki", tag_open: "açık", all_clear: "Bugün acil bir şey yok ✓ Gecikmiş, sahipsiz ya da çelişkili kayıt görünmüyor.",
-    empty_col: "Bu komitede görev yok", empty_col_hint: "＋ ile ekleyin ya da AI incelemesini kontrol edin.", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    empty_col: "Bu komitede görev yok", empty_col_hint: "＋ ile ekleyin ya da AI incelemesini kontrol edin.", src_show: "Kaynağı göster", src_none: "Kaynak mesaj bulunamadı", approve_why_not: "Kaynak mesaj bulunamadığı için onaylanamaz; düzenleyin ya da reddedin.",
+    new_proposals: "Yeni öneriler", change_badge: "Değişiklik önerisi", src_of: "Kaynak mesaj",
+    review_empty_t: "İncelenecek öneri yok", review_empty_d: "Bir sohbet dosyası yüklediğinizde ya da “Baştan analiz et” dediğinizde Gemma’nın önerileri burada onayınızı bekler. Onaylamadığınız hiçbir şey panoya girmez.",
+    approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -203,7 +206,10 @@ const I18N = {
       ["What if the AI is wrong?", "Edit, Reject or Approve. Your corrections are not overwritten by later analyses and rejected items do not return; proposals without a source cannot be approved."],
     ],
     chip_soon: "soon", tag_conflict: "conflict", tag_open: "open", all_clear: "Nothing urgent today ✓ No overdue, unassigned or conflicting records.",
-    empty_col: "No tasks in this team", empty_col_hint: "Add one with ＋ or check the AI review.", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    empty_col: "No tasks in this team", empty_col_hint: "Add one with ＋ or check the AI review.", src_show: "Show source", src_none: "Source message not found", approve_why_not: "Cannot be approved because no source message was found; edit or reject it.",
+    new_proposals: "New proposals", change_badge: "Change proposal", src_of: "Source message",
+    review_empty_t: "Nothing to review", review_empty_d: "When you upload a chat file or choose “Re-analyse”, Gemma’s proposals wait here for your approval. Nothing you do not approve reaches the board.",
+    approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -574,7 +580,7 @@ function card(task, today) {
     <div class="card-meta">
       ${task.owner ? `<span class="chip">${avatar(task.owner)}${esc(firstName(task.owner))}</span>` : `<span class="chip none">🙋 ${t("no_owner")}</span>`}
       ${dueChip(task, today)}
-      ${task.source_idx != null ? `<button class="src" data-src="${task.source_idx}" title="${t("source")}">💬</button>` : ""}
+      ${task.source_idx != null ? `<button class="src" data-src="${task.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : ""}
     </div>
   </div>`;
 }
@@ -593,14 +599,14 @@ function renderBoardView() {
     const list = tasks.filter(x => (u ? x.unit === u : !x.unit || !b.chat.units.includes(x.unit)));
     return `<div class="column">
       <div class="column-head"><span>${esc(u || t("no_unit"))} <span class="n">${list.length}</span></span>
-        <button data-add="${esc(u)}" title="${t("add_task")}">＋</button></div>
+        <button data-add="${esc(u)}" title="${t("add_task")}" aria-label="${t("add_task")}">＋</button></div>
       ${list.map(x => card(x, b.today)).join("") || `<div class="empty"><b>${t("empty_col")}</b>${t("empty_col_hint")}</div>`}
     </div>`;
   }).join("");
 
   const m = b.missed;
   const miss = (title, list, fmt) => list.length ? `<h4>${title} (${list.length})</h4><ul class="list">${list.map(fmt).join("")}</ul>` : "";
-  const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}">💬</button>` : "";
+  const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : "";
   const taskLi = i => `<li><span class="grow"><a href="javascript:void 0" data-edit="${i.id}">${esc(i.title)}</a>
     <small>${i.owner ? esc(firstName(i.owner)) : t("no_owner")}${i.due ? " · " + fmtDate(i.due) : ""}</small></span>${srcBtn(i)}</li>`;
   const missedHtml = miss(t("m_questions"), m.questions, q => `<li><span class="grow">${esc(q.title)}
@@ -621,7 +627,7 @@ function renderBoardView() {
         <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"}</small></span>${srcBtn(q)}</li>`).join("") || `<li class="muted">${t("none_yet")}</li>`}</ul></div>` : cols}</div>
     <aside class="side">
       <div class="panel missed"><h3>⚠️ ${t("missed")}</h3>${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}</div>
-      <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}">＋</button></h3>
+      <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}" aria-label="${t("ev_add")}">＋</button></h3>
         ${b.events.length ? "" : `<p><button class="ghost small" data-ev-sample>${t("ev_sample")}</button></p>`}${b.events.length ? `<ul class="list">${b.events.map(e => {
         const n = b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
         return `<li><span class="grow"><a href="javascript:void 0" data-ev-edit="${e.id}"><b>${esc(e.title)}</b></a>
@@ -760,14 +766,28 @@ async function reloadBoard() {
 // ---------------------------------------------------------------- modals
 function modal(html, bind) {
   const m = $("#modal");
+  const opener = document.activeElement;
   m.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true">${html}</div>`;
   m.hidden = false;
-  const close = () => { m.hidden = true; m.innerHTML = ""; document.removeEventListener("keydown", onKey); };
-  const onKey = e => e.key === "Escape" && close();
+  const close = () => {
+    m.hidden = true; m.innerHTML = ""; document.removeEventListener("keydown", onKey);
+    if (opener && opener.focus) opener.focus();  // hand the keyboard back to where the user was
+  };
+  const focusables = () => [...m.querySelectorAll("a[href], button:not(:disabled), input, select, textarea")];
+  const onKey = e => {
+    if (e.key === "Escape") return close();
+    if (e.key !== "Tab") return;  // keep Tab inside the dialog
+    const f = focusables();
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
   document.addEventListener("keydown", onKey);
   m.onclick = e => e.target === m && close();
   m.querySelectorAll("[data-close]").forEach(b => (b.onclick = close));
   bind?.(m, close);
+  if (!m.contains(document.activeElement)) (m.querySelector("button.primary") || focusables()[0])?.focus();
 }
 
 function editTask(task) {
@@ -831,23 +851,47 @@ async function showSource(idx) {
 // ---------------------------------------------------------------- summary view
 function renderReviewView() {
   const b = S.board;
-  const row = i => `<li class="review-row" data-id="${i.id}">
-    <span class="grow"><b>${t("k_" + i.kind)}</b> · ${esc(i.title)}${i.needs_review ? ` <span class="chip overdue">⚠️ ${t(i.needs_review === 1 ? "no_source" : "date_unclear")}</span>` : ""}
-      <small>${i.owner ? esc(firstName(i.owner)) : ""}${i.due ? " · " + fmtDate(i.due) : ""}${i.unit ? " · " + esc(i.unit) : ""}</small></span>
-    ${i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}">💬</button>` : ""}
-    <button class="small" data-edit="${i.id}">${t("edit")}</button>
-    <button class="small primary" data-ok="${i.id}" ${i.needs_review === 1 ? "disabled" : ""}>${t("approve")}</button>
-    <button class="small ghost danger" data-no="${i.id}">${t("reject")}</button></li>`;
+  const kindIc = { task: "📌", question: "❓", decision: "🧭", event: "📅" };
+  const quote = src => `<blockquote class="srcbox" aria-label="${t("src_of")}">${src
+    ? `<div class="srcmeta"><b>${esc(src.sender || "")}</b> · <time>${fmtTs(src.ts)}</time></div><p>${esc(src.text)}</p>`
+    : `<span class="muted">${t("src_none")}</span>`}</blockquote>`;
+  const showSrc = (idx, title) => idx != null
+    ? `<button class="small" data-src="${idx}" aria-label="${t("src_show")}: ${esc(title)}">💬 ${t("src_show")}</button>` : "";
+  const card = i => {
+    const lbl = x => `aria-label="${x}: ${esc(i.title)}"`;
+    const noSrc = i.needs_review === 1;
+    return `<article class="rcard" data-id="${i.id}">
+      <header><span class="chip ai">${kindIc[i.kind] || ""} ${t("k_" + i.kind)}</span>
+        ${i.needs_review ? `<span class="chip overdue">⚠️ ${t(noSrc ? "no_source" : "date_unclear")}</span>` : ""}</header>
+      <h4 class="rtitle">${esc(i.title)}</h4>
+      ${i.owner || i.due || i.unit ? `<p class="rmeta">${[i.owner && esc(firstName(i.owner)), i.due && fmtDate(i.due), i.unit && esc(i.unit)].filter(Boolean).join(" · ")}</p>` : ""}
+      ${quote(i.source)}
+      <footer class="ractions">
+        <button class="small primary" data-ok="${i.id}" ${lbl(t("approve"))} ${noSrc ? `disabled title="${t("approve_why_not")}"` : ""}>✓ ${t("approve")}</button>
+        <button class="small" data-edit="${i.id}" ${lbl(t("edit"))}>✎ ${t("edit")}</button>
+        <button class="small danger" data-no="${i.id}" ${lbl(t("reject"))}>✕ ${t("reject")}</button>
+        ${showSrc(i.source_idx, i.title)}
+      </footer>
+      ${noSrc ? `<p class="rwhy">${t("approve_why_not")}</p>` : ""}</article>`;
+  };
   const val = v => v == null || v === "" ? "—" : esc(String(v));
-  const crow = c => `<li class="review-row"><span class="grow"><b>${esc(c.item_title)}</b>
-      <small>${["status", "owner", "due", "time", "place"].filter(k => k in c.new).map(k =>
-        `${t("f_" + k + "_l")}: ${val(c.old[k])} → <b>${val(c.new[k])}</b>`).join(" · ")}</small></span>
-    ${c.source_idx != null ? `<button class="src" data-src="${c.source_idx}" title="${t("source")}">💬</button>` : ""}
-    <button class="small primary" data-cok="${c.id}">${t("approve")}</button>
-    <button class="small ghost danger" data-cno="${c.id}">${t("reject")}</button></li>`;
-  $("#view").innerHTML = `<div class="narrow"><p class="muted">${t("review_intro")}</p>
-    ${b.changes.length ? `<h4>${t("changes_title")} (${b.changes.length})</h4><ul class="list">${b.changes.map(crow).join("")}</ul>` : ""}
-    ${b.review.length ? `<ul class="list">${b.review.map(row).join("")}</ul>` : b.changes.length ? "" : `<p class="muted">${t("review_empty")}</p>`}</div>`;
+  const ccard = c => `<article class="rcard">
+      <header><span class="chip soon">↻ ${t("change_badge")}</span></header>
+      <h4 class="rtitle">${esc(c.item_title)}</h4>
+      <ul class="diff">${["status", "owner", "due", "time", "place"].filter(k => k in c.new).map(k =>
+        `<li>${t("f_" + k + "_l")}: ${val(c.old[k])} → <b>${val(c.new[k])}</b></li>`).join("")}</ul>
+      ${quote(c.source)}
+      <footer class="ractions">
+        <button class="small primary" data-cok="${c.id}" aria-label="${t("approve")}: ${esc(c.item_title)}">✓ ${t("approve")}</button>
+        <button class="small danger" data-cno="${c.id}" aria-label="${t("reject")}: ${esc(c.item_title)}">✕ ${t("reject")}</button>
+        ${showSrc(c.source_idx, c.item_title)}
+      </footer></article>`;
+  const empty = !b.review.length && !b.changes.length;
+  $("#view").innerHTML = `<div class="narrow review">
+    <p class="muted">${t("review_intro")}</p>
+    ${empty ? `<div class="empty review-empty"><b>${t("review_empty_t")}</b>${t("review_empty_d")}</div>` : ""}
+    ${b.changes.length ? `<h3>${t("changes_title")} <span class="n">${b.changes.length}</span></h3><div class="rgrid">${b.changes.map(ccard).join("")}</div>` : ""}
+    ${b.review.length ? `<h3>${t("new_proposals")} <span class="n">${b.review.length}</span></h3><div class="rgrid">${b.review.map(card).join("")}</div>` : ""}</div>`;
   const view = $("#view");
   const decide = (id, review) => async () => {
     try { await patch(`/api/items/${id}`, { review }); await render(); } catch (e) { toast(e.message); }
@@ -1032,7 +1076,7 @@ function renderOverview() {
         : `<p class="muted">${t("none_yet")}</p>`}
       </div>
       <div class="panel"><h3>🧭 ${t("recent_decisions")}</h3>
-        ${b.decisions.length ? `<ul class="list">${b.decisions.slice(-5).reverse().map(d => `<li><span class="grow">${esc(d.title)}</span>${d.source_idx != null ? `<button class="src" data-src="${d.source_idx}">💬</button>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}
+        ${b.decisions.length ? `<ul class="list">${b.decisions.slice(-5).reverse().map(d => `<li><span class="grow">${esc(d.title)}</span>${d.source_idx != null ? `<button class="src" data-src="${d.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}
       </div>
     </div>
   </div>`;
@@ -1155,14 +1199,6 @@ $("#lang").onclick = () => {
 };
 $("#lang").textContent = lang === "tr" ? "EN" : "TR";
 document.documentElement.lang = lang;
-const setThemeIcon = () => ($("#theme").textContent = document.documentElement.dataset.theme === "dark" ? "☀️" : "🌙");
-$("#theme").onclick = () => {
-  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-  document.documentElement.dataset.theme = next;
-  try { localStorage.setItem("pano.theme", next); } catch {}
-  setThemeIcon();
-};
-setThemeIcon();
 window.addEventListener("hashchange", render);
 refreshHealth();
 setInterval(refreshHealth, 15000);

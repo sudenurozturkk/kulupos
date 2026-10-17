@@ -200,6 +200,15 @@ def progress(chat_id: int):
     return analyzer.progress(chat_id)
 
 
+def _with_source(chat_id: int, rows: list[dict]) -> list[dict]:
+    """Attach the source message (sender, time, shortened text) so the review cards can quote it."""
+    for r in rows:
+        idx = r.get("source_idx")
+        m = db.get_messages(chat_id, idx, idx) if idx is not None else []
+        r["source"] = {"sender": m[0]["sender"], "ts": m[0]["ts"], "text": m[0]["text"][:280]} if m else None
+    return rows
+
+
 @app.get("/api/chats/{chat_id}/board")
 def board(chat_id: int):
     chat = _chat_or_404(chat_id)
@@ -223,8 +232,8 @@ def board(chat_id: int):
         "decisions": [i for i in items if i["kind"] == "decision"],
         "events": sorted((i for i in items if i["kind"] == "event"), key=lambda e: e["due"] or ""),
         "missed": missed,
-        "review": db.get_items(chat_id, review="proposed"),  # AI suggestions awaiting approval
-        "changes": db.get_changes(chat_id),  # AI edits to approved items awaiting approval
+        "review": _with_source(chat_id, db.get_items(chat_id, review="proposed")),  # AI suggestions awaiting approval
+        "changes": _with_source(chat_id, db.get_changes(chat_id)),  # AI edits to approved items awaiting approval
         "review_total": len(db.get_items(chat_id, review="proposed")) + len(db.get_changes(chat_id)),
         "overview": insights.overview(chat, items, db.senders(chat_id), t),
         "progress": analyzer.progress(chat_id),

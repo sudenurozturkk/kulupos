@@ -1,6 +1,7 @@
 """Local account: one sign-in for the person running Pano. No roles, no per-record permissions.
 
-The first account can be created while there are no accounts; later sign-ups are refused. Passwords are stored as
+Anyone can create an account (all accounts share the same club data: there are no roles or per-user data). A demo
+visitor gets a guest session that sees only the sample club. Passwords are stored as
 salted PBKDF2 hashes in the local database, sessions are random tokens in an HttpOnly cookie kept in memory
 (restarting the server signs everyone out). Set PANO_AUTH=0 to turn the check off (tests, demos on a trusted machine).
 """
@@ -15,6 +16,7 @@ from . import db
 
 COOKIE = "pano_session"
 OPEN = ("/api/auth/", "/api/health")
+GUEST = "Demo"
 _sessions: dict[str, str] = {}
 
 TABLE = "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, salt TEXT NOT NULL, pw_hash TEXT NOT NULL)"
@@ -42,8 +44,8 @@ def register(username: str, password: str) -> str:
     username = username.strip()
     if len(username) < 3 or len(password) < 6:
         raise ValueError("Kullanıcı adı en az 3, parola en az 6 karakter olmalı / username 3+ and password 6+ characters")
-    if has_users():
-        raise PermissionError("Bu kurulumda hesap zaten var; giriş yapın / an account already exists, sign in")
+    if any(u["username"].casefold() == username.casefold() for u in _users()) or username.casefold() == GUEST.casefold():
+        raise PermissionError("Bu kullanıcı adı alınmış / that username is taken")
     salt = secrets.token_hex(16)
     with db._lock, db.conn() as c:
         c.execute("INSERT INTO users (username, salt, pw_hash) VALUES (?, ?, ?)", (username, salt, _hash(password, salt)))
@@ -58,6 +60,17 @@ def login(username: str, password: str) -> str:
     token = secrets.token_urlsafe(32)
     _sessions[token] = row["username"]
     return token
+
+
+def guest() -> str:
+    """Demo visitor: can open the sample club only; their chat list is limited to sample clubs."""
+    token = secrets.token_urlsafe(32)
+    _sessions[token] = GUEST
+    return token
+
+
+def is_guest(token: str | None) -> bool:
+    return _sessions.get(token or "") == GUEST
 
 
 def user_of(token: str | None) -> str | None:

@@ -43,6 +43,11 @@ async def require_sign_in(request: Request, call_next):
     path = request.url.path
     if auth.enabled() and path.startswith("/api/") and not path.startswith(auth.OPEN)             and not auth.user_of(request.cookies.get(auth.COOKIE)):
         return JSONResponse({"detail": "Giriş gerekli / sign-in required"}, status_code=401)
+    m = re.match(r"/api/chats/(\d+)", path)
+    if auth.enabled() and m and auth.is_guest(request.cookies.get(auth.COOKIE)):  # demo visitors see the sample club only
+        row = db._rows("SELECT is_sample FROM chats WHERE id = ?", (int(m.group(1)),))
+        if row and not row[0]["is_sample"]:
+            return JSONResponse({"detail": "Demo oturumu yalnızca örnek kulübü görür / demo session sees the sample club only"}, status_code=403)
     return await call_next(request)
 
 
@@ -57,10 +62,15 @@ def _session_response(token: str, username: str) -> JSONResponse:
     return r
 
 
+@app.post("/api/auth/guest")
+def auth_guest():
+    return _session_response(auth.guest(), auth.GUEST)
+
+
 @app.get("/api/auth/me")
 def auth_me(request: Request):
     user = auth.user_of(request.cookies.get(auth.COOKIE))
-    return {"user": user, "auth": auth.enabled(), "can_register": auth.enabled() and not auth.has_users()}
+    return {"user": user, "auth": auth.enabled(), "guest": auth.is_guest(request.cookies.get(auth.COOKIE))}
 
 
 @app.post("/api/auth/register")
@@ -148,8 +158,9 @@ async def health():
 
 
 @app.get("/api/chats")
-def chats():
-    return db.list_chats()
+def chats(request: Request):
+    rows = db.list_chats()
+    return [c for c in rows if c["is_sample"]] if auth.enabled() and auth.is_guest(request.cookies.get(auth.COOKIE)) else rows
 
 
 @app.post("/api/chats")

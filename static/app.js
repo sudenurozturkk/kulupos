@@ -452,7 +452,7 @@ async function api(path, opts = {}) {
   });
   if (!res.ok) {
     let detail = res.statusText;
-    if (res.status === 401 && !path.startsWith("/api/auth/")) { showLogin(); throw new Error(lang === "tr" ? "Oturum gerekli" : "Sign-in required"); }
+    if (res.status === 401 && !path.startsWith("/api/auth/")) { showPublic(); throw new Error(lang === "tr" ? "Oturum gerekli" : "Sign-in required"); }
     try { detail = (await res.json()).detail || detail; } catch {}
     if (detail && typeof detail === "object") {  // 422 from report/insight checks: {message, unsupported}
       detail = (detail.message || res.statusText) + (detail.unsupported?.length ? " — " + detail.unsupported.join(", ") : "");
@@ -1994,53 +1994,88 @@ document.addEventListener("click", e => {
 });
 window.addEventListener("hashchange", render);
 
-// ---- sign-in -------------------------------------------------------------------
+// ---- public landing + sign-in --------------------------------------------------
+const PUB = {
+  tr: { tag: "Kulüp yönetim platformu", h1: "Kulübün tüm işleri, tek yerde.", lead: "WhatsApp sohbeti, toplantı notu ve etkinlik verisini görev, karar ve etkinlik panosuna çevirir. Yapay zekâ yerelde çalışır; hiçbir şey sen onaylamadan kesinleşmez.",
+        login: "Giriş yap", signup: "Kayıt ol", demo: "Demo kulübünü dene", demoNote: "Hesap gerekmez · örnek veri: FUB3V Yönetim 2026",
+        f: [["Görevler", "Sohbetten çıkan görevleri sahibi ve tarihiyle tek panoda gör."], ["Etkinlikler", "Hazırlık, katılım, bütçe ve geri bildirim tek sayfada."], ["Toplantılar", "Notlardan karar ve görev önerisi, kaynak alıntısıyla."], ["Güvenli yapay zekâ", "Kaynak şart, otomatik onay yok, veri bilgisayarından çıkmaz."]] },
+  en: { tag: "Club management platform", h1: "All of your club's work, in one place.", lead: "Turns WhatsApp chats, meeting notes and event data into a board of tasks, decisions and events. AI runs locally; nothing becomes final until you approve it.",
+        login: "Sign in", signup: "Sign up", demo: "Try the demo club", demoNote: "No account needed · sample data: FUB3V Management 2026",
+        f: [["Tasks", "See tasks found in the chat with owner and date on one board."], ["Events", "Preparation, attendance, budget and feedback on one page."], ["Meetings", "Decision and task suggestions from notes, with source quotes."], ["Safe AI", "Source required, no auto-approval, data never leaves your computer."]] },
+};
 const AUTH_TXT = {
-  tr: { title: "Pano'ya giriş", sub: "Kulübün tüm işleri tek yerde.", user: "Kullanıcı adı", pass: "Parola", login: "Giriş yap",
-        create: "Hesap oluştur", first: "İlk kurulum: bir hesap oluşturun (bu bilgisayardaki tek hesap olur).",
-        logout: "Çıkış yap", note: "Veriler bu bilgisayarda kalır; yapay zekâ yerel Gemma ile çalışır." },
-  en: { title: "Sign in to Pano", sub: "All of your club's work in one place.", user: "Username", pass: "Password", login: "Sign in",
-        create: "Create account", first: "First run: create an account (the only account on this computer).",
-        logout: "Sign out", note: "Data stays on this computer; AI runs locally with Gemma." },
+  tr: { login: "Giriş yap", signup: "Kayıt ol", user: "Kullanıcı adı", pass: "Parola", back: "← Ana sayfa", logout: "Çıkış yap",
+        toSignup: "Hesabın yok mu? Kayıt ol", toLogin: "Hesabın var mı? Giriş yap", note: "Veriler bu bilgisayarda kalır; yapay zekâ yerel Gemma ile çalışır." },
+  en: { login: "Sign in", signup: "Sign up", user: "Username", pass: "Password", back: "← Home", logout: "Sign out",
+        toSignup: "No account? Sign up", toLogin: "Have an account? Sign in", note: "Data stays on this computer; AI runs locally with Gemma." },
 };
 let started = false;
-function showLogin(canRegister) {
+
+function showPublic() {
+  document.body.classList.add("public");
+  const p = PUB[lang];
+  $("#app").innerHTML = `<div class="pub">
+    <header class="pub-nav"><span class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></span>Pano</span>
+      <span class="pub-actions"><button class="ghost" id="pub-lang" type="button">${lang === "tr" ? "EN" : "TR"}</button><button class="ghost" id="pub-login" type="button">${p.login}</button><button class="primary" id="pub-signup" type="button">${p.signup}</button></span></header>
+    <section class="pub-hero"><span class="pub-tag">${p.tag}</span><h1>${p.h1}</h1><p>${p.lead}</p>
+      <div class="pub-cta"><button class="primary big" id="pub-demo" type="button">${p.demo}</button><button class="ghost big" id="pub-login2" type="button">${p.login}</button></div>
+      <small>${p.demoNote}</small></section>
+    <section class="pub-grid">${p.f.map(([h, d]) => `<div class="pub-card"><h3>${h}</h3><p>${d}</p></div>`).join("")}</section></div>`;
+  $("#pub-login").onclick = $("#pub-login2").onclick = () => showLogin(false);
+  $("#pub-signup").onclick = () => showLogin(true);
+  $("#pub-lang").onclick = () => { lang = lang === "tr" ? "en" : "tr"; try { localStorage.setItem("pano.lang", lang); } catch {} showPublic(); };
+  $("#pub-demo").onclick = async e => {
+    e.target.disabled = true;
+    try {
+      await post("/api/auth/guest");
+      const res = await fetch("/api/demo/tr", { method: "POST" });
+      if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+      const chat = await res.json();
+      await boot(true);
+      openChat(chat);
+    } catch (err) { toast(err.message, 6000); e.target.disabled = false; }
+  };
+}
+
+function showLogin(signup) {
   let box = $("#login");
   if (!box) { box = document.createElement("div"); box.id = "login"; box.className = "login"; document.body.appendChild(box); }
   const a = AUTH_TXT[lang];
   box.hidden = false;
-  document.body.classList.add("locked");
   box.innerHTML = `<form class="login-card" id="login-form">
-    <span class="logo big" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></span>
-    <h1>${a.title}</h1><p class="muted">${canRegister ? a.first : a.sub}</p>
+    <button type="button" class="linkish" id="login-back">${a.back}</button>
+    <h1>${signup ? a.signup : a.login}</h1>
     <label>${a.user}<input name="u" autocomplete="username" required minlength="3" autofocus></label>
-    <label>${a.pass}<input name="p" type="password" autocomplete="${canRegister ? "new-password" : "current-password"}" required minlength="6"></label>
+    <label>${a.pass}<input name="p" type="password" autocomplete="${signup ? "new-password" : "current-password"}" required minlength="6"></label>
     <div class="login-err" id="login-err" role="alert"></div>
-    <button class="primary" type="submit">${canRegister ? a.create : a.login}</button>
+    <button class="primary" type="submit">${signup ? a.signup : a.login}</button>
+    <button type="button" class="linkish" id="login-switch">${signup ? a.toLogin : a.toSignup}</button>
     <p class="login-note">${a.note}</p></form>`;
+  $("#login-back").onclick = () => { box.hidden = true; };
+  $("#login-switch").onclick = () => showLogin(!signup);
   $("#login-form").onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
     try {
-      await post(canRegister ? "/api/auth/register" : "/api/auth/login", { username: f.u.value, password: f.p.value });
+      await post(signup ? "/api/auth/register" : "/api/auth/login", { username: f.u.value, password: f.p.value });
       box.hidden = true;
-      document.body.classList.remove("locked");
-      boot();
+      boot(true);
     } catch (err) { $("#login-err").textContent = err.message; }
   };
 }
 
-async function boot() {
+async function boot(force) {
   let me = { auth: false, user: null };
   try { me = await (await fetch("/api/auth/me")).json(); } catch {}
-  if (me.auth && !me.user) return showLogin(me.can_register);
+  if (me.auth && !me.user) return showPublic();
+  document.body.classList.remove("public");
   const out = $("#btn-logout");
   if (out) {
     out.hidden = !me.auth;
     out.textContent = (me.user ? me.user + " · " : "") + AUTH_TXT[lang].logout;
     out.onclick = async () => { await post("/api/auth/logout"); location.hash = "#/"; location.reload(); };
   }
-  if (started) return render();
+  if (started) { if (!force) render(); return; }
   started = true;
   refreshHealth();
   setInterval(refreshHealth, 15000);

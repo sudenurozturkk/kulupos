@@ -8,10 +8,11 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analyzer, assistant, db, llm
+from . import analyzer, assistant, db, insights, llm
 from .parser import parse_chat, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -90,6 +91,9 @@ def demo(lang: str):
     if lang not in DEMOS:
         raise HTTPException(404)
     name, path, units = DEMOS[lang]
+    for c in db.list_chats():  # reuse an already analysed demo: instant on stage
+        if c["name"] == name and c["status"] in ("ready", "analyzing"):
+            return db.get_chat(c["id"])
     return _import(path.read_bytes(), name, units)
 
 
@@ -160,8 +164,65 @@ def board(chat_id: int):
         "decisions": [i for i in items if i["kind"] == "decision"],
         "events": sorted((i for i in items if i["kind"] == "event"), key=lambda e: e["due"] or ""),
         "missed": missed,
+        "overview": insights.overview(chat, items, db.senders(chat_id), t),
         "progress": analyzer.progress(chat_id),
     }
+
+
+class PlanReq(BaseModel):
+    goal: str
+
+
+@app.post("/api/chats/{chat_id}/plan")
+async def plan(chat_id: int, body: PlanReq):
+    _chat_or_404(chat_id)
+    try:
+        return await insights.plan_event(chat_id, body.goal, today())
+    except llm.LLMError as e:
+        raise HTTPException(503, str(e))
+
+
+class PlanAccept(BaseModel):
+    event_title: str | None = None
+    event_date: str | None = None
+    tasks: list[dict]
+
+
+@app.post("/api/chats/{chat_id}/plan/accept")
+def plan_accept(chat_id: int, body: PlanAccept):
+    """Only the tasks the user ticked are written to the board."""
+    _chat_or_404(chat_id)
+    for t in body.tasks:
+        item_id = db.add_item(chat_id, "task", title=t.get("title", "").strip() or "?", owner=t.get("owner") or None,
+                              due=t.get("due") or None, unit=t.get("unit") or None)
+        db.update_item(item_id, user=True)
+    if body.event_title and body.event_date:
+        item_id = db.add_item(chat_id, "event", title=body.event_title, due=body.event_date)
+        db.update_item(item_id, user=True)
+    return {"added": len(body.tasks)}
+
+
+@app.get("/api/chats/{chat_id}/export.md", response_class=PlainTextResponse)
+def export_md(chat_id: int):
+    """The whole board as Markdown, with source references, for Notion/GitHub/Docs."""
+    b = board(chat_id)
+    out = [f"# {b['chat']['name']}", "", f"_Pano · {b['today']}_", "", "## Tasks", ""]
+    for unit in [*b["chat"]["units"], None]:
+        rows = [t for t in b["tasks"] if (t["unit"] or None) == unit]
+        if not rows:
+            continue
+        out.append(f"### {unit or '—'}")
+        for t in rows:
+            meta = ", ".join(filter(None, [t["owner"], t["due"], f"msg #{t['source_idx']}" if t["source_idx"] is not None else ""]))
+            out.append(f"- [{'x' if t['status'] == 'done' else ' '}] {t['title']}" + (f" ({meta})" if meta else ""))
+        out.append("")
+    for title, key in (("Open questions", "questions"), ("Decisions", "decisions"), ("Events", "events")):
+        rows = b[key] if key != "questions" else [q for q in b[key] if q["status"] == "open"]
+        if rows:
+            out += [f"## {title}", ""] + [
+                f"- {r['title']}" + (f" — {r['due']}" if r["due"] else "") + (f" {r['time']}" if r["time"] else "")
+                for r in rows] + [""]
+    return "\n".join(out)
 
 
 @app.get("/api/chats/{chat_id}/messages")

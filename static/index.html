@@ -3,19 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pano</title>
+  <title>Pano · Club Board</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📌</text></svg>">
   <link rel="stylesheet" href="style.css">
+  <script>try { document.documentElement.dataset.theme = localStorage.getItem("pano.theme") || "light"; } catch {}</script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="#/">
       <span class="logo">📌</span>
-      <span class="brand-name">Pano</span>
+      <span>Pano <small>· local club AI</small></span>
     </a>
     <div id="chat-switch"></div>
     <div class="topbar-right">
       <span id="health" class="badge"></span>
+      <button id="theme" class="ghost small" type="button" aria-label="theme">🌙</button>
       <button id="lang" class="ghost small" type="button"></button>
     </div>
   </header>

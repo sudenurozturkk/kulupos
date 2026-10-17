@@ -214,8 +214,11 @@ async def _process_window(chat_id: int, chat: dict, window: list[dict]) -> None:
         "NEW MESSAGES:",
         render_messages(window),
     ])
-    result = await llm.chat_json(
-        [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}], SCHEMA)
+    msgs = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}]
+    try:
+        result = await llm.chat_json(msgs, SCHEMA)
+    except (llm.LLMError, ValueError):
+        result = await llm.chat_json(msgs, SCHEMA, temperature=0.3)  # one retry, slightly varied
     _apply(chat_id, result, window, members, units, last_day)
 
 

@@ -29,7 +29,7 @@ def focus(items: list[dict], open_tasks: list[dict], t: str) -> dict:
         "orphans": [_brief(x) for x in open_tasks if not x["owner"]],
         "conflicts": conflicts,
         # decisions the club has not marked final yet
-        "decisions": [_brief(x) for x in items if x["kind"] == "decision" and x["status"] == "open"],
+        "decisions": [_brief(x) for x in items if x["kind"] == "decision" and x["status"] == "open" and x["validity"] == "valid"],
     }
 
 
@@ -108,7 +108,7 @@ def overview(chat: dict, items: list[dict], members: list[str], today: date) -> 
                 "open": len(open_), "done": len(tasks) - len(open_), "total": len(tasks),
                 "questions": sum(1 for q in items if q["kind"] == "question" and q["status"] == "open"),
                 "orphans": sum(1 for x in open_ if not x["owner"]),
-                "decisions": sum(1 for d in items if d["kind"] == "decision"),
+                "decisions": sum(1 for d in items if d["kind"] == "decision" and d["validity"] == "valid"),
                 "next_event": ({"title": events[0]["title"], "date": events[0]["due"], "time": events[0]["time"],
                                 "days": (date.fromisoformat(events[0]["due"]) - today).days} if events else None)},
         "units": units, "workload": workload, "alerts": alerts, "timeline": timeline,

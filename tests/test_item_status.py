@@ -51,3 +51,44 @@ def test_user_closed_question_is_not_reopened_by_the_model(env, monkeypatch):
     q = add(client, cid, "question", "Salon kim?")
     client.patch(f"/api/items/{q}", json={"status": "invalid"})
     assert db.get_item(q)["user_edited"] == 1 and db.get_item(q)["status"] == "invalid"
+
+
+def test_decision_validity_is_history_not_current(env):
+    db, client, cid = env
+    d1, d2, d3 = (add(client, cid, "decision", x) for x in ("Salon B-201", "Saat 14:00", "Lacivert afiş"))
+    assert client.get(f"/api/chats/{cid}/board").json()["decisions"][0]["validity"] == "valid"
+    assert client.patch(f"/api/items/{d1}", json={"validity": "changed", "note": "Salon A-100 oldu"}).status_code == 200
+    client.patch(f"/api/items/{d2}", json={"validity": "cancelled"})
+    client.patch(f"/api/items/{d3}", json={"title": "Lacivert ve beyaz afiş"})
+    h1 = client.get(f"/api/items/{d1}/history").json()
+    assert [(x["field"], x["old"], x["new"], x["note"]) for x in h1] == [("validity", "valid", "changed", "Salon A-100 oldu")]
+    h3 = client.get(f"/api/items/{d3}/history").json()
+    assert [(x["field"], x["old"], x["new"]) for x in h3] == [("title", "Lacivert afiş", "Lacivert ve beyaz afiş")]
+    # current counts and alerts leave out changed/cancelled decisions; the record itself stays visible
+    b = client.get(f"/api/chats/{cid}/board").json()
+    assert b["overview"]["kpi"]["decisions"] == 1 and len(b["overview"]["focus"]["decisions"]) == 1
+    assert len(b["decisions"]) == 3
+    rows = client.get(f"/api/chats/{cid}/export", params={"what": "decisions", "format": "json"}).json()["rows"]
+    assert {r["title"]: r["validity"] for r in rows}["Salon B-201"] == "changed"
+
+
+def test_validity_rules(env):
+    db, client, cid = env
+    t, d = add(client, cid, "task", "Görev"), add(client, cid, "decision", "Karar")
+    assert client.patch(f"/api/items/{t}", json={"validity": "changed"}).status_code == 400
+    assert client.patch(f"/api/items/{d}", json={"validity": "weird"}).status_code == 400
+    client.patch(f"/api/items/{d}", json={"validity": "valid"})   # no change -> no history
+    assert client.get(f"/api/items/{d}/history").json() == []
+
+
+def test_changed_decision_is_not_a_fact_in_meeting_summary(env):
+    db, client, cid = env
+    from app import meetings
+    mid = db.add_meeting(cid, title="T", date="2026-10-14", notes="Karar: x", status="held", units=[])
+    d = db.add_item(cid, "decision", title="Salon B-201", meeting_id=mid)
+    before = meetings.summary_fingerprint(db.get_meeting(mid), "tr")
+    assert "Salon B-201" in meetings.facts_text(db.get_meeting(mid), "tr")
+    client.patch(f"/api/items/{d}", json={"validity": "changed"})
+    m = db.get_meeting(mid)
+    assert "Salon B-201" not in meetings.facts_text(m, "tr")
+    assert meetings.summary_fingerprint(m, "tr") != before   # saved summary turns stale

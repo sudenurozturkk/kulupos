@@ -405,6 +405,7 @@ class ItemPatch(EventFields):
     unit: str | None = None
     status: str | None = None
     review: str | None = None  # approved | rejected
+    validity: str | None = None  # decisions only: valid | changed | cancelled
     note: str | None = None    # why the status changed; goes to the item's history, not onto the item
 
 
@@ -436,6 +437,10 @@ def patch_item(item_id: int, body: ItemPatch):
             del fields[required]
     if fields.get("status") not in (None, *STATUSES.get(cur["kind"], ("open", "done", "answered"))):
         raise HTTPException(400, "bad status")
+    if fields.get("validity") not in (None, *db.VALIDITY):
+        raise HTTPException(400, "bad validity")
+    if fields.get("validity") and cur["kind"] != "decision":
+        raise HTTPException(400, "validity only applies to decisions")
     if fields.get("review") not in (None, "approved", "rejected"):
         raise HTTPException(400, "bad review")
     if fields.get("review") is None:
@@ -448,6 +453,10 @@ def patch_item(item_id: int, body: ItemPatch):
     db.update_item(item_id, user=any(k != "review" for k in fields), **fields)
     if cur["kind"] == "question" and fields.get("status") not in (None, cur["status"]):
         db.add_history(item_id, "status", cur["status"], fields["status"], note)
+    if cur["kind"] == "decision":
+        for f in ("validity", "title"):
+            if fields.get(f) not in (None, cur[f]):
+                db.add_history(item_id, f, cur[f], fields[f], note)
     return db.get_item(item_id)
 
 
@@ -625,7 +634,7 @@ def _meeting_card(m: dict, items: list[dict]) -> dict:
     tasks = [i for i in mine if i["kind"] == "task"]
     return {**{k: v for k, v in m.items() if k != "notes"}, "has_notes": bool(m["notes"]),
             "tasks": len(tasks), "orphan_tasks": sum(1 for t in tasks if not t["owner"] and t["status"] == "open"),
-            "decisions": sum(1 for i in mine if i["kind"] == "decision"),
+            "decisions": sum(1 for i in mine if i["kind"] == "decision" and i["validity"] == "valid"),
             "questions": sum(1 for i in mine if i["kind"] == "question")}
 
 

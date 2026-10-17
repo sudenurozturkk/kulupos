@@ -10,7 +10,7 @@ from . import db
 from .analyzer import detect_lang
 
 KINDS = {"tasks": "task", "decisions": "decision", "questions": "question"}
-COLUMNS = ["id", "title", "owner", "unit", "due", "status", "source_idx", "source_sender", "source_date", "source_text"]
+COLUMNS = ["id", "title", "owner", "unit", "due", "status", "validity", "source_idx", "source_sender", "source_date", "source_text"]
 UNSAFE = ("=", "+", "-", "@", "\t", "\r")
 
 
@@ -59,7 +59,7 @@ def rows_for(chat_id: int, what: str, status: str | None, owner: str | None, uni
         if (date_from or date_to) and (not day or (date_from and day < date_from) or (date_to and day > date_to)):
             continue
         out.append({"id": i["id"], "title": i["title"], "owner": i["owner"] or "", "unit": i["unit"] or "",
-                    "due": i["due"] or "", "status": i["status"],
+                    "due": i["due"] or "", "status": i["status"], "validity": i["validity"],
                     "source_idx": i["source_idx"] if i["source_idx"] is not None else "",
                     "source_sender": (m["sender"] or "") if m else "", "source_date": m["ts"] if m else "",
                     "source_text": m["text"] if m else ""})

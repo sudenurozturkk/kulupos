@@ -112,7 +112,8 @@ const I18N = {
     none_yet: "Henüz yok",
     q_resolve: "Çözüldü", q_invalid: "Geçersiz", q_reopen: "Yeniden aç", q_closed: "Kapatılan sorular", q_hist: "Geçmiş", q_hist_none: "Henüz değişiklik yok.",
     st_name: { open: "Açık", answered: "Cevaplandı", resolved: "Çözüldü", invalid: "Geçersiz", done: "Kesinleşti" },
-    q_note: "Not (isteğe bağlı)", q_save: "Kaydet", q_close_title: s => `Soruyu “${s}” olarak işaretle`,
+    val_name: { valid: "Geçerli", changed: "Değişti", cancelled: "İptal" }, val_changed: "Değişti", val_cancelled: "İptal", val_valid_btn: "Yine geçerli",
+    q_note: "Not (isteğe bağlı)", q_save: "Kaydet", q_close_title: s => `“${s}” olarak işaretle`,
     no_owner: "sahibi yok", no_due: "tarih yok",
     asked_by: "soran",
     add_task: "Görev ekle", edit_task: "Görevi düzenle",
@@ -244,6 +245,7 @@ const I18N = {
     none_yet: "Nothing yet",
     q_resolve: "Resolved", q_invalid: "Not valid", q_reopen: "Reopen", q_closed: "Closed questions", q_hist: "History", q_hist_none: "No changes yet.",
     st_name: { open: "Open", answered: "Answered", resolved: "Resolved", invalid: "Not valid", done: "Final" },
+    val_name: { valid: "Valid", changed: "Changed", cancelled: "Cancelled" }, val_changed: "Changed", val_cancelled: "Cancel", val_valid_btn: "Valid again",
     q_note: "Note (optional)", q_save: "Save", q_close_title: s => `Mark the question as “${s}”`,
     no_owner: "no owner", no_due: "no date",
     asked_by: "asked by",
@@ -696,6 +698,10 @@ function renderBoardView() {
   const m = b.missed;
   const miss = (title, list, fmt) => list.length ? `<h4>${title} (${list.length})</h4><ul class="list">${list.map(fmt).join("")}</ul>` : "";
   const srcBtn = i => i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}" aria-label="${t("source")}">💬</button>` : "";
+  const decBtns = d => (d.validity === "valid"
+    ? `<button class="small ghost" data-qset="${d.id}" data-field="validity" data-st="changed">${t("val_changed")}</button><button class="small ghost" data-qset="${d.id}" data-field="validity" data-st="cancelled">${t("val_cancelled")}</button>`
+    : `<button class="small ghost" data-qset="${d.id}" data-field="validity" data-st="valid">${t("val_valid_btn")}</button>`)
+    + `<button class="small ghost" data-qhist="${d.id}">${t("q_hist")}</button>`;
   const closedQ = b.questions.filter(q => q.status !== "open");
   const qBtns = q => (q.status === "open" || q.status === "answered"
     ? `<button class="small ghost" data-qset="${q.id}" data-st="resolved">${t("q_resolve")}</button><button class="small ghost" data-qset="${q.id}" data-st="invalid">${t("q_invalid")}</button>`
@@ -731,7 +737,7 @@ function renderBoardView() {
       }).join("")}</ul>`
         : `<p class="muted">${t("none_yet")}</p>`}</div>
       <div class="panel"><h3>🧭 ${t("decisions")}</h3>${b.decisions.length ? `<ul class="list">${b.decisions.map(d =>
-        `<li><input type="checkbox" data-final="${d.id}" ${d.status === "done" ? "checked" : ""} title="${t("dec_final")}" aria-label="${t("dec_final")}"><span class="grow">${esc(d.title)}</span>${srcBtn(d)}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}</div>
+        `<li class="${d.validity !== "valid" ? "muted" : ""}"><input type="checkbox" data-final="${d.id}" ${d.status === "done" ? "checked" : ""} title="${t("dec_final")}" aria-label="${t("dec_final")}"><span class="grow">${d.validity !== "valid" ? `<s>${esc(d.title)}</s> <span class="chip">${esc(t("val_name")[d.validity])}</span>` : esc(d.title)}</span>${srcBtn(d)}${decBtns(d)}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}</div>
     </aside>
   </div>`;
 
@@ -753,7 +759,7 @@ function renderBoardView() {
     await patch(`/api/items/${el.dataset.final}`, { status: el.checked ? "done" : "open" });
     await reloadBoard();
   }));
-  view.querySelectorAll("[data-qset]").forEach(el => (el.onclick = () => setQuestionStatus(Number(el.dataset.qset), el.dataset.st)));
+  view.querySelectorAll("[data-qset]").forEach(el => (el.onclick = () => setQuestionStatus(Number(el.dataset.qset), el.dataset.st, el.dataset.field || "status")));
   view.querySelectorAll("[data-qhist]").forEach(el => (el.onclick = () => showHistory(Number(el.dataset.qhist))));
   view.querySelectorAll("[data-ev-edit]").forEach(el => (el.onclick = () => editEvent(b.events.find(x => x.id === Number(el.dataset.evEdit)))));
   view.querySelectorAll("[data-ev-add]").forEach(el => (el.onclick = () => editEvent({})));
@@ -764,13 +770,13 @@ function renderBoardView() {
 }
 
 // Question status (resolved / not valid / reopen) with an optional note; every change is kept in the item's history.
-function setQuestionStatus(id, status) {
-  const q = S.board.questions.find(x => x.id === id);
-  modal(`<h3>${esc(t("q_close_title")(t("st_name")[status]))}</h3><p>${esc(q ? q.title : "")}</p>
+function setQuestionStatus(id, status, field = "status") {
+  const q = S.board.questions.find(x => x.id === id) || S.board.decisions.find(x => x.id === id);
+  modal(`<h3>${esc(t("q_close_title")(t(field === "status" ? "st_name" : "val_name")[status]))}</h3><p>${esc(q ? q.title : "")}</p>
     <label for="q-note">${t("q_note")}</label><textarea id="q-note" rows="3" maxlength="500"></textarea>
     <div class="row"><button class="ghost" data-close>✕</button><button class="primary" id="q-save">${t("q_save")}</button></div>`, (m, close) => {
     m.querySelector("#q-save").onclick = async () => {
-      try { await patch(`/api/items/${id}`, { status, note: m.querySelector("#q-note").value }); close(); await reloadBoard(); }
+      try { await patch(`/api/items/${id}`, { [field]: status, note: m.querySelector("#q-note").value }); close(); await reloadBoard(); }
       catch (e) { toast(e.message); }
     };
   });
@@ -779,7 +785,7 @@ function setQuestionStatus(id, status) {
 async function showHistory(id) {
   let h = [];
   try { h = await api(`/api/items/${id}/history`); } catch (e) { return toast(e.message); }
-  const name = v => esc(t("st_name")[v] || v || "—");
+  const name = v => esc(t("st_name")[v] || t("val_name")[v] || v || "—");
   modal(`<h3>${t("q_hist")}</h3>${h.length ? `<ul class="list">${h.map(x => `<li><span class="grow">${esc(x.created_at.replace("T", " "))}
     <small>${x.field === "title" ? esc(x.old || "—") + " → " + esc(x.new || "—") : name(x.old) + " → " + name(x.new)}${x.note ? " · " + esc(x.note) : ""}</small></span></li>`).join("")}</ul>` : `<p class="muted">${t("q_hist_none")}</p>`}
     <div class="row"><button class="primary" data-close>OK</button></div>`);

@@ -32,7 +32,8 @@ class ReportRejected(Exception):
 def _linked(event: dict) -> tuple[list[dict], list[dict]]:
     items = db.get_items(event["chat_id"])
     tasks = [i for i in items if i["kind"] == "task" and i["event_id"] == event["id"]]
-    decisions = [i for i in items if i["kind"] == "decision" and i["event_id"] == event["id"]]
+    decisions = [i for i in items if i["kind"] == "decision" and i["event_id"] == event["id"]
+                 and i["validity"] == "valid"]
     return tasks, decisions
 
 

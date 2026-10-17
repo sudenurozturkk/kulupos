@@ -136,6 +136,9 @@ EVENT_COLUMNS = {"event_type": "TEXT", "phase": "TEXT", "event_units": "TEXT", "
 MEETING_COLUMNS = {"meeting_id": "INTEGER REFERENCES meetings(id) ON DELETE SET NULL",
                    "source_text": "TEXT"}  # source_text: the note line an item came from (survives later note edits)
 
+DECISION_COLUMNS = {"validity": "TEXT"}   # decisions: valid | changed | cancelled (NULL reads as valid)
+VALIDITY = ("valid", "changed", "cancelled")
+
 _lock = threading.RLock()
 _conn: sqlite3.Connection | None = None
 
@@ -152,7 +155,7 @@ def conn() -> sqlite3.Connection:
             _conn.execute("ALTER TABLE items ADD COLUMN review TEXT NOT NULL DEFAULT 'approved'")
             _conn.commit()
         have = {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}
-        for col, decl in {**EVENT_COLUMNS, **MEETING_COLUMNS}.items():
+        for col, decl in {**EVENT_COLUMNS, **MEETING_COLUMNS, **DECISION_COLUMNS}.items():
             if col not in have:
                 _conn.execute(f"ALTER TABLE items ADD COLUMN {col} {decl}")
         _conn.commit()
@@ -302,7 +305,7 @@ def senders(chat_id: int) -> list[str]:
 # ---- items -----------------------------------------------------------------
 
 ITEM_FIELDS = ("title", "owner", "due", "time", "place", "unit", "status", "source_idx", "resolved_idx", "review", "needs_review",
-               *EVENT_COLUMNS, *MEETING_COLUMNS)
+               *EVENT_COLUMNS, *MEETING_COLUMNS, *DECISION_COLUMNS)
 
 
 def add_item(chat_id: int, kind: str, **fields) -> int:
@@ -311,6 +314,7 @@ def add_item(chat_id: int, kind: str, **fields) -> int:
     data["event_units"] = _units_json(data["event_units"])
     data["status"] = data["status"] or "open"
     data["review"] = data["review"] or "approved"
+    data["validity"] = data["validity"] or "valid"
     data["needs_review"] = data["needs_review"] or 0
     now = _now()
     with _lock, conn() as c:
@@ -356,6 +360,7 @@ def _units_json(v) -> str | None:
 
 
 def _item(r: dict) -> dict:
+    r["validity"] = r.get("validity") or "valid"
     r["event_units"] = json.loads(r["event_units"]) if r.get("event_units") else []
     return r
 

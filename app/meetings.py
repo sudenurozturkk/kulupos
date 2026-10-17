@@ -249,7 +249,9 @@ def detect_lang(meeting: dict) -> str:
 def linked_records(meeting: dict) -> dict[str, list[dict]]:
     """Approved records only: a suggestion nobody approved never reaches a summary."""
     items = [i for i in db.get_items(meeting["chat_id"]) if i["meeting_id"] == meeting["id"]]
-    return {k: [i for i in items if i["kind"] == k] for k in ("task", "decision", "question")}
+    # a decision marked changed/cancelled is history, not a current fact (the summary must not present it as one)
+    return {k: [i for i in items if i["kind"] == k and (k != "decision" or i["validity"] == "valid")]
+            for k in ("task", "decision", "question")}
 
 
 def facts_text(meeting: dict, lang: str) -> str:

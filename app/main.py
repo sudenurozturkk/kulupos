@@ -190,6 +190,7 @@ def board(chat_id: int):
         "events": sorted((i for i in items if i["kind"] == "event"), key=lambda e: e["due"] or ""),
         "missed": missed,
         "review": db.get_items(chat_id, review="proposed"),  # AI suggestions awaiting approval
+        "changes": db.get_changes(chat_id),  # AI edits to approved items awaiting approval
         "overview": insights.overview(chat, items, db.senders(chat_id), t),
         "progress": analyzer.progress(chat_id),
     }
@@ -286,8 +287,24 @@ def patch_item(item_id: int, body: ItemPatch):
         # no source -> never approvable; unclear date -> only after the user edited it
         if cur["needs_review"] == 1 or not (cur["user_edited"] or len(fields) > 1):
             raise HTTPException(409, "Kaynak bulunamadı / date unclear: düzenle veya reddet / edit or reject")
-    db.update_item(item_id, user=True, **fields)
+    # Approving/rejecting is a decision, not a correction: only real edits lock the item against the AI.
+    db.update_item(item_id, user=any(k != "review" for k in fields), **fields)
     return db.get_item(item_id)
+
+
+class ChangeDecision(BaseModel):
+    review: str  # approved | rejected
+
+
+@app.patch("/api/changes/{change_id}")
+def decide_change(change_id: int, body: ChangeDecision):
+    ch = db.get_change(change_id)
+    if not ch:
+        raise HTTPException(404)
+    if body.review not in ("approved", "rejected") or ch["review"] != "proposed":
+        raise HTTPException(400, "bad review")
+    db.decide_change(change_id, body.review == "approved")
+    return db.get_change(change_id)
 
 
 class ItemCreate(BaseModel):

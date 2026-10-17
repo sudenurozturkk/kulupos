@@ -51,11 +51,11 @@ const I18N = {
     health_ok: "Yerel · Gemma 4 hazır",
     health_nomodel: "Model yok: ollama pull",
     health_down: "Ollama kapalı",
-    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
-    found: { task: "görev", question: "soru", decision: "karar", event: "etkinlik", update: "güncellendi" },
+    found: { task: "görev", question: "soru", decision: "karar", event: "etkinlik", update: "güncellendi", change: "değişiklik önerisi" },
     no_unit: "Birimsiz",
     everyone: "Herkes",
     show_done: "Bitenleri göster",
@@ -137,11 +137,11 @@ const I18N = {
     health_ok: "Local · Gemma 4 ready",
     health_nomodel: "Model missing: ollama pull",
     health_down: "Ollama is not running",
-    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
-    found: { task: "task", question: "question", decision: "decision", event: "event", update: "updated" },
+    found: { task: "task", question: "question", decision: "decision", event: "event", update: "updated", change: "change proposed" },
     no_unit: "No team",
     everyone: "Everyone",
     show_done: "Show done",
@@ -394,7 +394,7 @@ function shell(view) {
   <nav class="tabs">
     <a href="#/c/${c.id}/overview" class="${view === "overview" ? "active" : ""}">📊 ${t("tab_overview")}</a>
     <a href="#/c/${c.id}/board" class="${view === "board" ? "active" : ""}">📌 ${t("tab_board")}${missedCount ? `<span class="count">${missedCount}</span>` : ""}</a>
-    <a href="#/c/${c.id}/review" class="${view === "review" ? "active" : ""}">🔎 ${t("tab_review")}${b.review.length ? `<span class="count">${b.review.length}</span>` : ""}</a>
+    <a href="#/c/${c.id}/review" class="${view === "review" ? "active" : ""}">🔎 ${t("tab_review")}${b.review.length + b.changes.length ? `<span class="count">${b.review.length + b.changes.length}</span>` : ""}</a>
     <a href="#/c/${c.id}/plan" class="${view === "plan" ? "active" : ""}">🧭 ${t("tab_plan")}<span class="new">AI</span></a>
     <a href="#/c/${c.id}/summary" class="${view === "summary" ? "active" : ""}">🗞️ ${t("tab_summary")}</a>
     <a href="#/c/${c.id}/ask" class="${view === "ask" ? "active" : ""}">💬 ${t("tab_ask")}</a>
@@ -606,12 +606,25 @@ function renderReviewView() {
     <button class="small" data-edit="${i.id}">${t("edit")}</button>
     <button class="small primary" data-ok="${i.id}" ${i.needs_review === 1 ? "disabled" : ""}>${t("approve")}</button>
     <button class="small ghost danger" data-no="${i.id}">${t("reject")}</button></li>`;
+  const val = v => v == null || v === "" ? "—" : esc(String(v));
+  const crow = c => `<li class="review-row"><span class="grow"><b>${esc(c.item_title)}</b>
+      <small>${["status", "owner", "due", "time", "place"].filter(k => k in c.new).map(k =>
+        `${t("f_" + k + "_l")}: ${val(c.old[k])} → <b>${val(c.new[k])}</b>`).join(" · ")}</small></span>
+    ${c.source_idx != null ? `<button class="src" data-src="${c.source_idx}" title="${t("source")}">💬</button>` : ""}
+    <button class="small primary" data-cok="${c.id}">${t("approve")}</button>
+    <button class="small ghost danger" data-cno="${c.id}">${t("reject")}</button></li>`;
   $("#view").innerHTML = `<div class="narrow"><p class="muted">${t("review_intro")}</p>
-    ${b.review.length ? `<ul class="list">${b.review.map(row).join("")}</ul>` : `<p class="muted">${t("review_empty")}</p>`}</div>`;
+    ${b.changes.length ? `<h4>${t("changes_title")} (${b.changes.length})</h4><ul class="list">${b.changes.map(crow).join("")}</ul>` : ""}
+    ${b.review.length ? `<ul class="list">${b.review.map(row).join("")}</ul>` : b.changes.length ? "" : `<p class="muted">${t("review_empty")}</p>`}</div>`;
   const view = $("#view");
   const decide = (id, review) => async () => {
     try { await patch(`/api/items/${id}`, { review }); await render(); } catch (e) { toast(e.message); }
   };
+  const decideChange = (id, review) => async () => {
+    try { await patch(`/api/changes/${id}`, { review }); await render(); } catch (e) { toast(e.message); }
+  };
+  view.querySelectorAll("[data-cok]").forEach(el => (el.onclick = decideChange(el.dataset.cok, "approved")));
+  view.querySelectorAll("[data-cno]").forEach(el => (el.onclick = decideChange(el.dataset.cno, "rejected")));
   view.querySelectorAll("[data-ok]").forEach(el => (el.onclick = decide(el.dataset.ok, "approved")));
   view.querySelectorAll("[data-no]").forEach(el => (el.onclick = decide(el.dataset.no, "rejected")));
   view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(b.review.find(x => x.id === Number(el.dataset.edit)))));

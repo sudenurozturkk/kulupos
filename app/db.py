@@ -51,6 +51,16 @@ CREATE TABLE IF NOT EXISTS items (
     created_at   TEXT NOT NULL,
     updated_at   TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS changes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id    INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+    item_id    INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    old        TEXT NOT NULL,          -- JSON {field: value} at proposal time
+    new        TEXT NOT NULL,          -- JSON {field: value} to apply on approval
+    source_idx INTEGER,
+    review     TEXT NOT NULL DEFAULT 'proposed',  -- proposed | approved | rejected
+    created_at TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS items_chat ON items(chat_id, kind);
 """
 
@@ -234,3 +244,49 @@ def get_items(chat_id: int, kind: str | None = None, review: str | None = "appro
     if review:
         sql += " AND review = ?"; args.append(review)
     return _rows(sql + " ORDER BY id", args)
+
+
+# ---- change proposals (AI edits to approved items wait for the user) -------
+
+def has_change(item_id: int, new: dict) -> bool:
+    """True if this exact change was proposed before, in any state (rejected ones must not return)."""
+    want = json.dumps(new, sort_keys=True, ensure_ascii=False)
+    return any(json.dumps(json.loads(r["new"]), sort_keys=True, ensure_ascii=False) == want
+               for r in _rows("SELECT new FROM changes WHERE item_id = ?", (item_id,)))
+
+
+def add_change(chat_id: int, item_id: int, old: dict, new: dict, source_idx: int | None) -> int:
+    with _lock, conn() as c:
+        return c.execute(
+            "INSERT INTO changes (chat_id, item_id, old, new, source_idx, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (chat_id, item_id, json.dumps(old, ensure_ascii=False), json.dumps(new, ensure_ascii=False),
+             source_idx, _now())).lastrowid
+
+
+def get_change(change_id: int) -> dict | None:
+    rows = _rows("SELECT * FROM changes WHERE id = ?", (change_id,))
+    return _decode_change(rows[0]) if rows else None
+
+
+def get_changes(chat_id: int, review: str = "proposed") -> list[dict]:
+    rows = _rows("""SELECT ch.*, i.title AS item_title, i.kind AS item_kind FROM changes ch
+                    JOIN items i ON i.id = ch.item_id
+                    WHERE ch.chat_id = ? AND ch.review = ? ORDER BY ch.id""", (chat_id, review))
+    return [_decode_change(r) for r in rows]
+
+
+def _decode_change(r: dict) -> dict:
+    r["old"], r["new"] = json.loads(r["old"]), json.loads(r["new"])
+    return r
+
+
+def decide_change(change_id: int, approve: bool) -> None:
+    """Approving applies the change to the item; rejecting leaves the item untouched."""
+    ch = get_change(change_id)
+    if not ch or ch["review"] != "proposed":
+        return
+    if approve:
+        update_item(ch["item_id"], **ch["new"])
+    with _lock, conn() as c:
+        c.execute("UPDATE changes SET review = ? WHERE id = ?",
+                  ("approved" if approve else "rejected", change_id))

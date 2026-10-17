@@ -263,6 +263,21 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
             return 1
         return 2 if any((raw or "").strip() and not ok for raw, ok in dates) else 0
 
+    def modify(item, changes, source):
+        """Edit an item the AI saw. Approved items are never touched directly: the edit becomes a
+        change proposal for the user. Not-yet-approved items can still be refined in place."""
+        changes = {k: v for k, v in changes.items() if v != item.get(k)}
+        if not changes or item["review"] == "rejected":
+            return
+        if item["review"] == "approved":
+            if not db.has_change(item["id"], changes):
+                db.add_change(chat_id, item["id"], {k: item.get(k) for k in changes}, changes, source)
+                note("change", item["title"])
+            return
+        db.update_item(item["id"], **changes)
+        item.update(changes)
+        note("update", item["title"])
+
     def note(kind, text):
         found.append({"kind": kind, "text": text})
         del found[:-12]
@@ -276,14 +291,12 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
         if u.get("status") == "done" and t["status"] != "done":
             changes.update(status="done", resolved_idx=src(u))
         owner = match_member(u.get("owner", ""), members)
-        if owner and owner != t["owner"]:
+        if owner:
             changes["owner"] = owner
         due = valid_date(u.get("due", ""), around)
-        if due and due != t["due"]:
+        if due:
             changes["due"] = due
-        if changes:
-            db.update_item(t["id"], **changes)
-            note("update", t["title"])
+        modify(t, changes, src(u))
 
     tasks = db.get_items(chat_id, "task", review=None)  # done ones too: a finished task must not come back
     for t in r.get("new_tasks", []):
@@ -295,9 +308,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
         due = valid_date(t.get("due", ""), around)
         if dup:
             if not dup["user_edited"]:
-                fill = {k: v for k, v in (("owner", owner), ("due", due)) if v and not dup[k]}
-                if fill:
-                    db.update_item(dup["id"], **fill)
+                modify(dup, {k: v for k, v in (("owner", owner), ("due", due)) if v and not dup[k]}, src(t))
             continue
         done = t.get("status") == "done"
         new_id = db.add_item(chat_id, "task", review="proposed", title=title,
@@ -312,7 +323,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
         # The answer must be a real message that comes after the question.
         if (q and q["kind"] == "question" and q["status"] == "open" and src(a) is not None
                 and (q["source_idx"] is None or src(a) > q["source_idx"])):
-            db.update_item(q["id"], status="answered", resolved_idx=src(a))
+            modify(q, {"status": "answered", "resolved_idx": src(a)}, src(a))
 
     questions = db.get_items(chat_id, "question", review=None)
     for q in r.get("new_questions", []):
@@ -337,13 +348,10 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
         e = by_id.get(u.get("id"))
         if not e or e["kind"] != "event" or e["user_edited"]:
             continue
-        changes = {k: v for k, v in (
+        modify(e, {k: v for k, v in (
             ("due", valid_date(u.get("date", ""), around)),
             ("time", (u.get("time") or "").strip() or None),
-            ("place", (u.get("place") or "").strip() or None)) if v and v != e[k]}
-        if changes:
-            db.update_item(e["id"], **changes)
-            note("update", e["title"])
+            ("place", (u.get("place") or "").strip() or None)) if v}, src(u))
 
     events = db.get_items(chat_id, "event", review=None)
     for ev in r.get("new_events", []):
@@ -353,8 +361,8 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
             continue
         dup = next((o for o in events if similar(o["title"], title) > 0.6), None)
         if dup:
-            if not dup["user_edited"] and dup["due"] != when:
-                db.update_item(dup["id"], due=when, time=(ev.get("time") or "").strip() or dup["time"])
+            if not dup["user_edited"]:
+                modify(dup, {"due": when, "time": (ev.get("time") or "").strip() or dup["time"]}, src(ev))
             continue
         new_id = db.add_item(chat_id, "event", review="proposed", title=title, due=when, needs_review=flag(ev, src(ev)),
                              time=(ev.get("time") or "").strip() or None,

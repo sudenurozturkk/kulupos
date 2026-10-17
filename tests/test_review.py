@@ -86,3 +86,57 @@ def test_unsourced_item_flagged_and_not_approvable(env, monkeypatch):
     assert client.patch(f"/api/items/{tid}", json={"review": "approved"}).status_code == 409
     client.patch(f"/api/items/{tid}", json={"due": "2026-10-20"})
     assert client.patch(f"/api/items/{tid}", json={"review": "approved"}).status_code == 200
+
+
+def test_ai_update_to_approved_item_becomes_a_proposal(env, monkeypatch):
+    db, analyzer, client = env
+    fake(monkeypatch, analyzer)
+    cid = client.post("/api/chats", content=CHAT.encode()).json()["id"]
+    run(analyzer, cid)
+    task = next(i for i in client.get(f"/api/chats/{cid}/board").json()["review"] if i["kind"] == "task")
+    client.patch(f"/api/items/{task['id']}", json={"review": "approved"})
+
+    async def chat_json(*a, **k):
+        return {"task_updates": [{"id": task["id"], "status": "done", "owner": "Mert", "due": "", "source": 1}]}
+    monkeypatch.setattr(analyzer.llm, "chat_json", chat_json)
+
+    def rerun():
+        db.update_chat(cid, analyzed_upto=-1)
+        run(analyzer, cid)
+
+    rerun()
+    b = client.get(f"/api/chats/{cid}/board").json()
+    t = next(x for x in b["tasks"] if x["id"] == task["id"])
+    assert t["status"] == "open" and t["owner"] == "Ayşe"          # approved record untouched
+    assert len(b["changes"]) == 1 and b["changes"][0]["new"]["status"] == "done"
+    assert b["changes"][0]["old"]["owner"] == "Ayşe"
+
+    rerun()                                                          # same proposal is not repeated
+    assert len(client.get(f"/api/chats/{cid}/board").json()["changes"]) == 1
+
+    chg = b["changes"][0]
+    assert client.patch(f"/api/changes/{chg['id']}", json={"review": "approved"}).status_code == 200
+    b = client.get(f"/api/chats/{cid}/board").json()
+    t = next(x for x in b["tasks"] if x["id"] == task["id"])
+    assert t["status"] == "done" and t["owner"] == "Mert" and b["changes"] == []
+
+
+def test_rejected_change_leaves_item_and_does_not_return(env, monkeypatch):
+    db, analyzer, client = env
+    fake(monkeypatch, analyzer)
+    cid = client.post("/api/chats", content=CHAT.encode()).json()["id"]
+    run(analyzer, cid)
+    q = next(i for i in client.get(f"/api/chats/{cid}/board").json()["review"] if i["kind"] == "question")
+    client.patch(f"/api/items/{q['id']}", json={"review": "approved"})
+
+    async def chat_json(*a, **k):
+        return {"answered_questions": [{"id": q["id"], "source": 1}]}
+    monkeypatch.setattr(analyzer.llm, "chat_json", chat_json)
+    for _ in range(2):
+        db.update_chat(cid, analyzed_upto=-1)
+        run(analyzer, cid)
+        b = client.get(f"/api/chats/{cid}/board").json()
+        if b["changes"]:
+            client.patch(f"/api/changes/{b['changes'][0]['id']}", json={"review": "rejected"})
+    b = client.get(f"/api/chats/{cid}/board").json()
+    assert b["changes"] == [] and b["questions"][0]["status"] == "open"

@@ -51,7 +51,7 @@ const I18N = {
     health_ok: "Yerel · Gemma 4 hazır",
     health_nomodel: "Model yok: ollama pull",
     health_down: "Ollama kapalı",
-    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -137,7 +137,7 @@ const I18N = {
     health_ok: "Local · Gemma 4 ready",
     health_nomodel: "Model missing: ollama pull",
     health_down: "Ollama is not running",
-    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -343,9 +343,24 @@ async function upload(f) {
   const units = $("#units").value;
   const name = $("#gname").value;
   const qs = new URLSearchParams({ filename: f.name, units, name });
-  $("#drop").innerHTML = `<span class="spinner"></span>`;
-  try { openChat(await post(`/api/chats?${qs}`, await f.arrayBuffer())); }
-  catch (e) { toast(e.message, 5000); renderHome(); }
+  const buf = await f.arrayBuffer();
+  let pv;
+  try { pv = await post("/api/preview", buf); }
+  catch (e) { toast(e.message, 5000); return; }
+  modal(`<h3>${t("pv_title")}</h3>
+    <p><b>${esc(f.name)}</b><br>💬 ${pv.messages} ${t("pv_msgs")} · 📅 ${fmtDate(pv.first_ts, false)} – ${fmtDate(pv.last_ts, false)} · 👥 ${pv.senders.length} ${t("pv_senders")}</p>
+    <p class="muted">${pv.senders.map(esc).join(", ")}</p>
+    ${pv.skipped_lines ? `<p>⚠️ ${t("pv_skipped")(pv.skipped_lines)}</p>` : ""}
+    ${pv.duplicate_of ? `<p>⚠️ ${t("pv_dup")(esc(pv.duplicate_of.name))}</p>` : ""}
+    <div class="modal-actions"><button data-close>${t("cancel")}</button><button class="primary" id="pv-go">${t("pv_go")}</button></div>`,
+  (m, close) => {
+    m.querySelector("#pv-go").onclick = async () => {
+      close();
+      $("#drop").innerHTML = `<span class="spinner"></span>`;
+      try { openChat(await post(`/api/chats?${qs}`, buf)); }
+      catch (e) { toast(e.message, 5000); renderHome(); }
+    };
+  });
 }
 
 async function openChat(chat) {

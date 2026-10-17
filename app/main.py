@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import os
 import re
 from datetime import date, timedelta
@@ -13,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import analyzer, assistant, db, insights, llm
-from .parser import parse_chat, read_export
+from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
 DEMOS = {
@@ -45,15 +46,25 @@ def _name_from_filename(filename: str) -> str:
     return stem or "WhatsApp"
 
 
-def _import(data: bytes, name: str, units: list[str]) -> dict:
+def _read(data: bytes):
+    """Validate an upload; returns (messages, skipped_lines). Raises HTTPException(400/413)."""
+    if not data:
+        raise HTTPException(400, "Dosya boş / the file is empty")
+    if len(data) > MAX_BYTES:
+        raise HTTPException(413, "Dosya 5 MB sınırını aşıyor / file exceeds the 5 MB limit")
     try:
-        messages = parse_chat(read_export(data))
+        messages, skipped = parse_report(read_export(data))
     except Exception as e:
         raise HTTPException(400, f"Dosya okunamadı / could not read file: {e}")
     if not any(m.sender for m in messages):
         raise HTTPException(400, "Bu bir WhatsApp sohbet dışa aktarımı gibi görünmüyor / "
                                  "this does not look like a WhatsApp export")
-    chat_id = db.create_chat(name, units, messages)
+    return messages, skipped
+
+
+def _import(data: bytes, name: str, units: list[str]) -> dict:
+    messages, _ = _read(data)
+    chat_id = db.create_chat(name, units, messages, hashlib.sha256(data).hexdigest())
     return db.get_chat(chat_id)
 
 
@@ -80,10 +91,24 @@ def chats():
 @app.post("/api/chats")
 async def upload(request: Request, filename: str = "chat.txt", name: str = "", units: str = ""):
     data = await request.body()
-    if not data:
-        raise HTTPException(400, "empty upload")
     unit_list = [u.strip() for u in units.split(",") if u.strip()]
     return _import(data, name.strip() or _name_from_filename(filename), unit_list)
+
+
+@app.post("/api/preview")
+async def preview(request: Request):
+    """What an upload would import, without saving anything."""
+    data = await request.body()
+    messages, skipped = _read(data)
+    real = [m for m in messages if m.sender]
+    return {
+        "messages": len(messages),
+        "first_ts": messages[0].ts.isoformat(timespec="minutes"),
+        "last_ts": messages[-1].ts.isoformat(timespec="minutes"),
+        "senders": sorted({m.sender for m in real}),
+        "skipped_lines": skipped,
+        "duplicate_of": db.find_by_hash(hashlib.sha256(data).hexdigest()),
+    }
 
 
 @app.post("/api/demo/{lang}")
@@ -101,7 +126,7 @@ def demo(lang: str):
 async def reimport(chat_id: int, request: Request):
     """Upload a newer export of the same group: only new messages are added and analysed."""
     _chat_or_404(chat_id)
-    added = db.append_messages(chat_id, parse_chat(read_export(await request.body())))
+    added = db.append_messages(chat_id, _read(await request.body())[0])
     if added:
         _start_analysis(chat_id)
     return {"added": added}

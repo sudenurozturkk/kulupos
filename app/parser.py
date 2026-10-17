@@ -107,6 +107,12 @@ def _classify(text: str) -> str:
 
 
 def parse_chat(raw: str) -> list[Message]:
+    return parse_report(raw)[0]
+
+
+def parse_report(raw: str) -> tuple[list[Message], int]:
+    """Messages plus the number of non-empty lines that could not be placed anywhere."""
+    skipped = 0
     raw_lines = raw.splitlines()
     lines = [_clean(line) for line in raw_lines]
     day_first = _detect_day_first(lines)
@@ -118,9 +124,15 @@ def parse_chat(raw: str) -> list[Message]:
             # Continuation of a multi-line message.
             if messages and line.strip():
                 messages[-1].text += "\n" + line
+            elif line.strip():
+                skipped += 1  # text before the first message
             continue
 
-        ts = _to_datetime(m, day_first)
+        try:
+            ts = _to_datetime(m, day_first)
+        except ValueError:  # e.g. 31.02.2026
+            skipped += 1
+            continue
         body = m.group(8)
         sender, sep, text = body.partition(": ")
         if not sep:
@@ -142,7 +154,10 @@ def parse_chat(raw: str) -> list[Message]:
     for msg in messages:
         if msg.kind == "text":
             msg.kind = _classify(msg.text)
-    return messages
+    return messages, skipped
+
+
+MAX_BYTES = 5 * 1024 * 1024
 
 
 def read_export(data: bytes) -> str:
@@ -153,6 +168,8 @@ def read_export(data: bytes) -> str:
             if not txts:
                 raise ValueError("Zip içinde .txt sohbet dosyası yok / no .txt chat in zip")
             name = next((n for n in txts if "chat" in n.lower() or "sohbet" in n.lower()), txts[0])
+            if zf.getinfo(name).file_size > MAX_BYTES:
+                raise ValueError("Dosya 5 MB sınırını aşıyor / file exceeds the 5 MB limit")
             data = zf.read(name)
     if data[:2] in (b"\xff\xfe", b"\xfe\xff"):
         return data.decode("utf-16")

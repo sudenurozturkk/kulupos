@@ -67,3 +67,38 @@ def test_demo_chats_parse_cleanly():
     for msgs, members in ((tr, 8), (en, 6)):
         assert len({m.sender for m in msgs if m.sender}) == members
         assert all(m.ts for m in msgs)
+
+
+def test_skipped_lines_and_bad_date():
+    from app.parser import parse_report
+    msgs, skipped = parse_report("başıboş satır\n31.02.2026 10:00 - Ali: geçersiz tarih\n"
+                                 "17.10.2026 19:33 - Ayşe: selam\n")
+    assert [m.text for m in msgs] == ["selam"] and skipped == 2
+
+
+def _client(tmp_path, monkeypatch):
+    import importlib
+    from fastapi.testclient import TestClient
+    monkeypatch.setenv("PANO_DB", str(tmp_path / "p.db"))
+    from app import db
+    importlib.reload(db)
+    from app import main
+    importlib.reload(main)
+    return TestClient(main.app)
+
+
+def test_upload_validation_and_preview(tmp_path, monkeypatch):
+    c = _client(tmp_path, monkeypatch)
+    assert c.post("/api/preview", content=b"").status_code == 400
+    assert c.post("/api/chats", content=b"").status_code == 400
+    assert c.post("/api/preview", content=b"x" * (5 * 1024 * 1024 + 1)).status_code == 413
+    assert c.post("/api/preview", content=b"merhaba dunya").status_code == 400
+
+    data = "junk\n17.10.2026 19:33 - Ayşe: selam\n17.10.2026 19:34 - Mert: hi\n".encode()
+    pv = c.post("/api/preview", content=data).json()
+    assert pv["messages"] == 2 and pv["skipped_lines"] == 1 and pv["senders"] == ["Ayşe", "Mert"]
+    assert pv["duplicate_of"] is None and c.get("/api/chats").json() == []
+
+    c.post("/api/chats?name=A", content=data)
+    assert c.post("/api/preview", content=data).json()["duplicate_of"]["name"] == "A"
+    assert c.post("/api/preview", content=data + b"x").json()["duplicate_of"] is None

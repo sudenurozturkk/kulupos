@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS chats (
     imported_at   TEXT NOT NULL,
     status        TEXT NOT NULL DEFAULT 'imported',
     error         TEXT,
-    analyzed_upto INTEGER NOT NULL DEFAULT -1
+    analyzed_upto INTEGER NOT NULL DEFAULT -1,
+    file_hash     TEXT
 );
 CREATE TABLE IF NOT EXISTS messages (
     chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
@@ -68,6 +69,9 @@ def conn() -> sqlite3.Connection:
         if "review" not in {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}:
             _conn.execute("ALTER TABLE items ADD COLUMN review TEXT NOT NULL DEFAULT 'approved'")
             _conn.commit()
+        if "file_hash" not in {r["name"] for r in _conn.execute("PRAGMA table_info(chats)")}:
+            _conn.execute("ALTER TABLE chats ADD COLUMN file_hash TEXT")
+            _conn.commit()
         if "needs_review" not in {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}:
             _conn.execute("ALTER TABLE items ADD COLUMN needs_review INTEGER NOT NULL DEFAULT 0")
             _conn.commit()
@@ -85,11 +89,16 @@ def _rows(sql: str, args=()) -> list[dict]:
 
 # ---- chats -----------------------------------------------------------------
 
-def create_chat(name: str, units: list[str], messages: list[Message]) -> int:
+def find_by_hash(file_hash: str) -> dict | None:
+    rows = _rows("SELECT id, name, imported_at FROM chats WHERE file_hash = ? ORDER BY id LIMIT 1", (file_hash,))
+    return rows[0] if rows else None
+
+
+def create_chat(name: str, units: list[str], messages: list[Message], file_hash: str | None = None) -> int:
     with _lock, conn() as c:
         cur = c.execute(
-            "INSERT INTO chats (name, units, imported_at) VALUES (?, ?, ?)",
-            (name, json.dumps(units, ensure_ascii=False), _now()),
+            "INSERT INTO chats (name, units, imported_at, file_hash) VALUES (?, ?, ?, ?)",
+            (name, json.dumps(units, ensure_ascii=False), _now(), file_hash),
         )
         chat_id = cur.lastrowid
         _insert_messages(c, chat_id, messages, start=0)

@@ -1,7 +1,7 @@
 # DURUM — KulüpRadar / Pano
 
 Güncelleme: 2026-10-17 · Kaynak: koddaki mevcut hal (`app/`, `static/`, `tests/`). Etiketler: YAPILDI · KISMEN · YOK · DOĞRULANMADI.
-Doğrulama: `python -m pytest tests -q` (92 test, sahte LLM, Ollama gerekmez) · `scripts/eval_demo.py` (TR demo, 127 mesaj: **10/14, ~230 sn**; önceki koşular 7/14 ve 11/14; EN demo hiç koşulmadı) · gerçek Gemma ile elle API denemesi (analiz → öneri kuyruğu → onay → yeniden başlatma sonrası kalıcılık).
+Doğrulama: `python -m pytest tests -q` (98 test, sahte LLM, Ollama gerekmez) · `scripts/eval_demo.py` (TR demo, 127 mesaj: **10/14, ~230 sn**; önceki koşular 7/14 ve 11/14; EN demo hiç koşulmadı) · gerçek Gemma ile elle API denemesi (analiz → öneri kuyruğu → onay → yeniden başlatma sonrası kalıcılık).
 Donanım notu: Gemma 4 e4b, RTX 3050 4 GB laptopta ~4 dk / 127 mesaj; bu yüzden örnek veri ve önceden hesaplanmış örnek rapor var.
 
 ## YAPILDI (testli)
@@ -30,10 +30,14 @@ Donanım notu: Gemma 4 e4b, RTX 3050 4 GB laptopta ~4 dk / 127 mesaj; bu yüzden
   - Landing ve README ana mesajı değişti (G20g). "Haftalık özet / WhatsApp'a geri dön" kartı landing'den çıktı, özellik duruyor.
 - Yerel çalışma: sunucu `127.0.0.1`, harici CDN/font yok.
 
+- Açık soru durumu (G10): açık / cevaplandı / çözüldü / geçersiz; panoda “Çözüldü / Geçersiz / Yeniden aç” düğmeleri, isteğe bağlı not; her değişiklik `item_history`'ye yazılır (`GET /api/items/{id}/history`), “Geçmiş” penceresi. Kullanıcı kapatınca model yeniden açmaz.
+- Karar durumu ve geçmişi (G12): `validity` geçerli / değişti / iptal (Kesinleşti kutusundan ayrı); değişti/iptal kararlar güncel sayı, uyarı, toplantı özeti ve etkinlik raporu girdisinden çıkar (özet “ESKİ” olur), kayıt listede üstü çizili kalır; durum ve başlık değişikliği geçmişe yazılır; dışa aktarmada son sütun `validity`.
+- CI: `.github/workflows/test.yml` (push + PR, Python 3.11, sahte LLM) + README rozeti. İlk koşu GitHub'da henüz görülmedi.
+- Canlı toplantı analizi (17 Ekim): `scripts/eval_meeting.py`, 2 toplantı (örnek + tuzaklı sahte not): uydurma kişi/tarih yok, 12 alıntının hepsi notta var, tuzaklar (fikir, geçmiş iş, enjeksiyon) öneri üretmedi; ama sorumlusuz görev ve üye listesinde olmayan kişinin görevi kaçtı (geri çağırma düşük), başlıklar bazen bozuk Türkçe. Ham çıktı `data/eval_runs/` (git dışı). Ayrıntı README “Known limits”.
+
 ## KISMEN
 - Görev listesi: panelden filtre (açık/yaklaşan/gecikmiş/atanmamış) ve üye filtresi var; arama, sıralama, öncelik yok.
-- Karar: "Kesinleşti" kutusu var; geçmiş ve önceki karar ilişkisi yok.
-- Açık soru: model "cevaplandı" işaretler (artık öneri olarak); kullanıcı "çözüldü/geçersiz" düğmesi yok.
+- Karar: geçmiş var; bir kararın hangi yeni kararla değiştiği bağlanmıyor (yalnızca not).
 - Kanıt: tek kaynak mesaj; çoklu kaynak yok.
 - Takvim: yaklaşan liste ve panel; ay/hafta görünümü, çakışma uyarısı yok.
 - Yinelenenler: bulanık eşleşmeyle otomatik atlanır; kullanıcıya öneri/çelişki uyarısı yok.
@@ -45,7 +49,7 @@ Toplantı: tekrarlayan toplantı, toplantıdan etkinliğe bağlama, katılım yo
 
 ## DOĞRULANMADI
 - Toplantı ekranları (liste, form, ayrıntı, özet kutusu, panel kartları, komite üye alanı) ekranda görülmedi; yalnızca `node --check`, API testleri ve HTTP duman denemesi yapıldı.
-- Toplantı analizi canlı Gemma ile hiç çalıştırılmadı (testler sahte LLM); öneri kalitesi ölçülmedi. Canlı modelle yalnızca örnek toplantının özeti üretildi (geçti). İsim denetimi sezgisel: cümle ortasındaki büyük harfli kelimelere bakar, iyi bir özeti reddedebilir ya da veride başka yerde geçen yanlış ismi kaçırabilir. Özet notların ilk 12.000 karakterini okur (kesilirse arayüz söyler).
+- Toplantı analizi canlı Gemma ile yalnızca 2 kısa toplantıda denendi (bkz. YAPILDI); doğruluk oranı değil, tek örnek. Canlı modelle yalnızca örnek toplantının özeti üretildi (geçti). İsim denetimi sezgisel: cümle ortasındaki büyük harfli kelimelere bakar, iyi bir özeti reddedebilir ya da veride başka yerde geçen yanlış ismi kaçırabilir. Özet notların ilk 12.000 karakterini okur (kesilirse arayüz söyler).
 - Arayüz: otomatik UI testi yok; yalnızca Chrome'da elle bakıldı. 390 px genişlik iframe ile ölçüldü, gerçek telefon denenmedi; ekran okuyucu denenmedi.
 - Dışa aktarma penceresi, Etkinlik analizi ekranı ve yeni form alanları ekranda görülmedi (yalnızca `node --check` ve API testleri). Etkinlik raporunun girdisine yeni alanlar eklenmedi.
 - Etkinlik formu, rapor penceresi, komite penceresi ekranda görülmedi (JS sözdizimi ve DOM/odak kontrolleri yapıldı).
@@ -55,4 +59,5 @@ Toplantı: tekrarlayan toplantı, toplantıdan etkinliğe bağlama, katılım yo
 1 kaynaksız → işaretli: UYUYOR · 2 otomatik onay yok: UYUYOR · 3 uydurma yok: UYUYOR (rapor sayı denetimi kaba) · 4 geçmiş ≠ güncel: UYUYOR (değişiklik önerisi) · 5 düzeltmeler ezilmez: UYUYOR (testli) · 6 yinelenen: KISMEN · 7 hata çökertmez: UYUYOR (testli) · 8 gizlilik: KISMEN (hata mesajı ≤200 karakter model çıktısı içerebilir, yalnızca yerel DB'de) · 9 çalışmayan düğme yok: KISMEN (tüm düğmeler tek tek denenmedi) · 10 test edilmeyen hazır değil: UYUYOR · 11 mevcut yapı: UYUYOR · 12 tutarlılık: UYUYOR (pano/panel yalnızca onaylı veriden).
 
 ## Sıradaki
-G20 sonrası: toplantı analizi için kısa canlı deneme + elle etiketli kontrol listesi · G10 soru "çözüldü/geçersiz" · G12 karar durumu ve geçmiş · G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)
+G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)
+- G10/G12 ekranları (düğmeler, Geçmiş penceresi, üstü çizili karar) gözle görülmedi; yalnızca `node --check`, API testleri ve HTTP duman testi. Yapay zekâ önerisi onaylanınca karar/soru başlığı değişirse (değişiklik önerisi) geçmişe yazılmaz.

@@ -27,11 +27,15 @@ def test_empty_database_gets_a_labelled_sample_panel(client):
     b = board(client, r["chat_id"])
     assert b["chat"]["is_sample"] == 1 and b["chat"]["status"] == "ready"
     assert b["chat"]["units"] == ["Yönetim", "Etkinlik", "İletişim", "Sponsorluk"]
-    assert len(b["tasks"]) == 14 and len(b["decisions"]) == 6 and len(b["events"]) == 3  # incl. 3 + 2 from the held sample meeting
-    assert sum(1 for q in b["questions"] if q["status"] == "open") == 4
+    assert len(b["tasks"]) == 27 and len(b["decisions"]) == 9 and len(b["events"]) == 6  # incl. 3 + 2 from the held sample meeting
+    assert sum(1 for q in b["questions"] if q["status"] == "open") == 6
     # every approved card points at a real source message; the unsourced proposal is flagged
+    import json
+    from app import seed
+    spec = json.loads(seed.SPEC.read_text(encoding="utf-8"))   # records typed in by hand in the sample have no chat source
+    manual = {x["title"] for k in ("events", "tasks", "decisions", "questions") for x in spec[k] if not x.get("src")}
     assert all(i["source_idx"] is not None for i in [*b["tasks"], *b["questions"], *b["decisions"], *b["events"]]
-               if "(örnek veri)" not in i["title"] and not i["meeting_id"])  # the held sample event is hand-entered data, not from the chat
+               if "(örnek veri)" not in i["title"] and not i["meeting_id"] and i["title"] not in manual)
     assert len(b["review"]) == 4 and sum(1 for i in b["review"] if i["needs_review"] == 1) == 1
     # AI proposals are counted apart from real tasks
     assert b["review_total"] == 4 and all(i["review"] == "approved" for i in b["tasks"])
@@ -43,16 +47,17 @@ def test_panel_focus_lists(client):
     cid = client.post("/api/seed").json()["chat_id"]
     o = board(client, cid)["overview"]
     f = o["focus"]
-    assert {x["title"] for x in f["overdue"]} == {"Kahveciye teslimat saatini bildir", "Geçen yılın sponsor dosyasını bul"}
+    assert {x["title"] for x in f["overdue"]} == {"Kahveciye teslimat saatini bildir", "Geçen yılın sponsor dosyasını bul",
+                                                 "Salon ve internet altyapısını doğrula", "İzin dilekçesini SKS'ye ver"}
     assert {x["title"] for x in f["orphans"]} == {"Projeksiyon ve ses sistemi için Teknik İşler'e dilekçe yaz",
                                                  "Geçen yılın sponsor dosyasını bul",
-                                                 "Basın bülteni taslağını yaz"}  # overlap with overdue is intended; the last one comes from the held meeting
+                                                 "Basın bülteni taslağını yaz", "Ödül bütçesini netleştir"}  # overlap with overdue is intended; the last one comes from the held meeting
     assert [c["why"] for c in f["conflicts"]] == ["after_event"]
-    assert len(f["decisions"]) == 3  # three decisions not yet marked final (one from the held meeting)
+    assert len(f["decisions"]) == 6  # three decisions not yet marked final (one from the held meeting)
     k = o["kpi"]
-    assert k["open"] == 10 and k["done"] == 4 and k["questions"] == 4
-    assert len(k["upcoming_ids"]) == 1  # only "Sertifikaları hazırla" (+7) falls in the next 7 days
-    assert [e["title"] for e in o["events"]] == ["Online hazırlık toplantısı", "Yapay Zeka ile Kariyer Söyleşisi"]
+    assert k["open"] == 21 and k["done"] == 6 and k["questions"] == 6
+    assert len(k["upcoming_ids"]) == 6  # tasks due within the next 7 days
+    assert [e["title"] for e in o["events"]] == ["Online hazırlık toplantısı", "Teknoloji Şirketi Gezisi", "Yapay Zeka ile Kariyer Söyleşisi", "FUB3V Hackathon 24 Saat"]
     assert o["events"][0]["days"] == 6
 
 
@@ -60,7 +65,7 @@ def test_decision_can_be_marked_final(client):
     cid = client.post("/api/seed").json()["chat_id"]
     d = board(client, cid)["overview"]["focus"]["decisions"][0]
     client.patch(f"/api/items/{d['id']}", json={"status": "done"})
-    assert len(board(client, cid)["overview"]["focus"]["decisions"]) == 2
+    assert len(board(client, cid)["overview"]["focus"]["decisions"]) == 5
 
 
 def test_seed_only_on_an_empty_database(client):

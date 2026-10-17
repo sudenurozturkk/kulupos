@@ -1,54 +1,429 @@
 {
-  "_note": "Fake data for the first-run sample panel. 'src' is a phrase looked up in the demo chat to link the source message; 'due' is days from today so the panel always looks alive.",
-  "chat": {
-    "name": "KBK Yönetim 2026",
-    "source_name": "WhatsApp Chat - KBK Yönetim 2026.txt",
-    "messages_file": "kbk-yonetim-tr.txt",
-    "units": ["Yönetim", "Etkinlik", "İletişim", "Sponsorluk"]
-  },
-  "events": [
-    {"key": "soylesi", "title": "Yapay Zeka ile Kariyer Söyleşisi", "due": 14, "time": "14:00", "place": "B-201",
-     "owner": "Elif Kaya", "event_type": "söyleşi", "phase": "confirmed", "event_units": ["Etkinlik", "İletişim"],
-     "attendees_expected": 120, "applications": 85, "src": "Tamam karar: söyleşi"},
-    {"key": "toplanti", "title": "Online hazırlık toplantısı", "due": 6, "time": "18:00", "place": "Meet",
-     "owner": "Elif Kaya", "event_type": "toplantı", "phase": "planning", "event_units": ["Yönetim"],
-     "src": "online hazırlık toplantısı"},
-    {"key": "atolye", "title": "Python Atölyesi (örnek veri)", "due": -21, "time": "13:00", "place": "Bilgisayar Lab",
-     "owner": "Mert Demir", "event_type": "atölye", "phase": "held", "event_units": ["Etkinlik", "İletişim"],
-     "attendees_expected": 60, "attendees_actual": 48, "applications": 72, "budget_est": 1200, "budget_actual": 1350,
-     "feedback_score": 4, "feedback_note": "Uygulama bölümü beğenildi, süre kısa kaldı.",
-     "feedback_good": "Uygulamalı bölüm ve anlatımın netliği.", "feedback_bad": "Süre kısa kaldı; labdaki bazı bilgisayarlar yavaştı.",
-     "feedback_comments": "Uygulamalı bölüm çok işime yaradı, daha fazla örnek olsun.\nSüre çok kısa kaldı, konular yarım kaldı.\nAnlatım netti ama labdaki bilgisayarlar yavaştı.\nUygulamalı bölümü çok beğendim.\nBir saat daha olsa iyi olurdu, süre yetmedi.",
-     "due_date": "2026-09-26", "src": ""}
-  ],
-  "tasks": [
-    {"title": "Salon için SKS'ye dilekçe ver", "owner": "Deniz Çelik", "unit": "Etkinlik", "status": "done", "event": "soylesi", "src": "Dilekçeyi verdim"},
-    {"title": "Konuşmacıyla görüşüp tarihi netleştir", "owner": "Mert Demir", "unit": "Etkinlik", "status": "done", "event": "soylesi", "src": "Ahmet Bey'i aradım"},
-    {"title": "Afişi hazırla ve paylaş", "owner": "Zeynep Arslan", "unit": "İletişim", "status": "done", "event": "soylesi", "src": "Afişin final hali"},
-    {"title": "Kayıt formunu hazırla", "owner": "Can Öztürk", "unit": "İletişim", "status": "done", "event": "soylesi", "src": "Kayıt formu hazır"},
-    {"title": "Sertifikaları hazırla", "owner": "Selin Aydın", "unit": "Etkinlik", "due": 7, "event": "soylesi", "src": "Ben alırım sertifikaları"},
-    {"title": "3 günlük geri sayım story serisi", "owner": "Ece Şahin", "unit": "İletişim", "due": 11, "event": "soylesi", "src": "3 günlük geri sayım"},
-    {"title": "Projeksiyon ve ses sistemi için Teknik İşler'e dilekçe yaz", "unit": "Etkinlik", "event": "soylesi", "src": "Teknik İşler'e ayrıca dilekçe"},
-    {"title": "Kahveciye teslimat saatini bildir", "owner": "Burak Yıldız", "unit": "Sponsorluk", "due": -2, "event": "soylesi", "src": "Kahveci teslimat saatini soruyor"},
-    {"title": "Geçen yılın sponsor dosyasını bul", "unit": "Sponsorluk", "due": -3, "src": "sponsor dosyası kimde"},
-    {"title": "HDMI bağlantısı ve yaka mikrofonunu hazırla", "owner": "Mert Demir", "unit": "Etkinlik", "due": 12, "event": "soylesi", "src": "yaka mikrofonu"},
-    {"title": "Katılımcı listesini sertifikalar için aktar", "owner": "Can Öztürk", "unit": "İletişim", "due": 20, "event": "soylesi", "src": "formdan Excel olarak"}
-  ],
-  "questions": [
-    {"title": "Geçen yılın sponsor dosyası kimde?", "owner": "Selin Aydın", "src": "sponsor dosyası kimde"},
-    {"title": "Kulübün yaka mikrofonu hâlâ dolapta mı?", "owner": "Mert Demir", "src": "yaka mikrofonu hala dolapta"},
-    {"title": "Kahveciler 31 Ekim'de kaçta gelsin?", "owner": "Burak Yıldız", "src": "Kahveci teslimat saatini soruyor"},
-    {"title": "Sertifika isim listesi kayıt formundan mı çekilecek?", "owner": "Selin Aydın", "status": "answered", "src": "isim listesi kayıt formundan", "resolved": "formdan Excel olarak"}
-  ],
-  "decisions": [
-    {"title": "Söyleşi 31 Ekim Cumartesi saat 14:00'te yapılacak", "status": "done", "event": "soylesi", "src": "Tamam karar: söyleşi"},
-    {"title": "Kayıt Google Forms ile alınacak", "status": "done", "event": "soylesi", "src": "Google Forms yeterli"},
-    {"title": "Tişörtler lacivert, logo beyaz olacak", "src": "tişörtler lacivert, logo beyaz"},
-    {"title": "Katılımcılara sertifika verilecek", "event": "soylesi", "src": "Bence verelim"}
-  ],
-  "proposed": [
-    {"kind": "task", "title": "Afişi kahveciye de gönder", "owner": "Burak Yıldız", "unit": "Sponsorluk", "src": "Kahveciye de atıyorum"},
-    {"kind": "decision", "title": "Story'lerde sponsor logosu yer alacak", "src": "Story'lerde sponsor logosu da olsun"},
-    {"kind": "task", "title": "Kayıt formuna katılımcı sınırı koy", "unit": "İletişim", "needs_review": 1}
+ "_note": "Fake data for the first-run sample panel. 'src' is a phrase looked up in the demo chat to link the source message; 'due' is days from today so the panel always looks alive.",
+ "chat": {
+  "name": "FUB3V Yönetim 2026",
+  "source_name": "WhatsApp Chat - FUB3V Yönetim 2026.txt",
+  "messages_file": "kbk-yonetim-tr.txt",
+  "units": [
+   "Yönetim",
+   "Etkinlik",
+   "İletişim",
+   "Sponsorluk"
   ]
+ },
+ "events": [
+  {
+   "key": "soylesi",
+   "title": "Yapay Zeka ile Kariyer Söyleşisi",
+   "due": 14,
+   "time": "14:00",
+   "place": "B-201",
+   "owner": "Elif Kaya",
+   "event_type": "söyleşi",
+   "phase": "confirmed",
+   "event_units": [
+    "Etkinlik",
+    "İletişim"
+   ],
+   "attendees_expected": 120,
+   "applications": 85,
+   "src": "Tamam karar: söyleşi"
+  },
+  {
+   "key": "toplanti",
+   "title": "Online hazırlık toplantısı",
+   "due": 6,
+   "time": "18:00",
+   "place": "Meet",
+   "owner": "Elif Kaya",
+   "event_type": "toplantı",
+   "phase": "planning",
+   "event_units": [
+    "Yönetim"
+   ],
+   "src": "online hazırlık toplantısı"
+  },
+  {
+   "key": "atolye",
+   "title": "Python Atölyesi (örnek veri)",
+   "due": -21,
+   "time": "13:00",
+   "place": "Bilgisayar Lab",
+   "owner": "Mert Demir",
+   "event_type": "atölye",
+   "phase": "held",
+   "event_units": [
+    "Etkinlik",
+    "İletişim"
+   ],
+   "attendees_expected": 60,
+   "attendees_actual": 48,
+   "applications": 72,
+   "budget_est": 1200,
+   "budget_actual": 1350,
+   "feedback_score": 4,
+   "feedback_note": "Uygulama bölümü beğenildi, süre kısa kaldı.",
+   "feedback_good": "Uygulamalı bölüm ve anlatımın netliği.",
+   "feedback_bad": "Süre kısa kaldı; labdaki bazı bilgisayarlar yavaştı.",
+   "feedback_comments": "Uygulamalı bölüm çok işime yaradı, daha fazla örnek olsun.\nSüre çok kısa kaldı, konular yarım kaldı.\nAnlatım netti ama labdaki bilgisayarlar yavaştı.\nUygulamalı bölümü çok beğendim.\nBir saat daha olsa iyi olurdu, süre yetmedi.",
+   "due_date": "2026-09-26",
+   "src": ""
+  },
+  {
+   "key": "hackathon",
+   "title": "FUB3V Hackathon 24 Saat",
+   "due": 28,
+   "time": "10:00",
+   "place": "Mühendislik Fakültesi Kongre Salonu",
+   "owner": "Mert Demir",
+   "event_type": "yarışma",
+   "phase": "planning",
+   "event_units": [
+    "Etkinlik",
+    "Sponsorluk",
+    "İletişim"
+   ],
+   "attendees_expected": 150,
+   "applications": 96,
+   "budget_est": 18000,
+   "src": null
+  },
+  {
+   "key": "gezi",
+   "title": "Teknoloji Şirketi Gezisi",
+   "due": 10,
+   "time": "09:30",
+   "place": "Elazığ Teknokent",
+   "owner": "Deniz Çelik",
+   "event_type": "gezi",
+   "phase": "confirmed",
+   "event_units": [
+    "Etkinlik"
+   ],
+   "attendees_expected": 40,
+   "applications": 38,
+   "budget_est": 2500,
+   "src": null
+  },
+  {
+   "key": "tanitim",
+   "title": "Bahar Dönemi Tanıtım Standı",
+   "due": -45,
+   "time": "11:00",
+   "place": "Kampüs Meydanı",
+   "owner": "Zeynep Arslan",
+   "event_type": "stant",
+   "phase": "held",
+   "event_units": [
+    "İletişim",
+    "Etkinlik"
+   ],
+   "attendees_expected": 200,
+   "attendees_actual": 230,
+   "applications": 0,
+   "budget_est": 800,
+   "budget_actual": 720,
+   "src": null
+  }
+ ],
+ "tasks": [
+  {
+   "title": "Salon için SKS'ye dilekçe ver",
+   "owner": "Deniz Çelik",
+   "unit": "Etkinlik",
+   "status": "done",
+   "event": "soylesi",
+   "src": "Dilekçeyi verdim"
+  },
+  {
+   "title": "Konuşmacıyla görüşüp tarihi netleştir",
+   "owner": "Mert Demir",
+   "unit": "Etkinlik",
+   "status": "done",
+   "event": "soylesi",
+   "src": "Ahmet Bey'i aradım"
+  },
+  {
+   "title": "Afişi hazırla ve paylaş",
+   "owner": "Zeynep Arslan",
+   "unit": "İletişim",
+   "status": "done",
+   "event": "soylesi",
+   "src": "Afişin final hali"
+  },
+  {
+   "title": "Kayıt formunu hazırla",
+   "owner": "Can Öztürk",
+   "unit": "İletişim",
+   "status": "done",
+   "event": "soylesi",
+   "src": "Kayıt formu hazır"
+  },
+  {
+   "title": "Sertifikaları hazırla",
+   "owner": "Selin Aydın",
+   "unit": "Etkinlik",
+   "due": 7,
+   "event": "soylesi",
+   "src": "Ben alırım sertifikaları"
+  },
+  {
+   "title": "3 günlük geri sayım story serisi",
+   "owner": "Ece Şahin",
+   "unit": "İletişim",
+   "due": 11,
+   "event": "soylesi",
+   "src": "3 günlük geri sayım"
+  },
+  {
+   "title": "Projeksiyon ve ses sistemi için Teknik İşler'e dilekçe yaz",
+   "unit": "Etkinlik",
+   "event": "soylesi",
+   "src": "Teknik İşler'e ayrıca dilekçe"
+  },
+  {
+   "title": "Kahveciye teslimat saatini bildir",
+   "owner": "Burak Yıldız",
+   "unit": "Sponsorluk",
+   "due": -2,
+   "event": "soylesi",
+   "src": "Kahveci teslimat saatini soruyor"
+  },
+  {
+   "title": "Geçen yılın sponsor dosyasını bul",
+   "unit": "Sponsorluk",
+   "due": -3,
+   "src": "sponsor dosyası kimde"
+  },
+  {
+   "title": "HDMI bağlantısı ve yaka mikrofonunu hazırla",
+   "owner": "Mert Demir",
+   "unit": "Etkinlik",
+   "due": 12,
+   "event": "soylesi",
+   "src": "yaka mikrofonu"
+  },
+  {
+   "title": "Katılımcı listesini sertifikalar için aktar",
+   "owner": "Can Öztürk",
+   "unit": "İletişim",
+   "due": 20,
+   "event": "soylesi",
+   "src": "formdan Excel olarak"
+  },
+  {
+   "title": "Hackathon sponsor paketlerini hazırla",
+   "owner": "Burak Yıldız",
+   "unit": "Sponsorluk",
+   "due": 7,
+   "status": "open",
+   "event": "hackathon",
+   "src": null
+  },
+  {
+   "title": "Jüri üyelerini davet et",
+   "owner": "Elif Kaya",
+   "unit": "Yönetim",
+   "due": 12,
+   "status": "open",
+   "event": "hackathon",
+   "src": null
+  },
+  {
+   "title": "Kayıt formunu yayınla",
+   "owner": "Zeynep Arslan",
+   "unit": "İletişim",
+   "due": 3,
+   "status": "open",
+   "event": "hackathon",
+   "src": null
+  },
+  {
+   "title": "Salon ve internet altyapısını doğrula",
+   "owner": "Mert Demir",
+   "unit": "Etkinlik",
+   "due": -2,
+   "status": "open",
+   "event": "hackathon",
+   "src": null
+  },
+  {
+   "title": "Hackathon afiş ve sosyal medya takvimi",
+   "owner": "Zeynep Arslan",
+   "unit": "İletişim",
+   "due": 5,
+   "status": "open",
+   "event": "hackathon",
+   "src": null
+  },
+  {
+   "title": "Ödül bütçesini netleştir",
+   "owner": null,
+   "unit": "Sponsorluk",
+   "due": null,
+   "status": "open",
+   "event": "hackathon",
+   "src": null
+  },
+  {
+   "title": "Gezi için otobüs kirala",
+   "owner": "Deniz Çelik",
+   "unit": "Etkinlik",
+   "due": 4,
+   "status": "open",
+   "event": "gezi",
+   "src": null
+  },
+  {
+   "title": "Katılımcı listesini şirkete gönder",
+   "owner": "Deniz Çelik",
+   "unit": "Etkinlik",
+   "due": 6,
+   "status": "open",
+   "event": "gezi",
+   "src": null
+  },
+  {
+   "title": "İzin dilekçesini SKS'ye ver",
+   "owner": "Selin Aydın",
+   "unit": "Yönetim",
+   "due": -1,
+   "status": "open",
+   "event": "gezi",
+   "src": null
+  },
+  {
+   "title": "Stant sonuç raporunu yaz",
+   "owner": "Zeynep Arslan",
+   "unit": "İletişim",
+   "due": -47,
+   "status": "done",
+   "event": "tanitim",
+   "src": null
+  },
+  {
+   "title": "Yeni üye formlarını sisteme gir",
+   "owner": "Selin Aydın",
+   "unit": "Yönetim",
+   "due": -46,
+   "status": "done",
+   "event": "tanitim",
+   "src": null
+  },
+  {
+   "title": "Dönem sonu faaliyet raporu taslağı",
+   "owner": "Elif Kaya",
+   "unit": "Yönetim",
+   "due": 15,
+   "status": "open",
+   "event": null,
+   "src": null
+  },
+  {
+   "title": "Kulüp kimliği ve logo güncellemesi",
+   "owner": "Zeynep Arslan",
+   "unit": "İletişim",
+   "due": 20,
+   "status": "open",
+   "event": null,
+   "src": null
+  }
+ ],
+ "questions": [
+  {
+   "title": "Geçen yılın sponsor dosyası kimde?",
+   "owner": "Selin Aydın",
+   "src": "sponsor dosyası kimde"
+  },
+  {
+   "title": "Kulübün yaka mikrofonu hâlâ dolapta mı?",
+   "owner": "Mert Demir",
+   "src": "yaka mikrofonu hala dolapta"
+  },
+  {
+   "title": "Kahveciler 31 Ekim'de kaçta gelsin?",
+   "owner": "Burak Yıldız",
+   "src": "Kahveci teslimat saatini soruyor"
+  },
+  {
+   "title": "Sertifika isim listesi kayıt formundan mı çekilecek?",
+   "owner": "Selin Aydın",
+   "status": "answered",
+   "src": "isim listesi kayıt formundan",
+   "resolved": "formdan Excel olarak"
+  },
+  {
+   "title": "Hackathon ödül bütçesi kimden istenecek?",
+   "owner": "Burak Yıldız",
+   "status": "open",
+   "src": null
+  },
+  {
+   "title": "Gezi dönüşü yemek için ek ödenek var mı?",
+   "owner": null,
+   "status": "open",
+   "src": null
+  }
+ ],
+ "decisions": [
+  {
+   "title": "Söyleşi 31 Ekim Cumartesi saat 14:00'te yapılacak",
+   "status": "done",
+   "event": "soylesi",
+   "src": "Tamam karar: söyleşi"
+  },
+  {
+   "title": "Kayıt Google Forms ile alınacak",
+   "status": "done",
+   "event": "soylesi",
+   "src": "Google Forms yeterli"
+  },
+  {
+   "title": "Tişörtler lacivert, logo beyaz olacak",
+   "src": "tişörtler lacivert, logo beyaz"
+  },
+  {
+   "title": "Katılımcılara sertifika verilecek",
+   "event": "soylesi",
+   "src": "Bence verelim"
+  },
+  {
+   "title": "Hackathon 24 saat sürecek, kayıt 150 kişiyle sınırlı",
+   "status": "open",
+   "event": "hackathon",
+   "src": null
+  },
+  {
+   "title": "Gezi katılımı yalnızca kayıt olan üyelere açık",
+   "status": "open",
+   "event": "gezi",
+   "src": null
+  },
+  {
+   "title": "Aylık yönetim toplantısı her ayın ilk Salı günü yapılacak",
+   "status": "open",
+   "event": null,
+   "src": null
+  }
+ ],
+ "proposed": [
+  {
+   "kind": "task",
+   "title": "Afişi kahveciye de gönder",
+   "owner": "Burak Yıldız",
+   "unit": "Sponsorluk",
+   "src": "Kahveciye de atıyorum"
+  },
+  {
+   "kind": "decision",
+   "title": "Story'lerde sponsor logosu yer alacak",
+   "src": "Story'lerde sponsor logosu da olsun"
+  },
+  {
+   "kind": "task",
+   "title": "Kayıt formuna katılımcı sınırı koy",
+   "unit": "İletişim",
+   "needs_review": 1
+  }
+ ]
 }

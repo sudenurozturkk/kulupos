@@ -21,7 +21,7 @@ from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
 DEMOS = {
-    "tr": ("KBK Yönetim 2026", ROOT / "demo" / "kbk-yonetim-tr.txt",
+    "tr": ("FUB3V Yönetim 2026", ROOT / "demo" / "kbk-yonetim-tr.txt",
            ["Yönetim", "Etkinlik", "Sosyal Medya", "Sponsorluk", "Teknik"]),
     "en": ("Robotics Club Board", ROOT / "demo" / "robotics-club-en.txt",
            ["Board", "Events", "Social Media", "Sponsorship", "Tech"]),

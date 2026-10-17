@@ -69,11 +69,14 @@ def seed_sample(today, force: bool = False) -> int | None:
 
 
 def _outdated(chat_id: int) -> bool:
-    """A sample club made before the current sample data: no meetings, or the held event lacks feedback or its report."""
-    if not db.get_meetings(chat_id):
+    """A sample club made before the current sample data: other name, no meetings, or a sample event that should
+    carry feedback and a precomputed report but lacks them."""
+    spec = json.loads(SPEC.read_text(encoding="utf-8"))
+    if db.get_chat(chat_id)["name"] != spec["chat"]["name"] or not db.get_meetings(chat_id):
         return True
-    held = [e for e in db.get_items(chat_id, "event") if e["phase"] == "held"]
-    return any(not e.get("feedback_comments") or not db.get_report(e["id"]) for e in held)
+    wanted = {e["title"] for e in spec["events"] if e.get("feedback_comments")}
+    return any(not e.get("feedback_comments") or not db.get_report(e["id"])
+               for e in db.get_items(chat_id, "event") if e["title"] in wanted)
 
 
 def ensure_sample(today) -> int:

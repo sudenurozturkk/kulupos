@@ -51,7 +51,10 @@ const I18N = {
     health_ok: "Yerel · Gemma 4 hazır",
     health_nomodel: "Model yok: ollama pull",
     health_down: "Ollama kapalı",
-    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", units_btn: "Komiteler", units_add: "Yeni komite adı", units_add_btn: "Ekle", units_note: "Silinen komitenin görevleri “Komitesiz” sütununa düşer.", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", units_btn: "Komiteler", units_add: "Yeni komite adı", units_add_btn: "Ekle", units_note: "Silinen komitenin görevleri “Komitesiz” sütununa düşer.", ev_add: "Etkinlik ekle", ev_edit: "Etkinliği düzenle", ev_type: "Tür", ev_date: "Tarih", ev_time: "Saat", ev_place: "Mekân", ev_owner: "Sorumlu",
+    ev_units: "Komiteler", ev_phase: "Durum", ev_exp: "Beklenen katılımcı", ev_act: "Gerçekleşen katılımcı", ev_bud_est: "Bütçe tahmini", ev_bud_act: "Gerçekleşen bütçe",
+    ev_notes: "Notlar", ev_none: "Etkinlik yok", ev_linked: n => `${n} bağlı iş`, ev_link: "Etkinlik",
+    ph: { idea: "Fikir", planning: "Planlanıyor", confirmed: "Kesinleşti", held: "Gerçekleşti", cancelled: "İptal" }, approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -137,7 +140,10 @@ const I18N = {
     health_ok: "Local · Gemma 4 ready",
     health_nomodel: "Model missing: ollama pull",
     health_down: "Ollama is not running",
-    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", units_btn: "Teams", units_add: "New team name", units_add_btn: "Add", units_note: "Tasks of a deleted team move to the “no team” column.", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", units_btn: "Teams", units_add: "New team name", units_add_btn: "Add", units_note: "Tasks of a deleted team move to the “no team” column.", ev_add: "Add event", ev_edit: "Edit event", ev_type: "Type", ev_date: "Date", ev_time: "Time", ev_place: "Venue", ev_owner: "Owner",
+    ev_units: "Teams", ev_phase: "Status", ev_exp: "Expected attendees", ev_act: "Actual attendees", ev_bud_est: "Budget estimate", ev_bud_act: "Actual budget",
+    ev_notes: "Notes", ev_none: "No event", ev_linked: n => `${n} linked`, ev_link: "Event",
+    ph: { idea: "Idea", planning: "Planning", confirmed: "Confirmed", held: "Held", cancelled: "Cancelled" }, approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -523,8 +529,11 @@ function renderBoardView() {
     <div class="columns">${cols}</div>
     <aside class="side">
       <div class="panel missed"><h3>⚠️ ${t("missed")}</h3>${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}</div>
-      <div class="panel"><h3>📅 ${t("events")}</h3>${b.events.length ? `<ul class="list">${b.events.map(e =>
-        `<li><span class="grow"><b>${esc(e.title)}</b><small>${fmtDate(e.due)}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}</small></span>${srcBtn(e)}</li>`).join("")}</ul>`
+      <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}">＋</button></h3>${b.events.length ? `<ul class="list">${b.events.map(e => {
+        const n = b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
+        return `<li><span class="grow"><a href="javascript:void 0" data-ev-edit="${e.id}"><b>${esc(e.title)}</b></a>
+          <small>${e.due ? fmtDate(e.due) : "—"}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.phase ? " · " + esc(t("ph")[e.phase] || e.phase) : ""}${n ? " · " + t("ev_linked")(n) : ""}</small></span>${srcBtn(e)}</li>`;
+      }).join("")}</ul>`
         : `<p class="muted">${t("none_yet")}</p>`}</div>
       <div class="panel"><h3>🧭 ${t("decisions")}</h3>${b.decisions.length ? `<ul class="list">${b.decisions.map(d =>
         `<li><span class="grow">${esc(d.title)}</span>${srcBtn(d)}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}</div>
@@ -543,6 +552,57 @@ function renderBoardView() {
   view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(b.tasks.find(x => x.id === Number(el.dataset.edit)))));
   view.querySelectorAll("[data-add]").forEach(el => (el.onclick = () => editTask({ unit: el.dataset.add || null })));
   view.querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
+  view.querySelectorAll("[data-ev-edit]").forEach(el => (el.onclick = () => editEvent(b.events.find(x => x.id === Number(el.dataset.evEdit)))));
+  view.querySelectorAll("[data-ev-add]").forEach(el => (el.onclick = () => editEvent({})));
+}
+
+function editEvent(ev) {
+  const b = S.board, isNew = !ev.id;
+  const opt = (v, label, sel) => `<option value="${esc(v)}" ${v === sel ? "selected" : ""}>${esc(label)}</option>`;
+  const num = (id, label, v, step = "1") => `<div><label>${label}</label><input type="number" min="0" step="${step}" id="${id}" value="${v ?? ""}"></div>`;
+  modal(`<h3>${isNew ? t("ev_add") : t("ev_edit")}</h3>
+    <label>${t("f_title")}</label><input type="text" id="v-title" value="${esc(ev.title || "")}">
+    <div class="grid2">
+      <div><label>${t("ev_type")}</label><input type="text" id="v-type" value="${esc(ev.event_type || "")}"></div>
+      <div><label>${t("ev_phase")}</label><select id="v-phase">${Object.entries(t("ph")).map(([k, l]) => opt(k, l, ev.phase || "idea")).join("")}</select></div>
+      <div><label>${t("ev_date")}</label><input type="date" id="v-due" value="${esc(ev.due || "")}"></div>
+      <div><label>${t("ev_time")}</label><input type="text" id="v-time" placeholder="14:00" value="${esc(ev.time || "")}"></div>
+      <div><label>${t("ev_place")}</label><input type="text" id="v-place" value="${esc(ev.place || "")}"></div>
+      <div><label>${t("ev_owner")}</label><select id="v-owner">${opt("", "—", ev.owner || "")}${b.members.map(n => opt(n, n, ev.owner)).join("")}
+        ${ev.owner && !b.members.includes(ev.owner) ? opt(ev.owner, ev.owner, ev.owner) : ""}</select></div>
+      ${num("v-exp", t("ev_exp"), ev.attendees_expected)}${num("v-act", t("ev_act"), ev.attendees_actual)}
+      ${num("v-best", t("ev_bud_est"), ev.budget_est, "any")}${num("v-bact", t("ev_bud_act"), ev.budget_actual, "any")}
+    </div>
+    <label>${t("ev_units")}</label>
+    <div class="filters">${b.chat.units.map(u => `<label><input type="checkbox" data-vu="${esc(u)}" ${(ev.event_units || []).includes(u) ? "checked" : ""}> ${esc(u)}</label>`).join("")}</div>
+    <label>${t("ev_notes")}</label><textarea id="v-notes" rows="3">${esc(ev.notes || "")}</textarea>
+    ${ev.source_idx != null ? `<p><button class="ghost small" id="v-src">💬 ${t("source")}</button></p>` : ""}
+    <div class="modal-actions">
+      ${isNew ? "" : `<button class="danger ghost left" id="v-del">${t("del")}</button>`}
+      <button data-close>${t("cancel")}</button><button class="primary" id="v-save">${t("save")}</button>
+    </div>`, (m, close) => {
+    const q = id => m.querySelector(id);
+    const src = q("#v-src");
+    if (src) src.onclick = () => showSource(ev.source_idx);
+    const del = q("#v-del");
+    if (del) del.onclick = async () => { await api(`/api/items/${ev.id}`, { method: "DELETE" }); close(); reloadBoard(); };
+    const n = id => (q(id).value === "" ? null : Number(q(id).value));
+    q("#v-save").onclick = async () => {
+      const body = {
+        title: q("#v-title").value.trim(), event_type: q("#v-type").value, phase: q("#v-phase").value,
+        due: q("#v-due").value, time: q("#v-time").value, place: q("#v-place").value, owner: q("#v-owner").value,
+        attendees_expected: n("#v-exp"), attendees_actual: n("#v-act"), budget_est: n("#v-best"), budget_actual: n("#v-bact"),
+        event_units: [...m.querySelectorAll("[data-vu]:checked")].map(x => x.dataset.vu), notes: q("#v-notes").value,
+      };
+      if (!body.title) return;
+      try {
+        if (isNew) await post(`/api/chats/${b.chat.id}/items`, { kind: "event", ...body });
+        else await patch(`/api/items/${ev.id}`, body);
+        close();
+        reloadBoard();
+      } catch (e) { toast(e.message); }
+    };
+  });
 }
 
 async function reloadBoard() {
@@ -579,6 +639,7 @@ function editTask(task) {
         ${task.owner && !b.members.includes(task.owner) ? opt(task.owner, task.owner, task.owner) : ""}</select></div>
       <div><label>${t("f_due")}</label><input type="date" id="e-due" value="${esc(task.due || "")}"></div>
       <div><label>${t("f_unit")}</label><select id="e-unit">${opt("", "—", task.unit || "")}${b.chat.units.map(u => opt(u, u, task.unit)).join("")}</select></div>
+      <div><label>${t("ev_link")}</label><select id="e-event">${opt("", "—", String(task.event_id ?? ""))}${b.events.map(x => opt(String(x.id), x.title, String(task.event_id ?? ""))).join("")}</select></div>
       <div><label>${t("f_status")}</label><select id="e-status">${opt("open", t("st_open"), task.status || "open")}${opt("done", t("st_done"), task.status)}</select></div>
     </div>
     ${task.source_idx != null ? `<p><button class="ghost small" id="e-src">💬 ${t("source")}</button></p>` : ""}
@@ -596,6 +657,7 @@ function editTask(task) {
       const body = {
         title: m.querySelector("#e-title").value.trim(), owner: m.querySelector("#e-owner").value,
         due: m.querySelector("#e-due").value, unit: m.querySelector("#e-unit").value, status: m.querySelector("#e-status").value,
+        event_id: m.querySelector("#e-event").value ? Number(m.querySelector("#e-event").value) : null,
       };
       if (!body.title) return;
       try {

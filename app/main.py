@@ -279,7 +279,45 @@ def messages(chat_id: int, around: int, radius: int = 4):
     return db.get_messages(chat_id, max(0, around - radius), around + radius)
 
 
-class ItemPatch(BaseModel):
+PHASES = ("idea", "planning", "confirmed", "held", "cancelled")
+NUMERIC = ("attendees_expected", "attendees_actual", "budget_est", "budget_actual")
+EVENT_ONLY = ("phase", "event_type", "event_units", *NUMERIC)
+
+
+class EventFields(BaseModel):
+    time: str | None = None
+    place: str | None = None
+    event_type: str | None = None
+    phase: str | None = None
+    event_units: list[str] | None = None
+    attendees_expected: int | None = None
+    attendees_actual: int | None = None
+    budget_est: float | None = None
+    budget_actual: float | None = None
+    notes: str | None = None
+    event_id: int | None = None  # link a task/decision to an event
+
+
+def _clean_event_fields(chat_id: int, fields: dict) -> dict:
+    """Blank strings clear a field; numbers must be >= 0; links must point at an event of this chat."""
+    for k, v in list(fields.items()):
+        if isinstance(v, str):
+            fields[k] = v.strip() or None
+    if fields.get("phase") not in (None, *PHASES):
+        raise HTTPException(400, "bad phase")
+    for k in NUMERIC:
+        if fields.get(k) is not None and fields[k] < 0:
+            raise HTTPException(400, f"{k} must be >= 0")
+    if fields.get("event_id") is not None:
+        ev = db.get_item(fields["event_id"])
+        if not ev or ev["kind"] != "event" or ev["chat_id"] != chat_id:
+            raise HTTPException(400, "event_id must be an event of this chat")
+    if "event_units" in fields:
+        fields["event_units"] = [u.strip() for u in (fields["event_units"] or []) if u.strip()]
+    return fields
+
+
+class ItemPatch(EventFields):
     title: str | None = None
     owner: str | None = None
     due: str | None = None
@@ -293,7 +331,13 @@ def patch_item(item_id: int, body: ItemPatch):
     if not db.get_item(item_id):
         raise HTTPException(404)
     # "" clears a field; omitted fields stay untouched.
-    fields = {k: (v or None) for k, v in body.model_dump(exclude_unset=True).items()}
+    cur = db.get_item(item_id)
+    fields = {k: (None if v == "" else v) for k, v in body.model_dump(exclude_unset=True).items()}
+    fields = _clean_event_fields(cur["chat_id"], fields)
+    if cur["kind"] != "event" and any(k in fields for k in EVENT_ONLY):
+        raise HTTPException(400, "event fields only apply to events")
+    if fields.get("event_id") == item_id:
+        raise HTTPException(400, "an event cannot link to itself")
     for required in ("title", "status"):
         if fields.get(required, "") is None:
             del fields[required]
@@ -303,7 +347,6 @@ def patch_item(item_id: int, body: ItemPatch):
         raise HTTPException(400, "bad review")
     if fields.get("review") is None:
         fields.pop("review", None)
-    cur = db.get_item(item_id)
     if fields.get("review") == "approved" and cur["needs_review"]:
         # no source -> never approvable; unclear date -> only after the user edited it
         if cur["needs_review"] == 1 or not (cur["user_edited"] or len(fields) > 1):
@@ -328,7 +371,7 @@ def decide_change(change_id: int, body: ChangeDecision):
     return db.get_change(change_id)
 
 
-class ItemCreate(BaseModel):
+class ItemCreate(EventFields):
     kind: str = "task"
     title: str
     owner: str | None = None
@@ -339,8 +382,16 @@ class ItemCreate(BaseModel):
 @app.post("/api/chats/{chat_id}/items")
 def create_item(chat_id: int, body: ItemCreate):
     _chat_or_404(chat_id)
-    item_id = db.add_item(chat_id, body.kind, title=body.title, owner=body.owner or None,
-                          due=body.due or None, unit=body.unit or None)
+    if body.kind not in ("task", "question", "decision", "event"):
+        raise HTTPException(400, "bad kind")
+    extra = _clean_event_fields(chat_id, body.model_dump(
+        exclude_unset=True, exclude={"kind", "title", "owner", "due", "unit"}))
+    if body.kind != "event" and any(k in extra for k in EVENT_ONLY):
+        raise HTTPException(400, "event fields only apply to events")
+    if body.kind == "event" and not extra.get("phase"):
+        extra["phase"] = "idea"
+    item_id = db.add_item(chat_id, body.kind, title=body.title.strip() or "?", owner=body.owner or None,
+                          due=body.due or None, unit=body.unit or None, **extra)
     db.update_item(item_id, user=True)
     return db.get_item(item_id)
 

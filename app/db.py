@@ -46,6 +46,15 @@ CREATE TABLE IF NOT EXISTS items (
     source_idx   INTEGER,
     resolved_idx INTEGER,
     user_edited  INTEGER NOT NULL DEFAULT 0,
+    event_type   TEXT,                              -- events: free text (workshop, talk, ...)
+    phase        TEXT,                              -- events: idea | planning | confirmed | held | cancelled
+    event_units  TEXT,                              -- events: JSON list of committees involved
+    attendees_expected INTEGER,
+    attendees_actual   INTEGER,
+    budget_est   REAL,
+    budget_actual REAL,
+    notes        TEXT,
+    event_id     INTEGER REFERENCES items(id) ON DELETE SET NULL,  -- tasks/decisions linked to an event
     review       TEXT NOT NULL DEFAULT 'approved',  -- proposed | approved | rejected
     needs_review INTEGER NOT NULL DEFAULT 0,        -- 1 no source message | 2 date unclear
     created_at   TEXT NOT NULL,
@@ -64,6 +73,10 @@ CREATE TABLE IF NOT EXISTS changes (
 CREATE INDEX IF NOT EXISTS items_chat ON items(chat_id, kind);
 """
 
+EVENT_COLUMNS = {"event_type": "TEXT", "phase": "TEXT", "event_units": "TEXT", "attendees_expected": "INTEGER",
+                 "attendees_actual": "INTEGER", "budget_est": "REAL", "budget_actual": "REAL", "notes": "TEXT",
+                 "event_id": "INTEGER REFERENCES items(id) ON DELETE SET NULL"}
+
 _lock = threading.RLock()
 _conn: sqlite3.Connection | None = None
 
@@ -79,6 +92,11 @@ def conn() -> sqlite3.Connection:
         if "review" not in {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}:
             _conn.execute("ALTER TABLE items ADD COLUMN review TEXT NOT NULL DEFAULT 'approved'")
             _conn.commit()
+        have = {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}
+        for col, decl in EVENT_COLUMNS.items():
+            if col not in have:
+                _conn.execute(f"ALTER TABLE items ADD COLUMN {col} {decl}")
+        _conn.commit()
         if "file_hash" not in {r["name"] for r in _conn.execute("PRAGMA table_info(chats)")}:
             _conn.execute("ALTER TABLE chats ADD COLUMN file_hash TEXT")
             _conn.commit()
@@ -210,12 +228,14 @@ def senders(chat_id: int) -> list[str]:
 
 # ---- items -----------------------------------------------------------------
 
-ITEM_FIELDS = ("title", "owner", "due", "time", "place", "unit", "status", "source_idx", "resolved_idx", "review", "needs_review")
+ITEM_FIELDS = ("title", "owner", "due", "time", "place", "unit", "status", "source_idx", "resolved_idx", "review", "needs_review",
+               *EVENT_COLUMNS)
 
 
 def add_item(chat_id: int, kind: str, **fields) -> int:
     """Manual items are approved at once; the analyzer passes review="proposed"."""
     data = {k: fields.get(k) for k in ITEM_FIELDS}
+    data["event_units"] = _units_json(data["event_units"])
     data["status"] = data["status"] or "open"
     data["review"] = data["review"] or "approved"
     data["needs_review"] = data["needs_review"] or 0
@@ -231,6 +251,8 @@ def add_item(chat_id: int, kind: str, **fields) -> int:
 
 def update_item(item_id: int, user: bool = False, **fields) -> None:
     fields = {k: v for k, v in fields.items() if k in ITEM_FIELDS}
+    if "event_units" in fields:
+        fields["event_units"] = _units_json(fields["event_units"])
     if not fields:
         return
     fields["updated_at"] = _now()
@@ -246,9 +268,18 @@ def delete_item(item_id: int) -> None:
         c.execute("DELETE FROM items WHERE id = ?", (item_id,))
 
 
+def _units_json(v) -> str | None:
+    return json.dumps(v, ensure_ascii=False) if v else None
+
+
+def _item(r: dict) -> dict:
+    r["event_units"] = json.loads(r["event_units"]) if r.get("event_units") else []
+    return r
+
+
 def get_item(item_id: int) -> dict | None:
     rows = _rows("SELECT * FROM items WHERE id = ?", (item_id,))
-    return rows[0] if rows else None
+    return _item(rows[0]) if rows else None
 
 
 def get_items(chat_id: int, kind: str | None = None, review: str | None = "approved") -> list[dict]:
@@ -258,7 +289,7 @@ def get_items(chat_id: int, kind: str | None = None, review: str | None = "appro
         sql += " AND kind = ?"; args.append(kind)
     if review:
         sql += " AND review = ?"; args.append(review)
-    return _rows(sql + " ORDER BY id", args)
+    return [_item(r) for r in _rows(sql + " ORDER BY id", args)]
 
 
 # ---- change proposals (AI edits to approved items wait for the user) -------

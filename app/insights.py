@@ -32,7 +32,8 @@ def overview(chat: dict, items: list[dict], members: list[str], today: date) -> 
                        for m in members), key=lambda w: (-w["open"], -w["done"]))
     workload = [w for w in workload if w["open"] or w["done"]]
 
-    events = sorted((e for e in items if e["kind"] == "event" and e["due"] and e["due"] >= t),
+    events = sorted((e for e in items if e["kind"] == "event" and e["due"] and e["due"] >= t
+                           and e["phase"] not in ("cancelled", "held")),
                     key=lambda e: e["due"])
     alerts = []
     for e in events[:2]:
@@ -55,7 +56,8 @@ def overview(chat: dict, items: list[dict], members: list[str], today: date) -> 
     timeline = sorted(
         [{"date": x["due"], "title": x["title"], "kind": x["kind"], "owner": x["owner"], "id": x["id"],
           "status": x["status"]}
-         for x in items if x["due"] and x["due"] >= t and x["kind"] in ("task", "event") and x["status"] == "open"],
+         for x in items if x["due"] and x["due"] >= t and x["kind"] in ("task", "event") and x["status"] == "open"
+         and x["phase"] not in ("cancelled", "held")],
         key=lambda r: r["date"])[:10]
 
     return {

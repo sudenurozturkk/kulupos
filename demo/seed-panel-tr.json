@@ -123,7 +123,11 @@
    "applications": 180,
    "budget_est": 800,
    "budget_actual": 720,
-   "src": null
+   "src": null,
+   "feedback_score": 4.5,
+   "feedback_note": "Stant ilgi gördü, yeni üye başvurusu yoğundu.",
+   "feedback_good": "Kampüs meydanındaki konum ve hediye çekilişi.",
+   "feedback_bad": "Öğle saatinde stant kalabalık kaldı."
   }
  ],
  "tasks": [

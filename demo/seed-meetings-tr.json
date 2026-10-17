@@ -1,0 +1,45 @@
+{
+  "_note": "Sahte örnek veri: gerçek kişi, sohbet veya toplantı yok. Toplantı özeti (seed-meeting-summary-tr.json) scripts/make_sample_meeting_summary.py ile yerel Gemma'dan üretilir, elle düzenlenmez.",
+  "unit_members": {
+    "Yönetim": "Elif Kaya, Deniz Çelik",
+    "Etkinlik": "Deniz Çelik, Mert Demir, Selin Aydın, Elif Kaya"
+  },
+  "meetings": [
+    {
+      "key": "yonetim",
+      "title": "Yönetim toplantısı: söyleşi hazırlıkları",
+      "date": "2026-10-14",
+      "time": "19:00",
+      "status": "held",
+      "units": ["Yönetim", "Etkinlik"],
+      "attendees": "Elif Kaya, Deniz Çelik, Mert Demir, Selin Aydın",
+      "agenda": "Söyleşi hazırlıkları, sponsorluk, duyuru takvimi",
+      "notes": "Elif söyleşinin 31 Ekim Cumartesi 14:00'te B-201'de yapılacağını teyit etti.\nMert konuşmacıyla yol ve konaklama konusunu görüşüp bilgi verecek.\nBurak sponsor kahveciyle sözleşme maddelerini netleştirecek.\nBasın bülteni taslağını kimin yazacağı belli olmadı, şimdilik sahibi yok.\nKarar: duyuru görselleri lacivert tonlarda hazırlanacak.\nKarar: söyleşi sonrası katılımcılara e-sertifika gönderilecek.\nAçık soru: B-201 projeksiyonu için teknik destek kimden istenecek?\nSelin sertifika şablonunu bu toplantıda gösterdi, herkes beğendi.",
+      "tasks": [
+        {"title": "Konuşmacının yol ve konaklamasını ayarla", "owner": "Mert Demir", "unit": "Etkinlik", "src": "Mert konuşmacıyla yol"},
+        {"title": "Sponsor kahveciyle sözleşmeyi netleştir", "owner": "Burak Yıldız", "unit": "Sponsorluk", "src": "Burak sponsor kahveciyle"},
+        {"title": "Basın bülteni taslağını yaz", "unit": "İletişim", "src": "Basın bülteni taslağını"}
+      ],
+      "decisions": [
+        {"title": "Duyuru görselleri lacivert tonlarda olacak", "status": "done", "src": "Karar: duyuru görselleri"},
+        {"title": "Katılımcılara e-sertifika gönderilecek", "status": "open", "src": "Karar: söyleşi sonrası"}
+      ],
+      "questions": [
+        {"title": "B-201 projeksiyonu için teknik destek kimden istenecek?", "src": "Açık soru: B-201"}
+      ],
+      "proposed": [
+        {"kind": "task", "title": "E-sertifikaları katılımcılara gönder", "unit": "İletişim", "src": "Karar: söyleşi sonrası"}
+      ]
+    },
+    {
+      "key": "haftalik",
+      "title": "Haftalık yönetim toplantısı",
+      "date_offset": 4,
+      "time": "19:00",
+      "status": "planned",
+      "units": ["Yönetim"],
+      "attendees": "Elif Kaya, Deniz Çelik",
+      "agenda": "Söyleşi son hazırlıklar, sertifika şablonu, sponsor görüşmesi"
+    }
+  ]
+}

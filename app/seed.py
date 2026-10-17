@@ -5,13 +5,15 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
-from . import analysis, db, report
+from . import analysis, db, meetings, report
 from .analyzer import norm
 from .parser import parse_chat, read_export
 
 DEMO = Path(__file__).resolve().parent.parent / "demo"
 SPEC = DEMO / "seed-panel-tr.json"
 INSIGHT = DEMO / "seed-insight-tr.json"
+MEETINGS = DEMO / "seed-meetings-tr.json"
+MEETING_SUMMARY = DEMO / "seed-meeting-summary-tr.json"
 
 
 def _squash(s: str) -> str:
@@ -58,6 +60,7 @@ def seed_sample(today, force: bool = False) -> int | None:
         db.add_item(chat_id, p["kind"], review="proposed", title=p["title"], owner=p.get("owner"),
                     unit=p.get("unit"), source_idx=find(p.get("src")), needs_review=p.get("needs_review", 0))
     _seed_insight(chat_id)
+    _seed_meetings(chat_id, today)
     db.update_chat(chat_id, status="ready", analyzed_upto=len(messages) - 1)
     return chat_id
 
@@ -75,6 +78,45 @@ def _seed_insight(chat_id: int) -> None:
     spec = json.loads(INSIGHT.read_text(encoding="utf-8"))
     facts = analysis.facts_text(analysis.compute(db.get_items(chat_id)), spec["lang"])
     db.save_insight(chat_id, spec["insight"], report.fingerprint(facts), spec["lang"], spec.get("model"), "sample")
+
+
+def _seed_meetings(chat_id: int, today) -> None:
+    """Two fake meetings: one held (notes, linked records, precomputed summary), one planned. The held one has a fixed
+    past date so the summary stays true; the planned one is always a few days ahead."""
+    if not MEETINGS.exists():
+        return
+    spec = json.loads(MEETINGS.read_text(encoding="utf-8"))
+    db.update_chat(chat_id, unit_members=spec["unit_members"])
+    made = {}
+    for m in spec["meetings"]:
+        when = m.get("date") or (today + timedelta(days=m["date_offset"])).isoformat()
+        notes = m.get("notes")
+        mid = made[m["key"]] = db.add_meeting(
+            chat_id, title=m["title"], date=when, time=m["time"], status=m["status"], units=m["units"],
+            attendees=m["attendees"], agenda=m.get("agenda"), notes=notes,
+            analyzed_fp=meetings.fingerprint(notes) if m.get("proposed") else None)  # its suggestions are precomputed
+        lines = meetings.note_lines(notes)
+
+        def quote(phrase):
+            key = _squash(phrase) if phrase else ""
+            return next((ln[:meetings.QUOTE_CAP] for ln in lines if key and key in _squash(ln)), None)
+
+        for t in m.get("tasks", []):
+            db.add_item(chat_id, "task", title=t["title"], owner=t.get("owner"), unit=t.get("unit"),
+                        status=t.get("status", "open"), meeting_id=mid, source_text=quote(t["src"]))
+        for d in m.get("decisions", []):
+            db.add_item(chat_id, "decision", title=d["title"], status=d.get("status", "open"), meeting_id=mid,
+                        source_text=quote(d["src"]))
+        for q in m.get("questions", []):
+            db.add_item(chat_id, "question", title=q["title"], meeting_id=mid, source_text=quote(q["src"]))
+        for p in m.get("proposed", []):
+            db.add_item(chat_id, p["kind"], review="proposed", title=p["title"], unit=p.get("unit"), meeting_id=mid,
+                        source_text=quote(p["src"]))
+    if MEETING_SUMMARY.exists():  # written once by scripts/make_sample_meeting_summary.py with the local model
+        s = json.loads(MEETING_SUMMARY.read_text(encoding="utf-8"))
+        meeting = db.get_meeting(made[s["key"]])
+        db.save_meeting_summary(meeting["id"], s["summary"], meetings.summary_fingerprint(meeting, s["lang"]),
+                                s["lang"], s.get("model"), "sample")
 
 
 def clear_sample() -> int:

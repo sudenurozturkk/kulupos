@@ -198,7 +198,8 @@ def patch_chat(chat_id: int, body: ChatPatch):
         if any(u not in units for u in body.unit_members):
             raise HTTPException(400, "Komite bulunamadı / unknown committee")
         cleaned = {u: ", ".join(n for n in (" ".join(x.split()) for x in v.split(",")) if n) for u, v in body.unit_members.items()}
-        db.update_chat(chat_id, unit_members={u: v for u, v in cleaned.items() if v})
+        merged = {**db.get_chat(chat_id)["unit_members"], **cleaned}  # only the sent committees change
+        db.update_chat(chat_id, unit_members={u: v for u, v in merged.items() if v})
     return db.get_chat(chat_id)
 
 

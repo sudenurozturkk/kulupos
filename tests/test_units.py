@@ -80,6 +80,9 @@ def test_committee_members_saved_cleaned_and_follow_rename_and_delete(env):
     c, cid = env
     r = c.patch(f"/api/chats/{cid}", json={"unit_members": {"Etkinlik": " Ayşe Demir ,, Mert  Kaya,", "Sosyal": ""}})
     assert r.json()["unit_members"] == {"Etkinlik": "Ayşe Demir, Mert Kaya"}
+    r = c.patch(f"/api/chats/{cid}", json={"unit_members": {"Teknik": "Can Yıldız"}})
+    assert r.json()["unit_members"] == {"Etkinlik": "Ayşe Demir, Mert Kaya", "Teknik": "Can Yıldız"}  # others stay
+    c.patch(f"/api/chats/{cid}", json={"unit_members": {"Teknik": ""}})  # blank clears one
     c.patch(f"/api/chats/{cid}", json={"renames": {"Etkinlik": "Organizasyon"}})
     assert board(c, cid)["chat"]["unit_members"] == {"Organizasyon": "Ayşe Demir, Mert Kaya"}
     c.patch(f"/api/chats/{cid}", json={"units": ["Sosyal", "Teknik"]})

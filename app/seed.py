@@ -68,13 +68,24 @@ def seed_sample(today, force: bool = False) -> int | None:
     return chat_id
 
 
+def _outdated(chat_id: int) -> bool:
+    """A sample club made before the current sample data: no meetings, or the held event lacks feedback or its report."""
+    if not db.get_meetings(chat_id):
+        return True
+    held = [e for e in db.get_items(chat_id, "event") if e["phase"] == "held"]
+    return any(not e.get("feedback_comments") or not db.get_report(e["id"]) for e in held)
+
+
 def ensure_sample(today) -> int:
-    """The sample club for an explicit "open the demo" click: reuse the existing one, else create it. No model."""
+    """The sample club for an explicit "open the demo" click: reuse the existing one, else create it. No model.
+    An outdated sample (made before the current sample data) is deleted and rebuilt; clubs the user imported
+    or created themselves (is_sample = 0) are never touched."""
     rows = db._rows("SELECT id FROM chats WHERE is_sample = 1 ORDER BY id LIMIT 1")
+    if rows and _outdated(rows[0]["id"]):
+        db.delete_chat(rows[0]["id"])
+        rows = []
     if not rows:
         return seed_sample(today, force=True)
-    if not db.get_meetings(rows[0]["id"]):  # a sample made before meetings existed gets the two sample meetings
-        _seed_meetings(rows[0]["id"], today)
     return rows[0]["id"]
 
 

@@ -159,13 +159,26 @@ def test_sample_meeting_summary_is_precomputed_fresh_and_passes_the_checks(clien
     assert client.get(f"/api/meetings/{held['id']}/summary").json()["stale"] is True
 
 
-def test_demo_button_adds_meetings_to_a_sample_made_before_they_existed(client):
+def test_demo_button_rebuilds_a_sample_made_before_meetings_existed(client):
     from app import db
     cid = client.post("/api/seed").json()["chat_id"]
     for m in db.get_meetings(cid):
         db.delete_meeting(m["id"])
     assert client.get(f"/api/chats/{cid}/meetings").json() == []
-    assert client.post("/api/demo/tr").json()["id"] == cid
-    assert len(client.get(f"/api/chats/{cid}/meetings").json()) == 2
-    client.post("/api/demo/tr")   # a second click does not duplicate them
-    assert len(client.get(f"/api/chats/{cid}/meetings").json()) == 2
+    new = client.post("/api/demo/tr").json()["id"]
+    assert len(client.get(f"/api/chats/{new}/meetings").json()) == 2
+    assert client.post("/api/demo/tr").json()["id"] == new   # a second click reuses it, no duplicates
+
+
+def test_demo_button_rebuilds_an_outdated_sample_and_leaves_user_clubs_alone(client):
+    from app import db
+    own = client.post("/api/chats", content=b"17.10.2026 19:33 - Ayse: selam\n").json()["id"]
+    old = client.post("/api/demo/tr").json()["id"]
+    for e in db.get_items(old, "event"):                       # simulate a sample made before feedback/report existed
+        db.update_item(e["id"], feedback_comments=None)
+    for m in db.get_meetings(old):
+        db.delete_meeting(m["id"])
+    new = client.post("/api/demo/tr").json()["id"]
+    assert new != old and old not in [c["id"] for c in client.get("/api/chats").json()]
+    assert len(db.get_meetings(new)) == 2 and own in [c["id"] for c in client.get("/api/chats").json()]
+    assert client.post("/api/demo/tr").json()["id"] == new     # current sample is reused

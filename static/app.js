@@ -325,6 +325,11 @@ const MEET_I18N = {
 };
 const HUB_I18N = {
   tr: {
+    tab_people: "Kişiler", pp_intro: "Görev sahiplerinden otomatik türeyen isimler. Bir kişiye tıklayınca görevleri, etkinlikleri ve toplantıları açılır.",
+    pp_note: "Yalnızca sayılar: görev sayısı zorluğu yansıtmaz; bu sayfa bir performans değerlendirmesi değildir.",
+    pp_name: "Kişi", pp_committees: "Komiteler", pp_open: "Açık", pp_late: "Geciken görevler", pp_done: "Tamamlanan", pp_done_l: "Tamamladıkları",
+    pp_upcoming: "Yaklaşan teslimler", pp_undated: "Tarihsiz açık görevler", pp_events: "Etkinlikler", pp_meetings: "Toplantılar (katılımcı listesinde adı geçen)",
+    pp_role_owner: "etkinlik sorumlusu", pp_role_task: "görevi bu etkinliğe bağlı", pp_empty: "Henüz sorumlusu olan görev yok.",
     tab_events: "Etkinlikler", evs_intro: "Bir etkinliğe tıkla: bilgi, bağlı görevler, kararlar, sorular, toplantılar, katılım, geri bildirim ve rapor tek sayfada açılır.",
     evp_open: "Aç", evp_info: "Bilgi", evp_attend: "Katılım", evp_applied: "Kayıt / başvuru (ilgi)", evp_tasks: "Bağlı görevler", evp_decisions: "Bağlı kararlar",
     evp_questions: "Bağlı açık sorular", evp_meetings: "Bağlı toplantılar", evp_none: "Bağlı kayıt yok.",
@@ -336,6 +341,11 @@ const HUB_I18N = {
     cmp_note: "— : veri girilmemiş; tahmin yazılmaz. Geciken görev: bağlı açık görevlerden tarihi geçmiş olanlar / bağlı görev sayısı.",
   },
   en: {
+    tab_people: "People", pp_intro: "Names derived from task owners. Click a person to see their tasks, events and meetings.",
+    pp_note: "Numbers only: a task count does not reflect difficulty; this page is not a performance review.",
+    pp_name: "Person", pp_committees: "Committees", pp_open: "Open", pp_late: "Late tasks", pp_done: "Completed", pp_done_l: "Completed",
+    pp_upcoming: "Upcoming deadlines", pp_undated: "Open tasks without a date", pp_events: "Events", pp_meetings: "Meetings (named in the attendee list)",
+    pp_role_owner: "event owner", pp_role_task: "task linked to this event", pp_empty: "No task has an owner yet.",
     tab_events: "Events", evs_intro: "Click an event: info, linked tasks, decisions, questions, meetings, attendance, feedback and report open on one page.",
     evp_open: "Open", evp_info: "Info", evp_attend: "Attendance", evp_applied: "Registered / applied (interest)", evp_tasks: "Linked tasks", evp_decisions: "Linked decisions",
     evp_questions: "Linked open questions", evp_meetings: "Linked meetings", evp_none: "No linked records.",
@@ -417,7 +427,7 @@ const S = { chats: [], board: null, health: null, member: "", showDone: true, po
 
 function route() {
   const [, kind, id, view, mid] = location.hash.split("/");
-  return kind === "c" ? { chatId: Number(id), view: view || "overview", mid: Number(mid) || null } : { chatId: null, view: "home" };
+  return kind === "c" ? { chatId: Number(id), view: view || "overview", mid: Number(mid) || null, arg: decodeURIComponent(mid || "") } : { chatId: null, view: "home" };
 }
 
 async function refreshHealth() {
@@ -582,6 +592,7 @@ function shell(view) {
     <a href="#/c/${c.id}/overview" class="${view === "overview" ? "active" : ""}">📊 ${t("tab_overview")}</a>
     <a href="#/c/${c.id}/board" class="${view === "board" ? "active" : ""}">📌 ${t("tab_board")}${missedCount ? `<span class="count">${missedCount}</span>` : ""}</a>
     <a href="#/c/${c.id}/events" class="${view === "events" || view === "event" ? "active" : ""}">🎪 ${t("tab_events")}</a>
+    <a href="#/c/${c.id}/people" class="${view === "people" || view === "person" ? "active" : ""}">👤 ${t("tab_people")}</a>
     <a href="#/c/${c.id}/review" class="${view === "review" ? "active" : ""}">🔎 ${t("tab_review")}${b.review.length + b.changes.length ? `<span class="count">${b.review.length + b.changes.length}</span>` : ""}</a>
     <a href="#/c/${c.id}/plan" class="${view === "plan" ? "active" : ""}">🧭 ${t("tab_plan")}<span class="new">AI</span></a>
     <a href="#/c/${c.id}/analysis" class="${view === "analysis" ? "active" : ""}">📈 ${t("tab_analysis")}</a>
@@ -922,7 +933,7 @@ async function reloadBoard() {
   await loadBoard(chatId);
   $("#progress-slot").innerHTML = progressHtml(S.board.progress);
   bindShell();
-  if (["board", "overview", "review", "events", "event"].includes(view)) VIEWS[view]();
+  if (["board", "overview", "review", "events", "event", "people", "person"].includes(view)) VIEWS[view]();
 }
 
 // ---------------------------------------------------------------- modals
@@ -1527,7 +1538,57 @@ function drawEventReport(eid, r, extra = "") {
   };
 }
 
-const VIEWS = { events: renderEventsView, event: renderEventView, meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
+// ---------------------------------------------------------------- people (derived from task owners; counts only)
+async function renderPeopleView() {
+  const id = S.board.chat.id, view = $("#view");
+  view.innerHTML = `<div class="narrow"><p class="muted"><span class="spinner"></span></p></div>`;
+  let d;
+  try { d = await api(`/api/chats/${id}/people`); }
+  catch (e) { view.innerHTML = `<div class="narrow"><p class="muted">⚠️ ${esc(e.message)}</p></div>`; return; }
+  if (route().view !== "people" || S.board.chat.id !== id) return;
+  const rows = d.people.map(p => `<tr><th scope="row"><a href="#/c/${id}/person/${encodeURIComponent(p.name)}">${avatar(p.name)} ${esc(p.name)}</a></th>
+    <td>${p.committees.length ? p.committees.map(esc).join(", ") : dash}</td><td><b>${p.open}</b></td><td>${p.late ? `<b>${p.late}</b>` : "0"}</td><td>${p.done}</td></tr>`).join("");
+  view.innerHTML = `<div class="narrow wide"><p class="muted">${t("pp_intro")}</p><p class="muted small">${t("pp_note")}</p>
+    ${d.people.length ? `<div class="tscroll"><table class="atable"><thead><tr><th>${t("pp_name")}</th><th>${t("pp_committees")}</th><th>${t("pp_open")}</th><th>${t("pp_late")}</th><th>${t("pp_done")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<div class="empty"><b>${t("pp_empty")}</b></div>`}</div>`;
+}
+
+async function renderPersonView() {
+  const { chatId, arg: name } = route(), view = $("#view");
+  const back = `<p><a href="#/c/${chatId}/people">← ${t("tab_people")}</a></p>`;
+  view.innerHTML = `<div class="narrow wide">${back}<p class="muted"><span class="spinner"></span></p></div>`;
+  let p;
+  try { p = await api(`/api/chats/${chatId}/person?name=${encodeURIComponent(name)}`); }
+  catch { location.hash = `#/c/${chatId}/people`; return; }
+  const r = route();
+  if (r.view !== "person" || r.arg !== name) return;
+  const none = `<p class="muted">${t("evp_none")}</p>`;
+  const taskLi = x => `<li><input type="checkbox" data-toggle="${x.id}" ${x.status === "done" ? "checked" : ""} aria-label="${t("st_done")}">
+    <span class="grow ${x.status === "done" ? "muted" : ""}"><a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a>
+    <small>${x.unit ? esc(x.unit) : t("no_unit")}</small></span>${dueChip(x, p.today)}</li>`;
+  const sect = (title, items, fmt) => `<div class="panel"><h3>${title} <span class="n">${items.length}</span></h3>${items.length ? `<ul class="list">${items.map(fmt).join("")}</ul>` : none}</div>`;
+  const all = [...p.late, ...p.open, ...p.done];
+  view.innerHTML = `<div class="narrow wide">${back}
+    <h2>${avatar(p.name)} ${esc(p.name)}</h2>
+    <p class="muted small">${t("pp_note")}</p>
+    <div class="panel"><h3>${t("pp_committees")}</h3>${p.committees.length ? `<p>${p.committees.map(esc).join(", ")}</p>` : none}</div>
+    ${sect(t("pp_late"), p.late, taskLi)}
+    ${sect(t("pp_upcoming"), p.upcoming, taskLi)}
+    ${sect(t("pp_undated"), p.open.filter(x => !x.due), taskLi)}
+    ${sect(t("pp_done_l"), p.done, taskLi)}
+    ${sect(t("pp_events"), p.events, e => `<li><span class="grow"><a href="#/c/${chatId}/event/${e.id}">${esc(e.title)}</a>
+      <small>${e.due ? fmtDate(e.due) : "—"} · ${e.role.map(k => t(k === "owner" ? "pp_role_owner" : "pp_role_task")).join(", ")}</small></span></li>`)}
+    ${sect(t("pp_meetings"), p.meetings, m => `<li><span class="grow"><a href="#/c/${chatId}/meeting/${m.id}">${esc(m.title)}</a>
+      <small>${m.date ? fmtDate(m.date) : t("mt_nodate")} · ${esc(t("mt_st")[m.status] || m.status)}</small></span></li>`)}
+  </div>`;
+  view.querySelectorAll("[data-toggle]").forEach(el => (el.onchange = async () => {
+    await patch(`/api/items/${el.dataset.toggle}`, { status: el.checked ? "done" : "open" });
+    await reloadBoard();
+  }));
+  view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(all.find(x => x.id === Number(el.dataset.edit)))));
+}
+
+const VIEWS = { people: renderPeopleView, person: renderPersonView, events: renderEventsView, event: renderEventView, meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
 
 // ---------------------------------------------------------------- render & polling
 function startPolling(chatId) {

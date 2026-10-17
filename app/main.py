@@ -16,7 +16,7 @@ from fastapi.responses import PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analysis, analyzer, assistant, db, export, insights, llm, meetings, report, seed
+from . import analysis, analyzer, assistant, db, export, insights, llm, meetings, people, report, seed
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -570,6 +570,23 @@ def event_page(event_id: int):
             "questions": [i for i in mine if i["kind"] == "question"],
             "meetings": cards, "attendance": analysis.event_row(ev),
             **_report_view(ev, db.get_report(event_id))}
+
+
+@app.get("/api/chats/{chat_id}/people")
+def people_list(chat_id: int):
+    """People = owners of approved tasks. Counts only; no ranking."""
+    chat = _chat_or_404(chat_id)
+    return {"people": people.summary(db.get_items(chat_id), chat, today().isoformat())}
+
+
+@app.get("/api/chats/{chat_id}/person")
+def person(chat_id: int, name: str):
+    chat = _chat_or_404(chat_id)
+    items = db.get_items(chat_id)
+    known = {people.key(n): n for n in people.names(items)}
+    if people.key(name) not in known:
+        raise HTTPException(404, "person not found")
+    return people.detail(items, chat, db.get_meetings(chat_id), known[people.key(name)], today().isoformat())
 
 
 @app.get("/api/chats/{chat_id}/event-analysis")

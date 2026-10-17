@@ -277,6 +277,11 @@ const MEET_I18N = {
     mt_an_done: s => `${s.tasks} görev, ${s.decisions} karar, ${s.questions} soru önerildi${s.duplicates ? ` · ${s.duplicates} tanesi zaten kayıtlı olduğu için atlandı` : ""}.`,
     mt_an_stale: "Notlar son analizden sonra değişti; yeniden analiz yalnızca yeni öneriler ekler.",
     mt_pending: n => `AI incelemesinde ${n} öneri bekliyor`, mt_go_review: "İncelemeye git", mt_src_meeting: "Toplantı notu",
+    mt_sum_title: "Toplantı özeti", mt_sum_make: "Toplantı özeti", mt_sum_remake: "Özeti yeniden yaz", mt_sum_wait: "Gemma özeti yazıyor…",
+    mt_sum_note: "Yalnızca toplantı notlarından ve onaylı bağlı kayıtlardan yazılır; kayıtta olmayan sayı veya isim içeren özet reddedilir.",
+    mt_sum_none: "Henüz özet yok.", mt_sum_stale: "⚠️ ESKİ: notlar, toplantı bilgileri veya onaylı kayıtlar özetten sonra değişti.",
+    mt_sum_rejected: "Özet reddedildi", mt_sum_cut: "Notların yalnızca ilk 12.000 karakteri özete girdi.", mt_sum_copy: "Kopyala",
+    mt_sum_src_sample: "Örnek veri · önceden hesaplanmış özet", mt_sum_src_ai: "Yerel Gemma ile yazıldı",
     mt_noowner: "sorumlusu yok", mt_confirm_del: "Toplantı silinsin mi? Onaylı kayıtlar panoda kalır ama toplantıyla bağı ve kaynak notu kalkar; bekleyen öneriler silinir.",
   },
   en: {
@@ -294,6 +299,11 @@ const MEET_I18N = {
     mt_an_done: s => `${s.tasks} tasks, ${s.decisions} decisions, ${s.questions} questions suggested${s.duplicates ? ` · ${s.duplicates} skipped (already recorded)` : ""}.`,
     mt_an_stale: "The notes changed since the last analysis; re-analysing only adds new suggestions.",
     mt_pending: n => `${n} suggestion(s) waiting in AI review`, mt_go_review: "Go to review", mt_src_meeting: "Meeting note",
+    mt_sum_title: "Meeting summary", mt_sum_make: "Meeting summary", mt_sum_remake: "Rewrite summary", mt_sum_wait: "Gemma is writing the summary…",
+    mt_sum_note: "Written only from the meeting notes and the approved linked records; a summary with figures or names that are not in the record is rejected.",
+    mt_sum_none: "No summary yet.", mt_sum_stale: "⚠️ OUTDATED: the notes, meeting details or approved records changed after this summary.",
+    mt_sum_rejected: "Summary rejected", mt_sum_cut: "Only the first 12,000 characters of the notes went into the summary.", mt_sum_copy: "Copy",
+    mt_sum_src_sample: "Sample data · precomputed summary", mt_sum_src_ai: "Written by local Gemma",
     mt_noowner: "no owner", mt_confirm_del: "Delete this meeting? Approved records stay on the board but lose the meeting link and source note; pending suggestions are deleted.",
   },
 };
@@ -1435,10 +1445,40 @@ function editMeeting(m) {
   });
 }
 
+// Summary box: saved text with a real "outdated" flag, a make/remake button and the real elapsed time while the local model works.
+function drawMeetingSummary(mid, r, extra, cut = false) {
+  const box = $("#mt-sum"), has = r && r.summary;
+  box.innerHTML = `${has ? `<p class="muted">${t(r.source === "sample" ? "mt_sum_src_sample" : "mt_sum_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
+      ${r.stale ? `<p><b>${t("mt_sum_stale")}</b></p>` : ""}${cut ? `<p class="muted">${t("mt_sum_cut")}</p>` : ""}
+      <pre class="report" style="white-space:pre-wrap">${esc(r.summary)}</pre>` : `<p class="muted">${t("mt_sum_none")}</p>`}
+    ${extra}<div id="mt-sum-wait"></div>
+    <div class="row-actions">${has ? `<button class="ghost" id="mt-sum-copy">📋 ${t("mt_sum_copy")}</button>` : ""}
+      <button class="primary" id="mt-sum-make">📝 ${has ? t("mt_sum_remake") : t("mt_sum_make")}</button></div>`;
+  const cp = $("#mt-sum-copy");
+  if (cp) cp.onclick = () => copyText(r.summary);
+  $("#mt-sum-make").onclick = async e => {
+    const t0 = Date.now(), wait = $("#mt-sum-wait");
+    e.target.disabled = true;
+    const tick = () => (wait.innerHTML = `<div class="progress"><div class="progress-top"><span><span class="spinner"></span> ${t("mt_sum_wait")}</span>
+      <span class="muted">${t("mt_elapsed")}: ${Math.round((Date.now() - t0) / 1000)} s</span></div></div>`);
+    tick();
+    const timer = setInterval(tick, 1000);
+    try {
+      const next = await post(`/api/meetings/${mid}/summary`);
+      clearInterval(timer);
+      drawMeetingSummary(mid, next, "", next.notes_cut);
+    } catch (err) {
+      clearInterval(timer);
+      drawMeetingSummary(mid, r, `<div class="progress error"><b>${t("mt_sum_rejected")}</b><br><small>${esc(err.message)}</small></div>`);
+    }
+  };
+}
+
 async function renderMeetingView() {
   const { mid } = route(), chatId = S.board.chat.id;
   let d;
   try { d = await api(`/api/meetings/${mid}`); } catch { location.hash = `#/c/${chatId}/meetings`; return; }
+  try { d.summary = await api(`/api/meetings/${mid}/summary`); } catch { d.summary = null; }
   const m = d.meeting;
   const rec = (items, empty) => items.length ? `<ul class="list">${items.map(i => `<li><span class="grow">${esc(i.title)}
       <small>${[i.owner ? "👤 " + esc(i.owner) : (i.kind === "task" ? t("mt_noowner") : ""), i.due ? "📅 " + fmtDate(i.due) : ""].filter(Boolean).join(" · ")}</small></span>
@@ -1459,12 +1499,15 @@ async function renderMeetingView() {
     <div id="mt-wait"></div>
     ${d.notes_changed ? `<p class="muted">⚠️ ${t("mt_an_stale")}</p>` : ""}
     ${d.proposed ? `<p><span class="chip ai">${t("mt_pending")(d.proposed)}</span> <a href="#/c/${chatId}/review">${t("mt_go_review")} →</a></p>` : ""}
+    <h4>📝 ${t("mt_sum_title")}</h4><p class="muted">${t("mt_sum_note")}</p>
+    <div id="mt-sum"></div>
     <div id="mt-extra"></div>
     <h4>${t("mt_tasks")}</h4>${rec(d.tasks, t("mt_none"))}
     <h4>${t("mt_decisions")}</h4>${rec(d.decisions, t("mt_none"))}
     <h4>${t("mt_questions")}</h4>${rec(d.questions, t("mt_none"))}
   </div>`;
   $("#mt-edit").onclick = () => editMeeting(m);
+  drawMeetingSummary(mid, d.summary, "");
   const an = $("#mt-analyze");
   if (an) an.onclick = async () => {
     const t0 = Date.now(), wait = $("#mt-wait");

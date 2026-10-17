@@ -666,6 +666,30 @@ async def analyze_meeting(meeting_id: int):
         raise HTTPException(503, str(e))
 
 
+@app.get("/api/meetings/{meeting_id}/summary")
+def get_meeting_summary(meeting_id: int):
+    m = _meeting_or_404(meeting_id)
+    return meetings.summary_view(m, db.get_meeting_summary(meeting_id))
+
+
+@app.post("/api/meetings/{meeting_id}/summary")
+async def make_meeting_summary(meeting_id: int):
+    """Slow (local model): the UI shows elapsed time. Rejected when it contains figures or names not in the data."""
+    m = _meeting_or_404(meeting_id)
+    try:
+        r = await meetings.summarize(m)
+    except meetings.NotesError as e:
+        raise HTTPException(400, str(e))
+    except llm.LLMError as e:
+        raise HTTPException(503, str(e))
+    except report.ReportRejected as e:
+        raise HTTPException(422, {"message": "Özet, kayıtlı veride olmayan sayı veya isimler içerdiği için reddedildi / "
+                                             "summary rejected: it contained figures or names that are not in the recorded data",
+                                  "unsupported": e.unsupported})
+    db.save_meeting_summary(meeting_id, r["body"], r["fingerprint"], r["lang"], r["model"])
+    return {**meetings.summary_view(m, db.get_meeting_summary(meeting_id)), "notes_cut": r["notes_cut"]}
+
+
 @app.patch("/api/meetings/{meeting_id}")
 def patch_meeting(meeting_id: int, body: MeetingFields):
     m = _meeting_or_404(meeting_id)

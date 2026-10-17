@@ -1468,7 +1468,7 @@ function drawMeetingSummary(mid, r, extra, cut = false) {
   const box = $("#mt-sum"), has = r && r.summary;
   box.innerHTML = `${has ? `<p class="muted">${t(r.source === "sample" ? "mt_sum_src_sample" : "mt_sum_src_ai")}${r.model ? " · " + esc(r.model) : ""}</p>
       ${r.stale ? `<p><b>${t("mt_sum_stale")}</b></p>` : ""}${cut ? `<p class="muted">${t("mt_sum_cut")}</p>` : ""}
-      <pre class="report" style="white-space:pre-wrap">${esc(r.summary)}</pre>` : `<p class="muted">${t("mt_sum_none")}</p>`}
+      <pre class="report" style="white-space:pre-wrap">${esc(r.summary).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")}</pre>` : `<p class="muted">${t("mt_sum_none")}</p>`}
     ${extra}<div id="mt-sum-wait"></div>
     <div class="row-actions">${has ? `<button class="ghost" id="mt-sum-copy">📋 ${t("mt_sum_copy")}</button>` : ""}
       <button class="primary" id="mt-sum-make">📝 ${has ? t("mt_sum_remake") : t("mt_sum_make")}</button></div>`;

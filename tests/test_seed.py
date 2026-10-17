@@ -144,3 +144,17 @@ def test_sample_has_two_meetings_held_and_planned(client):
     assert rev["source"]["sender"] is None and rev["source"]["ts"] is None and "e-sertifika" in rev["source"]["text"]
     assert client.delete("/api/sample").json() == {"removed": 1}
     assert client.get(f"/api/meetings/{held['id']}").status_code == 404   # sample meetings go with the sample
+
+
+def test_sample_meeting_summary_is_precomputed_fresh_and_passes_the_checks(client):
+    from app import db, meetings
+    cid = client.post("/api/seed").json()["chat_id"]
+    held = next(m for m in client.get(f"/api/chats/{cid}/meetings").json() if m["status"] == "held")
+    view = client.get(f"/api/meetings/{held['id']}/summary").json()
+    assert view["source"] == "sample" and view["stale"] is False and view["summary"].strip()
+    m = db.get_meeting(held["id"])
+    facts = meetings.facts_text(m, "tr")
+    assert meetings.report.unsupported_figures(view["summary"], facts) == [] and meetings.unsupported_names(view["summary"], facts) == []
+    db.update_meeting(held["id"], notes=m["notes"] + "
+Yeni satır")   # editing the notes makes it outdated
+    assert client.get(f"/api/meetings/{held['id']}/summary").json()["stale"] is True

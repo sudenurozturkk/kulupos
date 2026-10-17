@@ -83,7 +83,8 @@ const I18N = {
       ["Sonuçları nereden kontrol ederim?", "“AI incelemesi” sekmesinden. Gemma’nın önerileri sen onaylayana kadar Pano’ya ve sayılara girmez. Her kartta 💬 ile kaynak mesaj var."],
       ["Yapay zekâ hata yaparsa?", "Düzenle, Reddet ya da Onayla. Düzelttiğin kayıt sonraki analizlerde ezilmez, reddedilen geri gelmez; kaynağı bulunamayan öneri onaylanamaz."],
     ],
-    approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    chip_soon: "yakında", tag_conflict: "çelişki", tag_open: "açık", all_clear: "Bugün acil bir şey yok ✓ Gecikmiş, sahipsiz ya da çelişkili kayıt görünmüyor.",
+    empty_col: "Bu komitede görev yok", empty_col_hint: "＋ ile ekleyin ya da AI incelemesini kontrol edin.", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -201,7 +202,8 @@ const I18N = {
       ["Where do I check the results?", "In the “AI review” tab. Gemma’s proposals stay out of the board and the numbers until you approve them. Every card has a 💬 source message."],
       ["What if the AI is wrong?", "Edit, Reject or Approve. Your corrections are not overwritten by later analyses and rejected items do not return; proposals without a source cannot be approved."],
     ],
-    approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    chip_soon: "soon", tag_conflict: "conflict", tag_open: "open", all_clear: "Nothing urgent today ✓ No overdue, unassigned or conflicting records.",
+    empty_col: "No tasks in this team", empty_col_hint: "Add one with ＋ or check the AI review.", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -559,7 +561,8 @@ function dueChip(item, today) {
   if (!item.due) return `<span class="chip none">📅 ${t("no_due")}</span>`;
   const soon = new Date(today + "T12:00:00"); soon.setDate(soon.getDate() + 3);
   const cls = item.status === "done" ? "" : item.due < today ? "overdue" : item.due <= soon.toISOString().slice(0, 10) ? "soon" : "";
-  return `<span class="chip ${cls}">📅 ${fmtDate(item.due)}</span>`;
+  const word = cls === "overdue" ? ` · ${t("n_late")}` : cls === "soon" ? ` · ${t("chip_soon")}` : "";
+  return `<span class="chip ${cls}">${cls === "overdue" ? "⏰" : cls === "soon" ? "⏳" : "📅"} ${fmtDate(item.due)}${word}</span>`;
 }
 
 function card(task, today) {
@@ -591,7 +594,7 @@ function renderBoardView() {
     return `<div class="column">
       <div class="column-head"><span>${esc(u || t("no_unit"))} <span class="n">${list.length}</span></span>
         <button data-add="${esc(u)}" title="${t("add_task")}">＋</button></div>
-      ${list.map(x => card(x, b.today)).join("") || `<div class="empty">—</div>`}
+      ${list.map(x => card(x, b.today)).join("") || `<div class="empty"><b>${t("empty_col")}</b>${t("empty_col_hint")}</div>`}
     </div>`;
   }).join("");
 
@@ -619,7 +622,7 @@ function renderBoardView() {
     <aside class="side">
       <div class="panel missed"><h3>⚠️ ${t("missed")}</h3>${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}</div>
       <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}">＋</button></h3>
-        ${b.events.some(e => e.title.includes("(demo")) ? "" : `<p><button class="ghost small" data-ev-sample>${t("ev_sample")}</button></p>`}${b.events.length ? `<ul class="list">${b.events.map(e => {
+        ${b.events.length ? "" : `<p><button class="ghost small" data-ev-sample>${t("ev_sample")}</button></p>`}${b.events.length ? `<ul class="list">${b.events.map(e => {
         const n = b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
         return `<li><span class="grow"><a href="javascript:void 0" data-ev-edit="${e.id}"><b>${esc(e.title)}</b></a>
           <small>${e.due ? fmtDate(e.due) : "—"}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.phase ? " · " + esc(t("ph")[e.phase] || e.phase) : ""}${n ? " · " + t("ev_linked")(n) : ""}</small></span>${srcBtn(e)}</li>`;
@@ -974,9 +977,11 @@ function renderOverview() {
     ["conflicts", t("f_conflicts"), fo.conflicts, x => `${esc(x.title)}<small>${whyTxt(x)}</small>`],
     ["decisions", t("f_decisions"), fo.decisions, x => `${esc(x.title)}`],
   ];
-  const focusHtml = groups.map(([key, label, list, fmt]) => `<div class="focus-col">
-    <h4>${label} <span class="n">${list.length}</span></h4>
-    ${list.length ? `<ul class="list">${list.slice(0, 4).map(x => `<li><span class="grow">${fmt(x)}</span></li>`).join("")}</ul>
+  const tags = { overdue: `⏰ ${t("n_late")}`, orphans: `🙋 ${t("n_orphan")}`, conflicts: `⚠️ ${t("tag_conflict")}`, decisions: `🧭 ${t("tag_open")}` };
+  const allClear = groups.every(g => !g[2].length);
+  const focusHtml = allClear ? `<p class="all-clear" style="grid-column:1/-1">${t("all_clear")}</p>` : groups.map(([key, label, list, fmt]) => `<div class="focus-col">
+    <h4>${label} <span class="n ${list.length ? "" : "zero"}">${list.length}</span></h4>
+    ${list.length ? `<ul class="list">${list.slice(0, 4).map(x => `<li><span class="grow">${fmt(x)} <span class="chip ${key === "overdue" ? "overdue" : key === "orphans" ? "soon" : key === "conflicts" ? "overdue" : "ai"} tag">${tags[key]}</span></span></li>`).join("")}</ul>
       ${list.length > 4 ? `<small class="muted">${t("f_more")(list.length - 4)}</small>` : ""}` : `<p class="muted">${t("f_none")}</p>`}
     ${key === "decisions" && list.length ? `<small class="muted">${t("f_decisions_hint")}</small>` : ""}</div>`).join("");
   const eventsHtml = o.events.length ? `<ul class="timeline">${o.events.map(e => `<li><span class="d">${fmtDate(e.date, false).replace(" ", "<br>")}</span>
@@ -987,12 +992,12 @@ function renderOverview() {
       ${c.is_sample ? `<span class="chip ai">${t("sample_tag")}</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`;
 
   $("#view").innerHTML = `
+  <div class="panel focus"><h3>🎯 ${t("focus_title")}</h3><div class="focus-grid">${focusHtml}</div></div>
   <div class="kpis cards4">${cards.map(c => `
       <div class="kpi card-link ${c.cls || ""}" role="link" tabindex="0" data-card="${c.f}" title="${esc(c.note)}">
         <div class="lbl">${c.ic} ${c.lbl}</div><div class="val">${c.has ? c.v : "—"}</div>
         <div class="sub">${c.sub}</div><div class="sub note">${c.note}</div></div>`).join("")}</div>
   <p class="muted cards-note">${t("cards_overlap")}</p>
-  <div class="panel focus"><h3>🎯 ${t("focus_title")}</h3><div class="focus-grid">${focusHtml}</div></div>
     <div class="ov-grid">
     <div class="ov-col">
       <div class="panel"><h3>🗂️ ${t("units_title")}</h3>

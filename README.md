@@ -1,5 +1,7 @@
 # 📌 Pano
 
+[![tests](https://github.com/sudenurozturkk/kulupradar/actions/workflows/test.yml/badge.svg)](https://github.com/sudenurozturkk/kulupradar/actions/workflows/test.yml)
+
 **[Türkçe özet](#türkçe-özet) · [English](#english)**
 
 ---

@@ -15,7 +15,7 @@ from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analyzer, assistant, db, insights, llm, report
+from . import analyzer, assistant, db, insights, llm, report, seed
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -70,9 +70,9 @@ def _read(data: bytes):
     return messages, skipped
 
 
-def _import(data: bytes, name: str, units: list[str]) -> dict:
+def _import(data: bytes, name: str, units: list[str], source_name: str | None = None) -> dict:
     messages, _ = _read(data)
-    chat_id = db.create_chat(name, units, messages, hashlib.sha256(data).hexdigest())
+    chat_id = db.create_chat(name, units, messages, hashlib.sha256(data).hexdigest(), source_name)
     return db.get_chat(chat_id)
 
 
@@ -103,7 +103,7 @@ def chats():
 async def upload(request: Request, filename: str = "chat.txt", name: str = "", units: str = ""):
     data = await request.body()
     unit_list = [u.strip() for u in units.split(",") if u.strip()]
-    return _import(data, name.strip() or _name_from_filename(filename), unit_list)
+    return _import(data, name.strip() or _name_from_filename(filename), unit_list, filename)
 
 
 @app.post("/api/preview")
@@ -120,6 +120,18 @@ async def preview(request: Request):
         "skipped_lines": skipped,
         "duplicate_of": db.find_by_hash(hashlib.sha256(data).hexdigest()),
     }
+
+
+@app.post("/api/seed")
+def seed_sample():
+    """First run: an empty database gets the fake sample club. No-op once chats exist or the sample was cleared."""
+    chat_id = seed.seed_sample(today())
+    return {"created": chat_id is not None, "chat_id": chat_id}
+
+
+@app.delete("/api/sample")
+def clear_sample():
+    return {"removed": seed.clear_sample()}
 
 
 @app.post("/api/demo/{lang}")
@@ -213,6 +225,7 @@ def board(chat_id: int):
         "missed": missed,
         "review": db.get_items(chat_id, review="proposed"),  # AI suggestions awaiting approval
         "changes": db.get_changes(chat_id),  # AI edits to approved items awaiting approval
+        "review_total": len(db.get_items(chat_id, review="proposed")) + len(db.get_changes(chat_id)),
         "overview": insights.overview(chat, items, db.senders(chat_id), t),
         "progress": analyzer.progress(chat_id),
     }

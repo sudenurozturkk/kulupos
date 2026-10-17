@@ -1,0 +1,47 @@
+{
+  "_note": "Fake data for the first-run sample panel. 'src' is a phrase looked up in the demo chat to link the source message; 'due' is days from today so the panel always looks alive.",
+  "chat": {
+    "name": "KBK Yönetim 2026",
+    "source_name": "WhatsApp Chat - KBK Yönetim 2026.txt",
+    "messages_file": "kbk-yonetim-tr.txt",
+    "units": ["Yönetim", "Etkinlik", "İletişim", "Sponsorluk"]
+  },
+  "events": [
+    {"key": "soylesi", "title": "Yapay Zeka ile Kariyer Söyleşisi", "due": 14, "time": "14:00", "place": "B-201",
+     "owner": "Elif Kaya", "event_type": "söyleşi", "phase": "confirmed", "event_units": ["Etkinlik", "İletişim"],
+     "src": "Tamam karar: söyleşi"},
+    {"key": "toplanti", "title": "Online hazırlık toplantısı", "due": 6, "time": "18:00", "place": "Meet",
+     "owner": "Elif Kaya", "event_type": "toplantı", "phase": "planning", "event_units": ["Yönetim"],
+     "src": "online hazırlık toplantısı"}
+  ],
+  "tasks": [
+    {"title": "Salon için SKS'ye dilekçe ver", "owner": "Deniz Çelik", "unit": "Etkinlik", "status": "done", "event": "soylesi", "src": "Dilekçeyi verdim"},
+    {"title": "Konuşmacıyla görüşüp tarihi netleştir", "owner": "Mert Demir", "unit": "Etkinlik", "status": "done", "event": "soylesi", "src": "Ahmet Bey'i aradım"},
+    {"title": "Afişi hazırla ve paylaş", "owner": "Zeynep Arslan", "unit": "İletişim", "status": "done", "event": "soylesi", "src": "Afişin final hali"},
+    {"title": "Kayıt formunu hazırla", "owner": "Can Öztürk", "unit": "İletişim", "status": "done", "event": "soylesi", "src": "Kayıt formu hazır"},
+    {"title": "Sertifikaları hazırla", "owner": "Selin Aydın", "unit": "Etkinlik", "due": 7, "event": "soylesi", "src": "Ben alırım sertifikaları"},
+    {"title": "3 günlük geri sayım story serisi", "owner": "Ece Şahin", "unit": "İletişim", "due": 11, "event": "soylesi", "src": "3 günlük geri sayım"},
+    {"title": "Projeksiyon ve ses sistemi için Teknik İşler'e dilekçe yaz", "unit": "Etkinlik", "event": "soylesi", "src": "Teknik İşler'e ayrıca dilekçe"},
+    {"title": "Kahveciye teslimat saatini bildir", "owner": "Burak Yıldız", "unit": "Sponsorluk", "due": -2, "event": "soylesi", "src": "Kahveci teslimat saatini soruyor"},
+    {"title": "Geçen yılın sponsor dosyasını bul", "unit": "Sponsorluk", "due": -3, "src": "sponsor dosyası kimde"},
+    {"title": "HDMI bağlantısı ve yaka mikrofonunu hazırla", "owner": "Mert Demir", "unit": "Etkinlik", "due": 12, "event": "soylesi", "src": "yaka mikrofonu"},
+    {"title": "Katılımcı listesini sertifikalar için aktar", "owner": "Can Öztürk", "unit": "İletişim", "due": 20, "event": "soylesi", "src": "formdan Excel olarak"}
+  ],
+  "questions": [
+    {"title": "Geçen yılın sponsor dosyası kimde?", "owner": "Selin Aydın", "src": "sponsor dosyası kimde"},
+    {"title": "Kulübün yaka mikrofonu hâlâ dolapta mı?", "owner": "Mert Demir", "src": "yaka mikrofonu hala dolapta"},
+    {"title": "Kahveciler 31 Ekim'de kaçta gelsin?", "owner": "Burak Yıldız", "src": "Kahveci teslimat saatini soruyor"},
+    {"title": "Sertifika isim listesi kayıt formundan mı çekilecek?", "owner": "Selin Aydın", "status": "answered", "src": "isim listesi kayıt formundan", "resolved": "formdan Excel olarak"}
+  ],
+  "decisions": [
+    {"title": "Söyleşi 31 Ekim Cumartesi saat 14:00'te yapılacak", "status": "done", "event": "soylesi", "src": "Tamam karar: söyleşi"},
+    {"title": "Kayıt Google Forms ile alınacak", "status": "done", "event": "soylesi", "src": "Google Forms yeterli"},
+    {"title": "Tişörtler lacivert, logo beyaz olacak", "src": "tişörtler lacivert, logo beyaz"},
+    {"title": "Katılımcılara sertifika verilecek", "event": "soylesi", "src": "Bence verelim"}
+  ],
+  "proposed": [
+    {"kind": "task", "title": "Afişi kahveciye de gönder", "owner": "Burak Yıldız", "unit": "Sponsorluk", "src": "Kahveciye de atıyorum"},
+    {"kind": "decision", "title": "Story'lerde sponsor logosu yer alacak", "src": "Story'lerde sponsor logosu da olsun"},
+    {"kind": "task", "title": "Kayıt formuna katılımcı sınırı koy", "unit": "İletişim", "needs_review": 1}
+  ]
+}

@@ -58,7 +58,32 @@ const I18N = {
     rp_wait: "Gemma yerelde yazıyor; bu birkaç dakika sürebilir", rp_elapsed: "geçen süre", rp_stale: "Etkinlik verisi bu rapordan sonra değişti; raporu yeniden üretin.",
     rp_src_sample: "Önceden hesaplanmış örnek rapor (demo verisi)", rp_src_ai: "Gemma tarafından, yalnızca girilen veriden yazıldı", rp_rejected: "Rapor reddedildi",
     rp_figs: "Veride olmayan sayılar", rp_note: "Rapor yalnızca bu etkinlik için girilen alanlardan, bağlı görevlerden ve kararlardan üretilir; boş alanlar “Girilmedi” kalır.",
-    rp_copy: "Kopyala", ev_sample: "Örnek etkinlik ekle", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    rp_copy: "Kopyala", ev_sample: "Örnek etkinlik ekle", c_tasks: "Görevler", c_approved_tasks: "onaylı görev", c_tasks_note: "Açık, onaylı görevler. AI önerileri dahil değil.",
+    c_soon: "Yaklaşan işler", c_soon_sub: "önümüzdeki 7 gün", c_soon_none: "Tarihli görev yok", c_soon_note: "Son tarihi 7 gün içinde olan açık görevler.",
+    c_q: "Açık sorular", c_q_total: "soru kayıtlı", c_q_none: "Henüz soru kaydı yok", c_q_note: "Henüz cevaplanmamış sorular.",
+    c_ai: "AI incelemesi", c_ai_sub: "onay bekliyor", c_ai_running: "analiz sürüyor", c_ai_waiting: "analiz bekleniyor", c_ai_note: "Gemma önerileri ve değişiklik önerileri; gerçek görev sayısına dahil değil.",
+    no_data: "Henüz veri yok",
+    cards_overlap: "Kartlar birbirini dışlamaz: gecikmiş bir iş hem “Görevler”de hem “Bugün”de görünebilir.",
+    focus_title: "Bugün ilgilenilmesi gerekenler", f_overdue: "Gecikmiş görevler", f_orphans: "Atanmamış görevler",
+    f_conflicts: "Tarihi çelişkili kayıtlar", f_decisions: "Sonuçlandırılmamış kararlar", f_none: "Bekleyen yok", f_more: n => `+${n} daha`,
+    f_decisions_hint: "Pano’da “Kesinleşti” kutusunu işaretleyene kadar açık sayılır.",
+    why_after_event: e => `etkinlikten (${e}) sonraya planlı`, why_held_in_future: "“Gerçekleşti” ama tarihi gelecekte", why_past_not_held: "tarihi geçti, durumu hâlâ güncel değil",
+    up_events: "Yaklaşan etkinlikler", ev_open_n: (o, n) => `${o}/${n} iş açık`, imp_title: "Son içe aktarımlar",
+    imp_review: n => `${n} inceleme bekliyor`, imp_st: { imported: "içe aktarıldı", analyzing: "analiz ediliyor", ready: "hazır", error: "hata" },
+    sample_tag: "Örnek veri", sample_banner: "Bu panel sahte örnek veriyle dolu; gerçek kulübünüz değil.", sample_clear: "Örnek veriyi temizle",
+    sample_confirm: "Örnek kulüp ve içindeki tüm kayıtlar silinsin mi? Gerçek verilerine dokunulmaz.",
+    flt_label: "Filtre", flt_clear: "Temizle", flt_open: "Açık görevler", flt_soon: "Yaklaşan işler", flt_overdue: "Gecikmiş görevler",
+    flt_orphans: "Atanmamış görevler", flt_questions: "Açık sorular", dec_final: "Kesinleşti", help_btn: "Nasıl çalışır?",
+    wl_title: "Pano’ya hoş geldin", wl_ok: "Anladım",
+    wl: [
+      ["Pano ne yapıyor?", "Kulüp WhatsApp grubunu okur; görev, karar, açık soru ve etkinlikleri kaynak mesajlarıyla birlikte düzenli bir panoya çevirir."],
+      ["Hangi dosyayı yüklemeliyim?", "WhatsApp’ta grup → Sohbeti dışa aktar → medyasız. Çıkan .txt (ya da .zip) dosyası. Yüklemeden önce bir ön izleme görürsün."],
+      ["Verilerim nereye gidiyor?", "Hiçbir yere. Dosya yalnızca bu bilgisayarda işlenir; analiz yerel Gemma ile yapılır, uzak servise veri gitmez."],
+      ["Analiz başladı mı?", "Dosyayı yüklediğinde analiz kendiliğinden başlar; sayfanın üstünde ilerleme çubuğu ve bulunanlar görünür. Bu örnek zaten hazır."],
+      ["Sonuçları nereden kontrol ederim?", "“AI incelemesi” sekmesinden. Gemma’nın önerileri sen onaylayana kadar Pano’ya ve sayılara girmez. Her kartta 💬 ile kaynak mesaj var."],
+      ["Yapay zekâ hata yaparsa?", "Düzenle, Reddet ya da Onayla. Düzelttiğin kayıt sonraki analizlerde ezilmez, reddedilen geri gelmez; kaynağı bulunamayan öneri onaylanamaz."],
+    ],
+    approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -151,7 +176,32 @@ const I18N = {
     rp_wait: "Gemma is writing locally; this can take a few minutes", rp_elapsed: "elapsed", rp_stale: "The event data changed after this report; regenerate it.",
     rp_src_sample: "Precomputed sample report (demo data)", rp_src_ai: "Written by Gemma from the entered data only", rp_rejected: "Report rejected",
     rp_figs: "Figures not in the data", rp_note: "The report is built only from the fields entered for this event, its linked tasks and decisions; empty fields stay “Not entered”.",
-    rp_copy: "Copy", ev_sample: "Add sample event", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    rp_copy: "Copy", ev_sample: "Add sample event", c_tasks: "Tasks", c_approved_tasks: "approved tasks", c_tasks_note: "Open, approved tasks. AI proposals not included.",
+    c_soon: "Coming up", c_soon_sub: "next 7 days", c_soon_none: "No task has a date", c_soon_note: "Open tasks due within 7 days.",
+    c_q: "Open questions", c_q_total: "questions recorded", c_q_none: "No questions recorded yet", c_q_note: "Questions nobody has answered yet.",
+    c_ai: "AI review", c_ai_sub: "awaiting approval", c_ai_running: "analysis running", c_ai_waiting: "waiting for analysis", c_ai_note: "Gemma proposals and change proposals; not part of the real task count.",
+    no_data: "No data yet",
+    cards_overlap: "Cards are not mutually exclusive: an overdue task can appear under “Tasks” and under “Today”.",
+    focus_title: "Needs attention today", f_overdue: "Overdue tasks", f_orphans: "Unassigned tasks",
+    f_conflicts: "Records with conflicting dates", f_decisions: "Decisions not finalised", f_none: "Nothing pending", f_more: n => `+${n} more`,
+    f_decisions_hint: "Stays open until you tick “Final” on the board.",
+    why_after_event: e => `scheduled after its event (${e})`, why_held_in_future: "marked “Held” but dated in the future", why_past_not_held: "date has passed, status not updated",
+    up_events: "Upcoming events", ev_open_n: (o, n) => `${o}/${n} tasks open`, imp_title: "Recent imports",
+    imp_review: n => `${n} awaiting review`, imp_st: { imported: "imported", analyzing: "analysing", ready: "ready", error: "error" },
+    sample_tag: "Sample data", sample_banner: "This panel is filled with fake sample data; it is not your club.", sample_clear: "Clear sample data",
+    sample_confirm: "Delete the sample club and everything in it? Your own data is not touched.",
+    flt_label: "Filter", flt_clear: "Clear", flt_open: "Open tasks", flt_soon: "Coming up", flt_overdue: "Overdue tasks",
+    flt_orphans: "Unassigned tasks", flt_questions: "Open questions", dec_final: "Final", help_btn: "How it works",
+    wl_title: "Welcome to Pano", wl_ok: "Got it",
+    wl: [
+      ["What does Pano do?", "It reads your club’s WhatsApp group and turns tasks, decisions, open questions and events into one clear board, each linked to its source message."],
+      ["Which file do I upload?", "In WhatsApp: group → Export chat → without media. Upload the .txt (or .zip) file. You see a preview before anything is imported."],
+      ["Where does my data go?", "Nowhere. The file is processed on this computer only; analysis runs on local Gemma and nothing is sent to a remote service."],
+      ["Has the analysis started?", "It starts by itself after you upload; a progress bar and the items found so far show at the top of the page. This sample is already done."],
+      ["Where do I check the results?", "In the “AI review” tab. Gemma’s proposals stay out of the board and the numbers until you approve them. Every card has a 💬 source message."],
+      ["What if the AI is wrong?", "Edit, Reject or Approve. Your corrections are not overwritten by later analyses and rejected items do not return; proposals without a source cannot be approved."],
+    ],
+    approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -272,7 +322,7 @@ async function refreshChats() {
   const box = $("#chat-switch");
   if (!S.chats.length || !chatId) { box.innerHTML = ""; return; }
   box.innerHTML = `<select id="chat-select">${S.chats.map(c =>
-    `<option value="${c.id}" ${c.id === chatId ? "selected" : ""}>${esc(c.name)}</option>`).join("")}
+    `<option value="${c.id}" ${c.id === chatId ? "selected" : ""}>${esc(c.name)}${c.is_sample ? " · " + t("sample_tag") : ""}</option>`).join("")}
     <option value="new">＋</option></select>`;
   $("#chat-select").onchange = e => {
     location.hash = e.target.value === "new" ? "#/" : `#/c/${e.target.value}/overview`;
@@ -392,13 +442,17 @@ function shell(view) {
   const b = S.board, c = b.chat;
   const missedCount = Object.values(b.missed).reduce((n, l) => n + l.length, 0);
   const range = c.first_ts ? `${fmtDate(c.first_ts, false)} – ${fmtDate(c.last_ts, false)}` : "";
+  const sample = c.is_sample ? `<div class="sample-banner"><span><b>🧪 ${t("sample_tag")}</b> · ${t("sample_banner")}</span>
+    <button class="small danger" id="btn-clear-sample">${t("sample_clear")}</button></div>` : "";
   return `
+  ${sample}
   <div class="page-head">
     <div class="club-ic">${esc(c.name.trim()[0] || "P")}</div>
     <div><h2>${esc(c.name)}</h2>
     <span class="meta">💬 ${c.message_count} ${t("messages")} · 📅 ${range} · 👥 ${b.members.length}</span></div>
     <div class="actions">
       <a class="btn ghost small" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">⤓ Markdown</a>
+      <button class="ghost small" id="btn-help">❔ ${t("help_btn")}</button>
       <button class="ghost small" id="btn-units">👥 ${t("units_btn")}</button>
       <button class="ghost small" id="btn-add-export">⤓ ${t("add_export")}</button>
       <button class="ghost small" id="btn-reanalyze">↻ ${t("reanalyze")}</button>
@@ -453,8 +507,27 @@ function bindShell() {
     location.hash = "#/";
   };
   $("#btn-units").onclick = manageUnits;
+  $("#btn-help").onclick = showWelcome;
+  const clr = $("#btn-clear-sample");
+  if (clr) clr.onclick = async () => {
+    if (!confirm(t("sample_confirm"))) return;
+    await api("/api/sample", { method: "DELETE" });
+    S.seedTried = true;
+    location.hash = "#/";
+  };
+  document.querySelectorAll(".tabs a").forEach(a => a.addEventListener("click", () => { S.taskFilter = null; }));
   const retry = $("#btn-retry");
   if (retry) retry.onclick = async () => { await post(`/api/chats/${id}/analyze`); startPolling(id); };
+}
+
+function showWelcome() {
+  modal(`<h3>👋 ${t("wl_title")}</h3>
+    <ol class="welcome">${t("wl").map(([q, a]) => `<li><b>${q}</b><p>${a}</p></li>`).join("")}</ol>
+    <div class="modal-actions"><button class="primary" data-close>${t("wl_ok")}</button></div>`, m => {
+    m.querySelector("[data-close]").addEventListener("click", () => {
+      try { localStorage.setItem("pano.welcomed", "1"); } catch { /* optional */ }
+    });
+  });
 }
 
 async function manageUnits() {
@@ -506,7 +579,12 @@ function card(task, today) {
 function renderBoardView() {
   const b = S.board;
   const units = [...b.chat.units];
+  const F = S.taskFilter, k = b.overview.kpi, fo = b.overview.focus;
+  const ids = F === "soon" ? new Set(k.upcoming_ids) : F === "overdue" ? new Set(fo.overdue.map(x => x.id))
+    : F === "orphans" ? new Set(fo.orphans.map(x => x.id)) : null;
   let tasks = b.tasks.filter(x => (S.showDone || x.status !== "done") && (!S.member || x.owner === S.member));
+  if (F === "open") tasks = tasks.filter(x => x.status === "open");
+  else if (ids) tasks = tasks.filter(x => ids.has(x.id));
   if (tasks.some(x => !x.unit || !units.includes(x.unit))) units.push("");
   const cols = units.map(u => {
     const list = tasks.filter(x => (u ? x.unit === u : !x.unit || !b.chat.units.includes(x.unit)));
@@ -528,13 +606,16 @@ function renderBoardView() {
 
   $("#view").innerHTML = `
   <div class="filters">
+    ${F ? `<span class="chip ai">${t("flt_label")}: ${t("flt_" + F)} <button class="small" id="clear-flt">✕ ${t("flt_clear")}</button></span>` : ""}
     <select id="member"><option value="">👥 ${t("everyone")}</option>${b.members.map(n =>
       `<option ${n === S.member ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
     <label><input type="checkbox" id="showdone" ${S.showDone ? "checked" : ""}> ${t("show_done")}</label>
     ${S.member ? `<button class="small" id="copy-member">📋 ${t("copy_member")(firstName(S.member))}</button>` : ""}
   </div>
   <div class="layout">
-    <div class="columns">${cols}</div>
+    <div class="columns">${F === "questions" ? `<div class="panel" style="grid-column:1/-1"><ul class="list">${
+      b.questions.filter(q => q.status === "open").map(q => `<li><span class="grow">${esc(q.title)}
+        <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"}</small></span>${srcBtn(q)}</li>`).join("") || `<li class="muted">${t("none_yet")}</li>`}</ul></div>` : cols}</div>
     <aside class="side">
       <div class="panel missed"><h3>⚠️ ${t("missed")}</h3>${missedHtml || `<p class="muted">${t("nothing_missed")}</p>`}</div>
       <div class="panel"><h3>📅 ${t("events")} <button class="small" data-ev-add title="${t("ev_add")}">＋</button></h3>
@@ -545,11 +626,13 @@ function renderBoardView() {
       }).join("")}</ul>`
         : `<p class="muted">${t("none_yet")}</p>`}</div>
       <div class="panel"><h3>🧭 ${t("decisions")}</h3>${b.decisions.length ? `<ul class="list">${b.decisions.map(d =>
-        `<li><span class="grow">${esc(d.title)}</span>${srcBtn(d)}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}</div>
+        `<li><input type="checkbox" data-final="${d.id}" ${d.status === "done" ? "checked" : ""} title="${t("dec_final")}" aria-label="${t("dec_final")}"><span class="grow">${esc(d.title)}</span>${srcBtn(d)}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`}</div>
     </aside>
   </div>`;
 
   $("#member").onchange = e => { S.member = e.target.value; renderBoardView(); };
+  const cf = $("#clear-flt");
+  if (cf) cf.onclick = () => { S.taskFilter = null; renderBoardView(); };
   const cm = $("#copy-member");
   if (cm) cm.onclick = () => copyText(memberMessage(S.member));
   $("#showdone").onchange = e => { S.showDone = e.target.checked; renderBoardView(); };
@@ -561,6 +644,10 @@ function renderBoardView() {
   view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(b.tasks.find(x => x.id === Number(el.dataset.edit)))));
   view.querySelectorAll("[data-add]").forEach(el => (el.onclick = () => editTask({ unit: el.dataset.add || null })));
   view.querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
+  view.querySelectorAll("[data-final]").forEach(el => (el.onchange = async () => {
+    await patch(`/api/items/${el.dataset.final}`, { status: el.checked ? "done" : "open" });
+    await reloadBoard();
+  }));
   view.querySelectorAll("[data-ev-edit]").forEach(el => (el.onclick = () => editEvent(b.events.find(x => x.id === Number(el.dataset.evEdit)))));
   view.querySelectorAll("[data-ev-add]").forEach(el => (el.onclick = () => editEvent({})));
   view.querySelectorAll("[data-ev-sample]").forEach(el => (el.onclick = async () => {
@@ -867,19 +954,46 @@ function renderOverview() {
   const alertIc = { event: "📅", overdue: "⏰", question: "❓", load: "🏋️" };
   const maxLoad = Math.max(1, ...o.workload.map(w => w.open + w.done));
   const health = { ok: t("h_ok"), warn: t("h_warn"), bad: t("h_bad"), idle: t("h_idle") };
+  const waiting = b.chat.status !== "ready";
+  const running = waiting || ["running", "queued"].includes(b.progress.state);
+  const cards = [
+    { f: "open", ic: "📌", lbl: t("c_tasks"), has: k.total > 0, v: k.open, note: t("c_tasks_note"),
+      sub: k.total ? `${k.done} ${t("k_done")} · ${k.total} ${t("c_approved_tasks")}` : t("no_data") },
+    { f: "soon", ic: "⏳", lbl: t("c_soon"), has: k.dated > 0, v: k.upcoming_ids.length, note: t("c_soon_note"),
+      sub: k.dated ? t("c_soon_sub") : t("c_soon_none") },
+    { f: "questions", ic: "❓", lbl: t("c_q"), has: k.questions_total > 0, v: k.questions, note: t("c_q_note"),
+      sub: k.questions_total ? `${k.questions_total} ${t("c_q_total")}` : t("c_q_none") },
+    { f: "review", ic: "🔎", lbl: t("c_ai"), has: !waiting || b.review_total > 0, v: b.review_total, note: t("c_ai_note"),
+      cls: b.review_total ? "warn" : "", sub: running ? t(waiting ? "c_ai_waiting" : "c_ai_running") : t("c_ai_sub") },
+  ];
+  const fo = o.focus;
+  const whyTxt = c => c.why === "after_event" ? t("why_after_event")(esc(c.event)) : t("why_" + c.why);
+  const groups = [
+    ["overdue", t("f_overdue"), fo.overdue, x => `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${x.owner ? esc(firstName(x.owner)) : t("no_owner")} · ${fmtDate(x.due)}</small>`],
+    ["orphans", t("f_orphans"), fo.orphans, x => `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${x.due ? fmtDate(x.due) : t("no_due")}</small>`],
+    ["conflicts", t("f_conflicts"), fo.conflicts, x => `${esc(x.title)}<small>${whyTxt(x)}</small>`],
+    ["decisions", t("f_decisions"), fo.decisions, x => `${esc(x.title)}`],
+  ];
+  const focusHtml = groups.map(([key, label, list, fmt]) => `<div class="focus-col">
+    <h4>${label} <span class="n">${list.length}</span></h4>
+    ${list.length ? `<ul class="list">${list.slice(0, 4).map(x => `<li><span class="grow">${fmt(x)}</span></li>`).join("")}</ul>
+      ${list.length > 4 ? `<small class="muted">${t("f_more")(list.length - 4)}</small>` : ""}` : `<p class="muted">${t("f_none")}</p>`}
+    ${key === "decisions" && list.length ? `<small class="muted">${t("f_decisions_hint")}</small>` : ""}</div>`).join("");
+  const eventsHtml = o.events.length ? `<ul class="timeline">${o.events.map(e => `<li><span class="d">${fmtDate(e.date, false).replace(" ", "<br>")}</span>
+      <span class="pt event"></span><span><b>${esc(e.title)}</b><small>${t("k_days")(e.days)}${e.time ? " · " + esc(e.time) : ""}${e.place ? " · " + esc(e.place) : ""}${e.tasks ? " · " + t("ev_open_n")(e.open_tasks, e.tasks) : ""}</small></span></li>`).join("")}</ul>`
+    : `<p class="muted">${t("none_yet")}</p>`;
+  const importsHtml = S.chats.length ? `<ul class="list">${S.chats.slice(0, 5).map(c => `<li><span class="grow"><a href="#/c/${c.id}/overview">${esc(c.source_name || c.name)}</a>
+      <small>${c.message_count} ${t("messages")} · ${t("imp_st")[c.status] || c.status}${c.review_count ? " · " + t("imp_review")(c.review_count) : ""} · ${fmtDate(c.imported_at, false)}</small></span>
+      ${c.is_sample ? `<span class="chip ai">${t("sample_tag")}</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">${t("none_yet")}</p>`;
 
   $("#view").innerHTML = `
-  <div class="kpis">
-    <div class="kpi hero-kpi"><div class="lbl">📅 ${t("k_next")}</div>
-      <div class="val" style="font-size:22px;margin-top:6px">${k.next_event ? esc(k.next_event.title) : t("k_none")}</div>
-      <div class="sub">${k.next_event ? `${fmtDate(k.next_event.date)}${k.next_event.time ? " · " + esc(k.next_event.time) : ""} · <b>${t("k_days")(k.next_event.days)}</b>` : ""}</div></div>
-    <div class="kpi"><div class="lbl">${t("k_open")}</div><div class="val">${k.open}</div>
-      <div class="sub">${k.done} ${t("k_done")}</div><div class="ring" style="--p:${pct}" data-l="${pct}%"></div></div>
-    <div class="kpi ${missed ? "warn" : "ok"}"><div class="lbl">⚠️ ${t("k_missed")}</div><div class="val">${missed}</div><div class="sub">${t("k_missed_sub")}</div></div>
-    <div class="kpi"><div class="lbl">🧭 ${t("k_decisions")}</div><div class="val">${k.decisions}</div><div class="sub">&nbsp;</div></div>
-    <div class="kpi"><div class="lbl">👥 ${lang === "tr" ? "Aktif üye" : "Active members"}</div><div class="val">${o.workload.length}<span class="muted" style="font-size:16px">/${b.members.length}</span></div><div class="sub">${lang === "tr" ? "görev alan" : "with tasks"}</div></div>
-  </div>
-  <div class="ov-grid">
+  <div class="kpis cards4">${cards.map(c => `
+      <div class="kpi card-link ${c.cls || ""}" role="link" tabindex="0" data-card="${c.f}" title="${esc(c.note)}">
+        <div class="lbl">${c.ic} ${c.lbl}</div><div class="val">${c.has ? c.v : "—"}</div>
+        <div class="sub">${c.sub}</div><div class="sub note">${c.note}</div></div>`).join("")}</div>
+  <p class="muted cards-note">${t("cards_overlap")}</p>
+  <div class="panel focus"><h3>🎯 ${t("focus_title")}</h3><div class="focus-grid">${focusHtml}</div></div>
+    <div class="ov-grid">
     <div class="ov-col">
       <div class="panel"><h3>🗂️ ${t("units_title")}</h3>
         <div class="units">${o.units.map(u => `
@@ -905,6 +1019,8 @@ function renderOverview() {
           <b>${w.open}</b></div>`).join("") + `<div class="legend"><span><i style="background:var(--brand)"></i>${t("l_open")}</span><span><i style="background:var(--ok)"></i>${t("l_done")}</span></div>`
         : `<p class="muted">${t("none_yet")}</p>`}
       </div>
+      <div class="panel"><h3>📅 ${t("up_events")}</h3>${eventsHtml}</div>
+      <div class="panel"><h3>📥 ${t("imp_title")}</h3>${importsHtml}</div>
       <div class="panel"><h3>🗓️ ${t("timeline_title")}</h3>
         ${o.timeline.length ? `<ul class="timeline">${o.timeline.map(r => `<li><span class="d">${fmtDate(r.date, false).replace(" ", "<br>")}</span>
           <span class="pt ${r.kind}"></span><span>${r.kind === "event" ? "<b>" + esc(r.title) + "</b>" : esc(r.title)}<small>${r.owner ? esc(firstName(r.owner)) : r.kind === "event" ? "📅" : t("no_owner")}</small></span></li>`).join("")}</ul>`
@@ -916,6 +1032,16 @@ function renderOverview() {
     </div>
   </div>`;
   $("#view").querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
+  $("#view").querySelectorAll("[data-card]").forEach(el => {
+    const go = () => {
+      const f = el.dataset.card;
+      if (f === "review") { location.hash = `#/c/${b.chat.id}/review`; return; }
+      S.taskFilter = f; location.hash = `#/c/${b.chat.id}/board`;
+    };
+    el.onclick = go;
+    el.onkeydown = e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), go());
+  });
+  $("#view").querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(b.tasks.find(x => x.id === Number(el.dataset.edit)))));
   $("#view").querySelectorAll("[data-unit]").forEach(el => (el.onclick = () => { location.hash = `#/c/${b.chat.id}/board`; }));
 }
 
@@ -995,12 +1121,22 @@ async function render() {
   const { chatId, view } = route();
   clearInterval(S.poll);
   await refreshChats();
+  if (!chatId && !S.chats.length && !S.seedTried) {
+    S.seedTried = true;  // fresh install: open on a filled sample panel
+    try {
+      const r = await post("/api/seed");
+      if (r.created) { location.hash = `#/c/${r.chat_id}/overview`; return; }
+    } catch { /* fall through to the normal home page */ }
+  }
   if (!chatId) return renderHome();
   try { await loadBoard(chatId); }
   catch { location.hash = "#/"; return; }
   $("#app").innerHTML = `<section class="page">${shell(view)}</section>`;
   bindShell();
   (VIEWS[view] || renderOverview)();
+  let welcomed = true;
+  try { welcomed = !!localStorage.getItem("pano.welcomed"); } catch { /* private mode: show it */ welcomed = false; }
+  if (!welcomed && view === "overview") showWelcome();
   if (["running", "queued"].includes(S.board.progress.state)) startPolling(chatId);
 }
 

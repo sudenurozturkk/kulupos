@@ -7,8 +7,47 @@ from . import db, llm
 from .analyzer import _obj, _s, detect_lang, match_member, match_unit, valid_date
 
 
+def _brief(x: dict) -> dict:
+    return {k: x.get(k) for k in ("id", "kind", "title", "owner", "due", "unit", "source_idx")}
+
+
+def focus(items: list[dict], open_tasks: list[dict], t: str) -> dict:
+    """What needs attention today. Categories overlap on purpose (an overdue task can also be ownerless)."""
+    by_id = {i["id"]: i for i in items}
+    conflicts = []
+    for x in items:
+        ev = by_id.get(x.get("event_id"))
+        if x["kind"] == "task" and x["due"] and ev and ev["due"] and x["due"] > ev["due"]:
+            conflicts.append({**_brief(x), "why": "after_event", "event": ev["title"], "event_date": ev["due"]})
+        if x["kind"] == "event" and x["due"]:
+            if x["phase"] == "held" and x["due"] > t:
+                conflicts.append({**_brief(x), "why": "held_in_future"})
+            elif x["phase"] in ("planning", "confirmed") and x["due"] < t:
+                conflicts.append({**_brief(x), "why": "past_not_held"})
+    return {
+        "overdue": [_brief(x) for x in open_tasks if x["due"] and x["due"] < t],
+        "orphans": [_brief(x) for x in open_tasks if not x["owner"]],
+        "conflicts": conflicts,
+        # decisions the club has not marked final yet
+        "decisions": [_brief(x) for x in items if x["kind"] == "decision" and x["status"] == "open"],
+    }
+
+
+def upcoming_events(items: list[dict], t: str) -> list[dict]:
+    today = date.fromisoformat(t)
+    out = []
+    for e in sorted((e for e in items if e["kind"] == "event" and e["due"] and e["due"] >= t
+                     and e["phase"] not in ("cancelled", "held")), key=lambda e: e["due"]):
+        linked = [x for x in items if x["kind"] == "task" and x.get("event_id") == e["id"]]
+        out.append({"id": e["id"], "title": e["title"], "date": e["due"], "time": e["time"], "place": e["place"],
+                    "phase": e["phase"], "days": (date.fromisoformat(e["due"]) - today).days,
+                    "open_tasks": sum(1 for x in linked if x["status"] == "open"), "tasks": len(linked)})
+    return out[:5]
+
+
 def overview(chat: dict, items: list[dict], members: list[str], today: date) -> dict:
     t = today.isoformat()
+    week = (today + timedelta(days=7)).isoformat()
     soon = (today + timedelta(days=3)).isoformat()
     tasks = [i for i in items if i["kind"] == "task"]
     open_ = [x for x in tasks if x["status"] == "open"]
@@ -61,7 +100,12 @@ def overview(chat: dict, items: list[dict], members: list[str], today: date) -> 
         key=lambda r: r["date"])[:10]
 
     return {
-        "kpi": {"open": len(open_), "done": len(tasks) - len(open_), "total": len(tasks),
+        "focus": focus(items, open_, t),
+        "events": upcoming_events(items, t),
+        "kpi": {"upcoming_ids": [x["id"] for x in open_ if x["due"] and t <= x["due"] <= week],
+                "questions_total": sum(1 for q in items if q["kind"] == "question"),
+                "dated": sum(1 for x in tasks if x["due"]),
+                "open": len(open_), "done": len(tasks) - len(open_), "total": len(tasks),
                 "questions": sum(1 for q in items if q["kind"] == "question" and q["status"] == "open"),
                 "orphans": sum(1 for x in open_ if not x["owner"]),
                 "decisions": sum(1 for d in items if d["kind"] == "decision"),

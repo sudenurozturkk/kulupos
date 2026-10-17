@@ -21,8 +21,11 @@ CREATE TABLE IF NOT EXISTS chats (
     status        TEXT NOT NULL DEFAULT 'imported',
     error         TEXT,
     analyzed_upto INTEGER NOT NULL DEFAULT -1,
-    file_hash     TEXT
+    file_hash     TEXT,
+    is_sample     INTEGER NOT NULL DEFAULT 0,
+    source_name   TEXT
 );
+CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
 CREATE TABLE IF NOT EXISTS messages (
     chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
     idx     INTEGER NOT NULL,
@@ -106,9 +109,11 @@ def conn() -> sqlite3.Connection:
             if col not in have:
                 _conn.execute(f"ALTER TABLE items ADD COLUMN {col} {decl}")
         _conn.commit()
-        if "file_hash" not in {r["name"] for r in _conn.execute("PRAGMA table_info(chats)")}:
-            _conn.execute("ALTER TABLE chats ADD COLUMN file_hash TEXT")
-            _conn.commit()
+        have_chat = {r["name"] for r in _conn.execute("PRAGMA table_info(chats)")}
+        for col, decl in (("file_hash", "TEXT"), ("is_sample", "INTEGER NOT NULL DEFAULT 0"), ("source_name", "TEXT")):
+            if col not in have_chat:
+                _conn.execute(f"ALTER TABLE chats ADD COLUMN {col} {decl}")
+        _conn.commit()
         if "needs_review" not in {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}:
             _conn.execute("ALTER TABLE items ADD COLUMN needs_review INTEGER NOT NULL DEFAULT 0")
             _conn.commit()
@@ -131,11 +136,12 @@ def find_by_hash(file_hash: str) -> dict | None:
     return rows[0] if rows else None
 
 
-def create_chat(name: str, units: list[str], messages: list[Message], file_hash: str | None = None) -> int:
+def create_chat(name: str, units: list[str], messages: list[Message], file_hash: str | None = None,
+                source_name: str | None = None, is_sample: bool = False) -> int:
     with _lock, conn() as c:
         cur = c.execute(
-            "INSERT INTO chats (name, units, imported_at, file_hash) VALUES (?, ?, ?, ?)",
-            (name, json.dumps(units, ensure_ascii=False), _now(), file_hash),
+            "INSERT INTO chats (name, units, imported_at, file_hash, source_name, is_sample) VALUES (?, ?, ?, ?, ?, ?)",
+            (name, json.dumps(units, ensure_ascii=False), _now(), file_hash, source_name, int(is_sample)),
         )
         chat_id = cur.lastrowid
         _insert_messages(c, chat_id, messages, start=0)
@@ -178,7 +184,8 @@ def get_chat(chat_id: int) -> dict | None:
 
 def list_chats() -> list[dict]:
     chats = _rows("""
-        SELECT c.id, c.name, c.status, c.imported_at, COUNT(m.idx) AS message_count
+        SELECT c.id, c.name, c.status, c.imported_at, c.is_sample, c.source_name, COUNT(m.idx) AS message_count,
+               (SELECT COUNT(*) FROM items i WHERE i.chat_id = c.id AND i.review = 'proposed') AS review_count
         FROM chats c LEFT JOIN messages m ON m.chat_id = c.id
         GROUP BY c.id ORDER BY c.id DESC""")
     return chats
@@ -367,3 +374,20 @@ def save_report(event_id: int, body: str, fingerprint: str, lang: str, model: st
 def get_report(event_id: int) -> dict | None:
     rows = _rows("SELECT * FROM event_reports WHERE event_id = ?", (event_id,))
     return rows[0] if rows else None
+
+
+# ---- meta + sample data -----------------------------------------------------
+
+def get_meta(key: str) -> str | None:
+    rows = _rows("SELECT value FROM meta WHERE key = ?", (key,))
+    return rows[0]["value"] if rows else None
+
+
+def set_meta(key: str, value: str) -> None:
+    with _lock, conn() as c:
+        c.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", (key, value))
+
+
+def delete_samples() -> int:
+    with _lock, conn() as c:
+        return c.execute("DELETE FROM chats WHERE is_sample = 1").rowcount

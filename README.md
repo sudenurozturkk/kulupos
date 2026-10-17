@@ -12,7 +12,7 @@ chat export with a local open-weight model and gives the club back:
 - **A weekly recap formatted for WhatsApp**, so the club lead can paste it back into the group in one click
 - **Ask the chat**: "Did we get the room?", answered with links to the source messages
 
-Nothing leaves the machine. No API keys, no cloud and no per-message cost, and it works offline.
+Nothing leaves the machine. No API keys, no cloud and no per-message fees, and it works offline once the model is installed.
 
 > Built in one night at **Hacktoberfest Elazığ Fest 2026** (Week 2: *Side Hustle*).
 
@@ -22,8 +22,8 @@ Nothing leaves the machine. No API keys, no cloud and no per-message cost, and i
 
 | | Pano (Gemma 4 + Ollama, local) | A closed API |
 |---|---|---|
-| **Privacy** | Phone numbers, names and private messages of 30+ students stay on the laptop. Under KVKK/GDPR that matters | The whole chat is uploaded to a third party |
-| **Cost** | Zero. Re-analyse as often as you like | Student clubs have no budget and no credit card |
+| **Privacy** | Phone numbers, names and private messages of 30+ students stay on the laptop (this reduces exposure; it is not legal advice) | The whole chat is uploaded to a third party |
+| **Cost** | No per-use fees, only your own electricity. Re-analyse as often as you like | Student clubs have no budget and no credit card |
 | **Offline** | Works on the campus Wi-Fi, or with no Wi-Fi at all | Needs a connection |
 | **Lock-in** | Swap `gemma4:e4b` for any Ollama model with one env var | Pricing and terms can change any time |
 
@@ -59,7 +59,7 @@ Small-model guardrails:
 Requirements: [Ollama](https://ollama.com/download), Python 3.10+, about 8 GB of free RAM.
 
 ```bash
-ollama pull gemma4:e4b
+ollama pull gemma4:e4b      # tested tag: gemma4:e4b
 git clone <this repo> && cd pano
 pip install -r requirements.txt
 python -m app            # opens http://127.0.0.1:8000
@@ -89,6 +89,20 @@ Click **Try a demo chat** to see it on a realistic (fictional) club chat, or dro
 python scripts/eval_demo.py      # Turkish demo
 python scripts/eval_demo.py en   # English demo
 ```
+
+Measured on the Turkish demo (127 messages) with `gemma4:e4b` via Ollama 0.32.9, on a laptop with an
+RTX 3050 (4 GB VRAM) and 16 GB RAM:
+
+| run | checks passed | time |
+|---|---|---|
+| baseline prompt | 7 / 14 | 432 s |
+| + few-shot example, unit rules | 11 / 14 | 344 s |
+| final prompt | 10 / 14 | 379 s |
+
+Results vary by one or two checks between runs. Typical misses: a task handed over between two people,
+a question that only has a time attached, and occasionally the wrong unit for a task. Every card links to its
+source message and is editable for exactly this reason. Other timings on the same machine: weekly recap about
+30 s, ask-the-chat about 15 s, event plan about 75 s. A smaller `gemma4:e2b` or a GPU with more VRAM is faster.
 
 ## Privacy notes
 

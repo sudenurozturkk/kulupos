@@ -27,7 +27,7 @@ def test_empty_database_gets_a_labelled_sample_panel(client):
     b = board(client, r["chat_id"])
     assert b["chat"]["is_sample"] == 1 and b["chat"]["status"] == "ready"
     assert b["chat"]["units"] == ["Yönetim", "Etkinlik", "İletişim", "Sponsorluk"]
-    assert len(b["tasks"]) == 27 and len(b["decisions"]) == 9 and len(b["events"]) == 6  # incl. 3 + 2 from the held sample meeting
+    assert len(b["tasks"]) == 35 and len(b["decisions"]) == 11 and len(b["events"]) == 10  # incl. 3 + 2 from the held sample meeting
     assert sum(1 for q in b["questions"] if q["status"] == "open") == 6
     # every approved card points at a real source message; the unsourced proposal is flagged
     import json
@@ -55,7 +55,7 @@ def test_panel_focus_lists(client):
     assert [c["why"] for c in f["conflicts"]] == ["after_event"]
     assert len(f["decisions"]) == 6  # three decisions not yet marked final (one from the held meeting)
     k = o["kpi"]
-    assert k["open"] == 21 and k["done"] == 6 and k["questions"] == 6
+    assert k["open"] == 21 and k["done"] == 14 and k["questions"] == 6
     assert len(k["upcoming_ids"]) == 6  # tasks due within the next 7 days
     assert [e["title"] for e in o["events"]] == ["Online hazırlık toplantısı", "Teknoloji Şirketi Gezisi", "Yapay Zeka ile Kariyer Söyleşisi", "FUB3V Hackathon 24 Saat"]
     assert o["events"][0]["days"] == 6

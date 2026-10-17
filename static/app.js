@@ -1623,16 +1623,21 @@ async function renderEventsView() {
   const b = S.board, id = b.chat.id, cmp = b.event_compare || [];
   const link = e => `#/c/${id}/event/${e.id}`;
   const linked = e => b.tasks.filter(x => x.event_id === e.id).length + b.decisions.filter(x => x.event_id === e.id).length;
-  const list = b.events.length ? `<div class="ev-list">${b.events.map(e => {
-    const n = linked(e);
-    return `<a class="ev-row" href="${link(e)}">
-      <span class="ev-title">${esc(e.title)}</span>
-      <span class="chip">${esc(e.phase ? (t("ph")[e.phase] || e.phase) : "—")}</span>
-      <span class="muted">${e.due ? fmtDate(e.due) : "—"}</span>
-      <span class="muted">${e.place ? esc(e.place) : "—"}</span>
-      <span class="muted">${n ? t("ev_linked")(n) : "—"}</span>
-    </a>`;
-  }).join("")}</div>`
+  const PH = { held: "ok", confirmed: "info", planning: "warn", idea: "muted", cancelled: "bad" };
+  const MON = lang === "tr" ? ["OCA", "ŞUB", "MAR", "NİS", "MAY", "HAZ", "TEM", "AĞU", "EYL", "EKİ", "KAS", "ARA"] : ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const evCard = e => {
+    const ts = b.tasks.filter(x => x.event_id === e.id), dn = ts.filter(x => x.status === "done").length;
+    const d = e.due ? new Date(e.due + "T00:00") : null;
+    const pr = ts.length ? Math.round(dn / ts.length * 100) : 0;
+    return `<a class="ev-card" href="${link(e)}">
+      <span class="ev-date big">${d ? `<b>${d.getDate()}</b>${MON[d.getMonth()]}` : "—"}</span>
+      <span class="ev-body"><span class="ev-top"><b class="ev-name">${esc(e.title)}</b><span class="pill ${PH[e.phase] || "muted"}">${esc(e.phase ? (t("ph")[e.phase] || e.phase) : "—")}</span></span>
+        <span class="ev-meta">${e.place ? esc(e.place) : ""}${e.time ? " · " + esc(e.time) : ""}${e.owner ? " · " + esc(firstName(e.owner)) : ""}</span>
+        ${ts.length ? `<span class="ev-prog"><span class="com-bar"><i style="width:${pr}%"></i></span><small>${dn}/${ts.length} ${lang === "tr" ? "iş tamam" : "tasks done"}</small></span>`
+          : `<small class="muted">${lang === "tr" ? "Bağlı görev yok" : "No linked tasks"}</small>`}
+      </span></a>`;
+  };
+  const list = b.events.length ? `<div class="ev-cards">${b.events.map(evCard).join("")}</div>`
     : `<div class="empty-quiet">${icon("calendar")}<p>${t("ev_none")}</p><button type="button" class="ghost" data-ev-sample>${t("ev_sample")}</button></div>`;
   const bar = pct => `<span class="meter" aria-hidden="true"><span style="width:${Math.max(0, Math.min(100, pct))}%"></span></span>`;
   const rows = cmp.map(r => `<tr><th scope="row"><a href="${link(r)}">${esc(r.title)}</a><div class="muted small">${esc(t("ph")[r.phase] || "")}${r.date ? " · " + fmtDate(r.date, false) : ""}</div></th>
@@ -1683,21 +1688,35 @@ async function renderEventView() {
   const fbLines = (l, v) => v ? `<h4>${l}</h4><p style="white-space:pre-wrap">${esc(v)}</p>` : "";
   const hasFb = ev.feedback_score != null || ev.feedback_note || ev.feedback_good || ev.feedback_bad || ev.feedback_comments;
   const nComments = (ev.feedback_comments || "").split("\n").filter(x => x.trim()).length;
-  view.innerHTML = `<div class="narrow wide">${back}
-    <div class="row-actions"><h2 style="margin:0" class="grow">${esc(ev.title)}</h2><button class="ghost small" id="evp-edit"> ${t("edit")}</button></div>
-    ${sect(t("evp_info"), `<div class="grid2">${kv(t("ev_date"), ev.due ? fmtDate(ev.due) : no)}${kv(t("ev_time"), val(ev.time))}${kv(t("ev_place"), val(ev.place))}
-      ${kv(t("ev_owner"), val(ev.owner))}${kv(t("ev_phase"), val(t("ph")[ev.phase] || ev.phase))}${kv(t("ev_type"), val(ev.event_type))}
-      ${kv(t("ev_units"), ev.event_units.length ? ev.event_units.map(esc).join(", ") : no)}</div>${ev.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(ev.notes)}</p>` : ""}`)}
-    ${sect(t("evp_attend"), `<div class="grid2">${kv(t("evp_applied"), val(a.applications))}${kv(t("ev_exp"), val(a.expected))}${kv(t("ev_act"), val(a.actual))}
-      ${kv(t("an_c_rate"), a.attendance_pct != null ? `<b>${a.attendance_pct}%</b>` : no)}${kv(t("an_c_conv"), a.conversion_pct != null ? `<b>${a.conversion_pct}%</b>` : no)}</div>`)}
-    ${sect(t("evp_tasks"), ul(p.tasks, taskLi), p.tasks.length)}
-    ${sect(t("evp_decisions"), ul(p.decisions, decLi), p.decisions.length)}
-    ${sect(t("evp_questions"), ul(p.questions, qLi), p.questions.length)}
-    ${sect(t("evp_meetings"), `<p class="muted small">${t("evp_meet_note")}</p>${ul(p.meetings, meetLi)}`, p.meetings.length)}
-    ${sect(t("evp_feedback"), hasFb ? `<div class="grid2">${kv(t("fb_score"), ev.feedback_score != null ? `<b>${ev.feedback_score}</b>/5` : no)}${kv(t("fb_count"), nComments || no)}</div>
-      ${fbLines(t("ev_fb_note"), ev.feedback_note)}${fbLines(t("fb_good"), ev.feedback_good)}${fbLines(t("fb_bad"), ev.feedback_bad)}${fbLines(t("fb_comments"), ev.feedback_comments)}`
-      : `<p class="muted">${t("fb_empty")}</p>`)}
-    ${sect(t("rp_title"), `<div id="evp-report"></div>`)}</div>`;
+  const TRL = lang === "tr";
+  const PHc = { held: "ok", confirmed: "info", planning: "warn", idea: "muted", cancelled: "bad" };
+  const tile = (l, v, sub = "") => `<div class="tile"><span>${l}</span><b>${v}</b>${sub ? `<small>${sub}</small>` : ""}</div>`;
+  const money = x => x == null || x === "" ? no : `${esc(x)} ₺`;
+  const chips = [ev.due ? fmtDate(ev.due) : null, ev.time, ev.place, ev.owner, ev.event_type].filter(Boolean).map(x => `<span class="meta-chip">${esc(x)}</span>`).join("")
+    + ev.event_units.map(u => `<span class="meta-chip unit">${esc(u)}</span>`).join("");
+  const doneN = p.tasks.filter(x => x.status === "done").length;
+  view.innerHTML = `<div class="evp">${back}
+    <section class="evp-hero"><div class="grow"><div class="evp-title"><h2>${esc(ev.title)}</h2><span class="pill ${PHc[ev.phase] || "muted"}">${esc(t("ph")[ev.phase] || ev.phase || "")}</span></div>
+      <div class="meta-chips">${chips}</div>${ev.notes ? `<p class="evp-notes">${esc(ev.notes)}</p>` : ""}</div>
+      <button class="hero-btn" id="evp-edit">${t("edit")}</button></section>
+    <div class="tiles">
+      ${tile(t("evp_applied"), val(a.applications))}${tile(t("ev_exp"), val(a.expected))}${tile(t("ev_act"), val(a.actual))}
+      ${tile(t("an_c_rate"), a.attendance_pct != null ? a.attendance_pct + "%" : no)}${tile(TRL ? "Bütçe" : "Budget", money(ev.budget_actual != null ? ev.budget_actual : ev.budget_est), ev.budget_actual != null && ev.budget_est != null ? (TRL ? "plan: " : "plan: ") + esc(ev.budget_est) + " ₺" : "")}
+      ${tile(t("fb_score"), ev.feedback_score != null ? ev.feedback_score + " / 5" : no)}
+    </div>
+    <section class="panel ai-panel"><div class="panel-head"><div><h3>${t("rp_title")}</h3><p class="muted small">${TRL ? "Gemma, yalnızca bu etkinlik için girilen verilerden yazar." : "Gemma writes only from the data entered for this event."}</p></div></div><div id="evp-report"></div></section>
+    <div class="evp-grid">
+      <div class="stack">
+        ${sect(t("evp_tasks"), (p.tasks.length ? `<div class="com-bar thick"><i style="width:${Math.round(doneN / p.tasks.length * 100)}%"></i></div>` : "") + ul(p.tasks, taskLi), `${doneN}/${p.tasks.length}`)}
+        ${sect(t("evp_decisions"), ul(p.decisions, decLi), p.decisions.length)}
+        ${sect(t("evp_questions"), ul(p.questions, qLi), p.questions.length)}
+      </div>
+      <div class="stack">
+        ${sect(t("evp_feedback"), hasFb ? `${fbLines(t("ev_fb_note"), ev.feedback_note)}${fbLines(t("fb_good"), ev.feedback_good)}${fbLines(t("fb_bad"), ev.feedback_bad)}${ev.feedback_comments ? `<h4>${t("fb_comments")} <span class="n">${nComments}</span></h4><ul class="quotes">${ev.feedback_comments.split("\n").filter(x => x.trim()).map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}`
+          : `<p class="muted">${t("fb_empty")}</p>`)}
+        ${sect(t("evp_meetings"), ul(p.meetings, meetLi), p.meetings.length)}
+      </div>
+    </div></div>`;
   view.querySelector("#evp-edit").onclick = () => editEvent(ev);
   view.querySelectorAll("[data-toggle]").forEach(el => (el.onchange = async () => {
     await patch(`/api/items/${el.dataset.toggle}`, { status: el.checked ? "done" : "open" });
@@ -1738,11 +1757,11 @@ async function renderPeopleView() {
   try { d = await api(`/api/chats/${id}/people`); }
   catch (e) { view.innerHTML = `<div class="narrow"><p class="muted"> ${esc(e.message)}</p></div>`; return; }
   if (route().view !== "people" || S.board.chat.id !== id) return;
-  const rows = d.people.map(p => `<tr><th scope="row"><a href="#/c/${id}/person/${encodeURIComponent(p.name)}">${avatar(p.name)} ${esc(p.name)}</a></th>
-    <td>${p.committees.length ? p.committees.map(esc).join(", ") : dash}</td><td><b>${p.open}</b></td><td class="${p.late > 0 ? "num-late" : ""}">${p.late ? `<b>${p.late}</b>` : "0"}</td><td>${p.done}</td></tr>`).join("");
-  view.innerHTML = `<p class="muted">${t("pp_intro")}</p><p class="muted small">${t("pp_note")}</p>
-    ${d.people.length ? `<div class="tscroll wide-table"><table class="atable"><thead><tr><th>${t("pp_name")}</th><th>${t("pp_committees")}</th><th>${t("pp_open")}</th><th>${t("pp_late")}</th><th>${t("pp_done")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
-      : `<div class="empty-quiet">${icon("person")}<p>${t("pp_empty")}</p></div>`}`;
+  const cards = d.people.map(p => `<a class="pc" href="#/c/${id}/person/${encodeURIComponent(p.name)}">
+    <span class="pc-top">${avatar(p.name)}<span><b>${esc(p.name)}</b><small>${p.committees.length ? p.committees.map(esc).join(", ") : t("no_unit")}</small></span></span>
+    <span class="pc-stats"><span><b>${p.open}</b>${t("pp_open")}</span><span class="${p.late > 0 ? "late" : ""}"><b>${p.late || 0}</b>${t("pp_late")}</span><span><b>${p.done}</b>${t("pp_done")}</span></span></a>`).join("");
+  view.innerHTML = `<p class="muted small">${t("pp_note")}</p>
+    ${d.people.length ? `<div class="pc-grid">${cards}</div>` : `<div class="empty-quiet">${icon("person")}<p>${t("pp_empty")}</p></div>`}`;
 }
 
 async function renderPersonView() {
@@ -1761,9 +1780,10 @@ async function renderPersonView() {
   const sect = (title, items, fmt) => `<div class="panel"><h3>${title} <span class="n">${items.length}</span></h3>${items.length ? `<ul class="list">${items.map(fmt).join("")}</ul>` : none}</div>`;
   const all = [...p.late, ...p.open, ...p.done];
   view.innerHTML = `${back}
-    <h2>${avatar(p.name)} ${esc(p.name)}</h2>
-    <p class="muted small">${t("pp_note")}</p>
-    <div class="panel"><h3>${t("pp_committees")}</h3>${p.committees.length ? `<p>${p.committees.map(esc).join(", ")}</p>` : none}</div>
+    <section class="evp-hero"><div class="grow"><div class="evp-title">${avatar(p.name)}<h2>${esc(p.name)}</h2></div>
+      <div class="meta-chips">${p.committees.length ? p.committees.map(u => `<span class="meta-chip unit">${esc(u)}</span>`).join("") : `<span class="meta-chip">${t("no_unit")}</span>`}</div>
+      <p class="evp-notes">${t("pp_note")}</p></div></section>
+    <div class="tiles"><div class="tile"><span>${t("pp_open")}</span><b>${p.open.length}</b></div><div class="tile ${p.late.length ? "bad" : ""}"><span>${t("pp_late")}</span><b>${p.late.length}</b></div><div class="tile"><span>${t("pp_done_l")}</span><b>${p.done.length}</b></div><div class="tile"><span>${t("pp_events")}</span><b>${p.events.length}</b></div></div>
     ${sect(t("pp_late"), p.late, taskLi)}
     ${sect(t("pp_upcoming"), p.upcoming, taskLi)}
     ${sect(t("pp_undated"), p.open.filter(x => !x.due), taskLi)}

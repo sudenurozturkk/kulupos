@@ -74,6 +74,8 @@ def _outdated(chat_id: int) -> bool:
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
     if db.get_chat(chat_id)["name"] != spec["chat"]["name"] or not db.get_meetings(chat_id):
         return True
+    if len(db.get_items(chat_id, "event")) != len(spec["events"]) or len(db.get_items(chat_id, "task")) < len(spec["tasks"]):
+        return True
     wanted = {e["title"] for e in spec["events"] if e.get("feedback_comments")}
     return any(not e.get("feedback_comments") or not db.get_report(e["id"])
                for e in db.get_items(chat_id, "event") if e["title"] in wanted)

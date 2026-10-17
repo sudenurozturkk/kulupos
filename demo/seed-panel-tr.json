@@ -128,6 +128,102 @@
    "feedback_note": "Stant ilgi gördü, yeni üye başvurusu yoğundu.",
    "feedback_good": "Kampüs meydanındaki konum ve hediye çekilişi.",
    "feedback_bad": "Öğle saatinde stant kalabalık kaldı."
+  },
+  {
+   "key": "git",
+   "title": "Git ve GitHub Atölyesi",
+   "due": -75,
+   "time": "14:00",
+   "place": "Bilgisayar Lab",
+   "owner": "Mert Demir",
+   "event_type": "atölye",
+   "phase": "held",
+   "event_units": [
+    "Etkinlik",
+    "İletişim"
+   ],
+   "attendees_expected": 50,
+   "attendees_actual": 41,
+   "applications": 66,
+   "budget_est": 900,
+   "budget_actual": 860,
+   "feedback_score": 4.4,
+   "feedback_note": "Uygulamalı anlatım çok beğenildi.",
+   "feedback_good": "Canlı örnekler ve alıştırmalar.",
+   "feedback_bad": "Kurulum sorunları ilk 20 dakikayı aldı.",
+   "src": null
+  },
+  {
+   "key": "siber",
+   "title": "Siber Güvenlik Semineri",
+   "due": -62,
+   "time": "15:30",
+   "place": "Konferans Salonu",
+   "owner": "Elif Kaya",
+   "event_type": "seminer",
+   "phase": "held",
+   "event_units": [
+    "Etkinlik",
+    "Sponsorluk",
+    "İletişim"
+   ],
+   "attendees_expected": 150,
+   "attendees_actual": 96,
+   "applications": 140,
+   "budget_est": 3500,
+   "budget_actual": 3900,
+   "feedback_score": 3.9,
+   "feedback_note": "İçerik güçlü, salon ses sistemi zayıftı.",
+   "feedback_good": "Konuşmacının deneyimi ve canlı demo.",
+   "feedback_bad": "Ses sistemi arızalandı, arka sıralar duymadı.",
+   "src": null
+  },
+  {
+   "key": "oryant",
+   "title": "Yeni Üye Oryantasyonu",
+   "due": -55,
+   "time": "17:00",
+   "place": "B-201",
+   "owner": "Selin Aydın",
+   "event_type": "toplantı",
+   "phase": "held",
+   "event_units": [
+    "Yönetim"
+   ],
+   "attendees_expected": 40,
+   "attendees_actual": 37,
+   "applications": 45,
+   "budget_est": 0,
+   "budget_actual": 0,
+   "feedback_score": 4.7,
+   "feedback_note": "Tanışma bölümü verimliydi.",
+   "feedback_good": "Komite tanıtımları kısa ve net oldu.",
+   "feedback_bad": "Yemek ikramı yetersiz kaldı.",
+   "src": null
+  },
+  {
+   "key": "kariyer",
+   "title": "Kariyer Günleri Paneli",
+   "due": -38,
+   "time": "13:00",
+   "place": "Amfi 2",
+   "owner": "Deniz Çelik",
+   "event_type": "panel",
+   "phase": "held",
+   "event_units": [
+    "Etkinlik",
+    "Sponsorluk"
+   ],
+   "attendees_expected": 200,
+   "attendees_actual": 172,
+   "applications": 190,
+   "budget_est": 6000,
+   "budget_actual": 5400,
+   "feedback_score": 4.2,
+   "feedback_note": "Konuk profili ilgi çekti, soru-cevap kısa kaldı.",
+   "feedback_good": "Sektörden konuklar ve ağ kurma molası.",
+   "feedback_bad": "Soru-cevap süresi yetersizdi, giriş kuyruğu uzundu.",
+   "src": null
   }
  ],
  "tasks": [
@@ -331,6 +427,78 @@
    "status": "open",
    "event": null,
    "src": null
+  },
+  {
+   "title": "Atölye bilgisayar kurulumlarını kontrol et",
+   "owner": "Mert Demir",
+   "unit": "Etkinlik",
+   "due": -80,
+   "status": "done",
+   "event": "git",
+   "src": null
+  },
+  {
+   "title": "Seminer konuşmacısıyla sözleşme yap",
+   "owner": "Burak Yıldız",
+   "unit": "Sponsorluk",
+   "due": -70,
+   "status": "done",
+   "event": "siber",
+   "src": null
+  },
+  {
+   "title": "Salon ses sistemini önceden test et",
+   "owner": "Elif Kaya",
+   "unit": "Etkinlik",
+   "due": -64,
+   "status": "done",
+   "event": "siber",
+   "src": null
+  },
+  {
+   "title": "Seminer afişini yayınla",
+   "owner": "Zeynep Arslan",
+   "unit": "İletişim",
+   "due": -68,
+   "status": "done",
+   "event": "siber",
+   "src": null
+  },
+  {
+   "title": "Oryantasyon sunumunu hazırla",
+   "owner": "Selin Aydın",
+   "unit": "Yönetim",
+   "due": -58,
+   "status": "done",
+   "event": "oryant",
+   "src": null
+  },
+  {
+   "title": "Panel konuklarını davet et",
+   "owner": "Deniz Çelik",
+   "unit": "Etkinlik",
+   "due": -50,
+   "status": "done",
+   "event": "kariyer",
+   "src": null
+  },
+  {
+   "title": "Panel sponsor ödemesini al",
+   "owner": "Burak Yıldız",
+   "unit": "Sponsorluk",
+   "due": -42,
+   "status": "done",
+   "event": "kariyer",
+   "src": null
+  },
+  {
+   "title": "Panel fotoğraf ve video paylaşımı",
+   "owner": "Zeynep Arslan",
+   "unit": "İletişim",
+   "due": -39,
+   "status": "done",
+   "event": "kariyer",
+   "src": null
   }
  ],
  "questions": [
@@ -407,6 +575,18 @@
    "title": "Aylık yönetim toplantısı her ayın ilk Salı günü yapılacak",
    "status": "open",
    "event": null,
+   "src": null
+  },
+  {
+   "title": "Ses sistemi kiralık olacak, salon sistemine güvenilmeyecek",
+   "status": "done",
+   "event": "siber",
+   "src": null
+  },
+  {
+   "title": "Etkinliklerde soru-cevap süresi en az 20 dakika olacak",
+   "status": "done",
+   "event": "kariyer",
    "src": null
   }
  ],

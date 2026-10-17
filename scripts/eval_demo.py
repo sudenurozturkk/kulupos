@@ -99,7 +99,20 @@ async def main(lang: str) -> None:
         ok = check(items, kind, words, cond) is not None
         passed += ok
         print(f"  {'✅' if ok else '❌'} {desc}")
-    print(f"\nScore: {passed}/{len(CHECKS[lang])}  ·  {len(items)} items  ·  {took:.0f}s\n")
+    print(f"\nScore: {passed}/{len(CHECKS[lang])}  ·  {len(items)} items  ·  {took:.0f}s")
+    by_kind = Counter(i["kind"] for i in items)
+    no_src = sum(1 for i in items if i["needs_review"] == 1)
+    bad_date = sum(1 for i in items if i["needs_review"] == 2)
+    print(f"Proposals by kind: {dict(by_kind)} · no source (1): {no_src} · date unclear (2): {bad_date}\n")
+    # Demo data only (fake chats), so the raw list is safe to keep; data/ is git-ignored anyway.
+    out = ROOT / "data" / "eval_runs"
+    out.mkdir(parents=True, exist_ok=True)
+    f = out / f"{lang}-{datetime.now():%Y%m%d-%H%M%S}.json"
+    f.write_text(json.dumps({
+        "chat": name, "model": llm.MODEL, "seconds": round(took), "score": f"{passed}/{len(CHECKS[lang])}",
+        "by_kind": by_kind, "needs_review_1": no_src, "needs_review_2": bad_date, "items": items,
+    }, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"Saved: {f}")
     print(f"DB: {os.environ['PANO_DB']}")
 
 

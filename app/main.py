@@ -174,6 +174,7 @@ class ChatPatch(BaseModel):
     name: str | None = None
     units: list[str] | None = None          # the full committee list after the change
     renames: dict[str, str] | None = None   # {old name: new name}, applied before `units`
+    unit_members: dict[str, str] | None = None  # {committee: "Ad Soyad, Ad Soyad"}: free text, comma separated
 
 
 @app.patch("/api/chats/{chat_id}")
@@ -192,6 +193,12 @@ def patch_chat(chat_id: int, body: ChatPatch):
         if any(not u for u in final) or len({u.casefold() for u in final}) != len(final):
             raise HTTPException(400, "Komite adları boş veya tekrar olamaz / names must be unique and non-empty")
         db.set_units(chat_id, final, renames)
+    if body.unit_members is not None:
+        units = db.get_chat(chat_id)["units"]
+        if any(u not in units for u in body.unit_members):
+            raise HTTPException(400, "Komite bulunamadı / unknown committee")
+        cleaned = {u: ", ".join(n for n in (" ".join(x.split()) for x in v.split(",")) if n) for u, v in body.unit_members.items()}
+        db.update_chat(chat_id, unit_members={u: v for u, v in cleaned.items() if v})
     return db.get_chat(chat_id)
 
 

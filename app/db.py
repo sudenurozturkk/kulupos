@@ -120,7 +120,8 @@ def conn() -> sqlite3.Connection:
                 _conn.execute(f"ALTER TABLE items ADD COLUMN {col} {decl}")
         _conn.commit()
         have_chat = {r["name"] for r in _conn.execute("PRAGMA table_info(chats)")}
-        for col, decl in (("file_hash", "TEXT"), ("is_sample", "INTEGER NOT NULL DEFAULT 0"), ("source_name", "TEXT")):
+        for col, decl in (("file_hash", "TEXT"), ("is_sample", "INTEGER NOT NULL DEFAULT 0"), ("source_name", "TEXT"),
+                          ("unit_members", "TEXT NOT NULL DEFAULT '{}'")):
             if col not in have_chat:
                 _conn.execute(f"ALTER TABLE chats ADD COLUMN {col} {decl}")
         _conn.commit()
@@ -189,6 +190,7 @@ def get_chat(chat_id: int) -> dict | None:
         return None
     chat = rows[0]
     chat["units"] = json.loads(chat["units"])
+    chat["unit_members"] = json.loads(chat.get("unit_members") or "{}")
     return chat
 
 
@@ -202,8 +204,9 @@ def list_chats() -> list[dict]:
 
 
 def update_chat(chat_id: int, **fields) -> None:
-    if "units" in fields:
-        fields["units"] = json.dumps(fields["units"], ensure_ascii=False)
+    for k in ("units", "unit_members"):
+        if k in fields:
+            fields[k] = json.dumps(fields[k], ensure_ascii=False)
     cols = ", ".join(f"{k} = ?" for k in fields)
     with _lock, conn() as c:
         c.execute(f"UPDATE chats SET {cols} WHERE id = ?", (*fields.values(), chat_id))
@@ -222,6 +225,9 @@ def set_units(chat_id: int, units: list[str], renames: dict[str, str] | None = N
         for gone in {renames.get(u, u) for u in current} - set(units):
             c.execute("UPDATE items SET unit = NULL WHERE chat_id = ? AND unit = ?", (chat_id, gone))
         c.execute("UPDATE chats SET units = ? WHERE id = ?", (json.dumps(units, ensure_ascii=False), chat_id))
+        members = json.loads(c.execute("SELECT unit_members FROM chats WHERE id = ?", (chat_id,)).fetchone()[0] or "{}")
+        kept = {renames.get(u, u): v for u, v in members.items() if renames.get(u, u) in units}
+        c.execute("UPDATE chats SET unit_members = ? WHERE id = ?", (json.dumps(kept, ensure_ascii=False), chat_id))
 
 
 def delete_chat(chat_id: int) -> None:

@@ -430,3 +430,7 @@ pre.report { overflow-wrap: anywhere; background: var(--surface-2); padding: var
 .rwhy { margin: var(--sp-2) 0 0; color: var(--danger); font-size: var(--fs-xs); }
 .diff { margin: var(--sp-1) 0 0; padding-left: var(--sp-5); font-size: var(--fs-sm); }
 .review-empty { padding: var(--sp-5) var(--sp-4); }
+
+.list li.unit-row { flex-wrap: wrap; align-items: center; }
+.list li.unit-row > input[data-unit] { flex: 1; }
+.list li.unit-row .unit-members { flex-basis: 100%; font-size: 13px; }

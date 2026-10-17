@@ -74,3 +74,18 @@ def test_model_prompt_uses_current_units(env, monkeypatch):
     monkeypatch.setattr(analyzer.llm, "chat_json", fake)
     asyncio.run(analyzer.analyze(cid))
     assert seen and "UNITS: Etkinlik, İletişim" in seen[0]
+
+
+def test_committee_members_saved_cleaned_and_follow_rename_and_delete(env):
+    c, cid = env
+    r = c.patch(f"/api/chats/{cid}", json={"unit_members": {"Etkinlik": " Ayşe Demir ,, Mert  Kaya,", "Sosyal": ""}})
+    assert r.json()["unit_members"] == {"Etkinlik": "Ayşe Demir, Mert Kaya"}
+    c.patch(f"/api/chats/{cid}", json={"renames": {"Etkinlik": "Organizasyon"}})
+    assert board(c, cid)["chat"]["unit_members"] == {"Organizasyon": "Ayşe Demir, Mert Kaya"}
+    c.patch(f"/api/chats/{cid}", json={"units": ["Sosyal", "Teknik"]})
+    assert board(c, cid)["chat"]["unit_members"] == {}
+
+
+def test_members_for_unknown_committee_rejected(env):
+    c, cid = env
+    assert c.patch(f"/api/chats/{cid}", json={"unit_members": {"Yok": "A"}}).status_code == 400

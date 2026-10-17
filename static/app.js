@@ -51,7 +51,7 @@ const I18N = {
     health_ok: "Yerel · Gemma 4 hazır",
     health_nomodel: "Model yok: ollama pull",
     health_down: "Ollama kapalı",
-    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", units_btn: "Komiteler", units_add: "Yeni komite adı", units_add_btn: "Ekle", units_note: "Silinen komitenin görevleri “Komitesiz” sütununa düşer.", ev_add: "Etkinlik ekle", ev_edit: "Etkinliği düzenle", ev_type: "Tür", ev_date: "Tarih", ev_time: "Saat", ev_place: "Mekân", ev_owner: "Sorumlu",
+    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", units_btn: "Komiteler", units_add: "Yeni komite adı", units_add_btn: "Ekle", unit_members_ph: "Üyeler (virgülle ayır, serbest metin)", units_note: "Silinen komitenin görevleri “Komitesiz” sütununa düşer.", ev_add: "Etkinlik ekle", ev_edit: "Etkinliği düzenle", ev_type: "Tür", ev_date: "Tarih", ev_time: "Saat", ev_place: "Mekân", ev_owner: "Sorumlu",
     ev_units: "Komiteler", ev_phase: "Durum", ev_exp: "Beklenen katılımcı", ev_act: "Gerçekleşen katılımcı", ev_bud_est: "Bütçe tahmini", ev_bud_act: "Gerçekleşen bütçe", ev_apps: "Başvuru sayısı", ev_fb_score: "Geri bildirim puanı (1-5, isteğe bağlı)", ev_fb_note: "Kısa geri bildirim notu",
     tab_analysis: "Etkinlik analizi", an_none: "Girilmedi", an_intro: "Sayılar yalnızca girilen etkinlik verisinden hesaplanır (iptal edilenler dışarıda); Gemma gerekmez. Eksik veri “Girilmedi” yazar.",
     an_total: "Etkinlik", an_avg_att: "Ortalama katılım", an_avg_rate: "Ortalama katılım oranı", an_avg_fb: "Ortalama geri bildirim", an_high: "En yüksek katılım", an_low: "En düşük katılım",
@@ -180,7 +180,7 @@ const I18N = {
     health_ok: "Local · Gemma 4 ready",
     health_nomodel: "Model missing: ollama pull",
     health_down: "Ollama is not running",
-    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", units_btn: "Teams", units_add: "New team name", units_add_btn: "Add", units_note: "Tasks of a deleted team move to the “no team” column.", ev_add: "Add event", ev_edit: "Edit event", ev_type: "Type", ev_date: "Date", ev_time: "Time", ev_place: "Venue", ev_owner: "Owner",
+    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", units_btn: "Teams", units_add: "New team name", units_add_btn: "Add", unit_members_ph: "Members (comma separated, free text)", units_note: "Tasks of a deleted team move to the “no team” column.", ev_add: "Add event", ev_edit: "Edit event", ev_type: "Type", ev_date: "Date", ev_time: "Time", ev_place: "Venue", ev_owner: "Owner",
     ev_units: "Teams", ev_phase: "Status", ev_exp: "Expected attendees", ev_act: "Actual attendees", ev_bud_est: "Budget estimate", ev_bud_act: "Actual budget", ev_apps: "Applications", ev_fb_score: "Feedback score (1-5, optional)", ev_fb_note: "Short feedback note",
     tab_analysis: "Event analysis", an_none: "Not entered", an_intro: "Figures are computed only from the entered event data (cancelled events excluded); no model needed. Missing data reads “Not entered”.",
     an_total: "Events", an_avg_att: "Average attendance", an_avg_rate: "Average attendance rate", an_avg_fb: "Average feedback", an_high: "Highest attendance", an_low: "Lowest attendance",
@@ -569,8 +569,9 @@ async function manageUnits() {
     catch (e) { toast(e.message); }
   };
   modal(`<h3>👥 ${t("units_btn")}</h3>
-    <ul class="list">${c.units.map((u, n) => `<li><input type="text" value="${esc(u)}" data-unit="${n}" aria-label="${esc(u)}">
-      <button class="small ghost danger" data-del="${n}" aria-label="${t("del")}">✕</button></li>`).join("")}</ul>
+    <ul class="list">${c.units.map((u, n) => `<li class="unit-row"><input type="text" value="${esc(u)}" data-unit="${n}" aria-label="${esc(u)}">
+      <button class="small ghost danger" data-del="${n}" aria-label="${t("del")}">✕</button>
+      <input type="text" class="unit-members" value="${esc((c.unit_members || {})[u] || "")}" data-members="${n}" placeholder="${t("unit_members_ph")}" aria-label="${esc(u)}: ${t("unit_members_ph")}"></li>`).join("")}</ul>
     <div class="row-actions"><input type="text" id="u-new" placeholder="${t("units_add")}">
       <button class="small primary" id="u-add">${t("units_add_btn")}</button></div>
     <p class="muted">${t("units_note")}</p>
@@ -579,6 +580,7 @@ async function manageUnits() {
       const old = c.units[Number(el.dataset.unit)], next = el.value.trim();
       if (next && next !== old) save({ renames: { [old]: next } }); else el.value = old;
     }));
+    m.querySelectorAll("[data-members]").forEach(el => (el.onchange = () => save({ unit_members: { [c.units[Number(el.dataset.members)]]: el.value } })));
     m.querySelectorAll("[data-del]").forEach(el => (el.onclick = () => save({ units: c.units.filter((_, n) => n !== Number(el.dataset.del)) })));
     const add = () => { const v = m.querySelector("#u-new").value.trim(); if (v) save({ units: [...c.units, v] }); };
     m.querySelector("#u-add").onclick = add;

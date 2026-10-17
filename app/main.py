@@ -164,6 +164,7 @@ def board(chat_id: int):
         "decisions": [i for i in items if i["kind"] == "decision"],
         "events": sorted((i for i in items if i["kind"] == "event"), key=lambda e: e["due"] or ""),
         "missed": missed,
+        "review": db.get_items(chat_id, review="proposed"),  # AI suggestions awaiting approval
         "overview": insights.overview(chat, items, db.senders(chat_id), t),
         "progress": analyzer.progress(chat_id),
     }
@@ -237,6 +238,7 @@ class ItemPatch(BaseModel):
     due: str | None = None
     unit: str | None = None
     status: str | None = None
+    review: str | None = None  # approved | rejected
 
 
 @app.patch("/api/items/{item_id}")
@@ -250,6 +252,10 @@ def patch_item(item_id: int, body: ItemPatch):
             del fields[required]
     if fields.get("status") not in (None, "open", "done", "answered"):
         raise HTTPException(400, "bad status")
+    if fields.get("review") not in (None, "approved", "rejected"):
+        raise HTTPException(400, "bad review")
+    if fields.get("review") is None:
+        fields.pop("review", None)
     db.update_item(item_id, user=True, **fields)
     return db.get_item(item_id)
 

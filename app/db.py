@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS items (
     source_idx   INTEGER,
     resolved_idx INTEGER,
     user_edited  INTEGER NOT NULL DEFAULT 0,
+    review       TEXT NOT NULL DEFAULT 'approved',  -- proposed | approved | rejected
     created_at   TEXT NOT NULL,
     updated_at   TEXT NOT NULL
 );
@@ -63,6 +64,9 @@ def conn() -> sqlite3.Connection:
         _conn.row_factory = sqlite3.Row
         _conn.execute("PRAGMA foreign_keys = ON")
         _conn.executescript(SCHEMA)
+        if "review" not in {r["name"] for r in _conn.execute("PRAGMA table_info(items)")}:
+            _conn.execute("ALTER TABLE items ADD COLUMN review TEXT NOT NULL DEFAULT 'approved'")
+            _conn.commit()
     return _conn
 
 
@@ -168,12 +172,14 @@ def senders(chat_id: int) -> list[str]:
 
 # ---- items -----------------------------------------------------------------
 
-ITEM_FIELDS = ("title", "owner", "due", "time", "place", "unit", "status", "source_idx", "resolved_idx")
+ITEM_FIELDS = ("title", "owner", "due", "time", "place", "unit", "status", "source_idx", "resolved_idx", "review")
 
 
 def add_item(chat_id: int, kind: str, **fields) -> int:
+    """Manual items are approved at once; the analyzer passes review="proposed"."""
     data = {k: fields.get(k) for k in ITEM_FIELDS}
     data["status"] = data["status"] or "open"
+    data["review"] = data["review"] or "approved"
     now = _now()
     with _lock, conn() as c:
         cur = c.execute(
@@ -206,7 +212,11 @@ def get_item(item_id: int) -> dict | None:
     return rows[0] if rows else None
 
 
-def get_items(chat_id: int, kind: str | None = None) -> list[dict]:
+def get_items(chat_id: int, kind: str | None = None, review: str | None = "approved") -> list[dict]:
+    """Approved items only by default; review=None returns every item, rejected ones included."""
+    sql, args = "SELECT * FROM items WHERE chat_id = ?", [chat_id]
     if kind:
-        return _rows("SELECT * FROM items WHERE chat_id = ? AND kind = ? ORDER BY id", (chat_id, kind))
-    return _rows("SELECT * FROM items WHERE chat_id = ? ORDER BY id", (chat_id,))
+        sql += " AND kind = ?"; args.append(kind)
+    if review:
+        sql += " AND review = ?"; args.append(review)
+    return _rows(sql + " ORDER BY id", args)

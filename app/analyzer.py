@@ -167,7 +167,7 @@ def valid_date(s: str, around: date) -> str | None:
 
 
 def board_state(chat_id: int) -> str:
-    items = db.get_items(chat_id)
+    items = [i for i in db.get_items(chat_id, review=None) if i["review"] != "rejected"]
     tasks = [i for i in items if i["kind"] == "task" and i["status"] == "open"]
     questions = [i for i in items if i["kind"] == "question" and i["status"] == "open"]
     events = [i for i in items if i["kind"] == "event"]
@@ -251,7 +251,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
            around: date) -> None:
     valid_src = {m["idx"] for m in window}
     found = PROGRESS.setdefault(chat_id, {}).setdefault("found", [])
-    items = db.get_items(chat_id)
+    items = db.get_items(chat_id, review=None)
     by_id = {i["id"]: i for i in items}
 
     def src(x):
@@ -279,7 +279,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
             db.update_item(t["id"], **changes)
             note("update", t["title"])
 
-    tasks = db.get_items(chat_id, "task")  # done ones too: a finished task must not come back
+    tasks = db.get_items(chat_id, "task", review=None)  # done ones too: a finished task must not come back
     for t in r.get("new_tasks", []):
         title = (t.get("title") or "").strip()
         if not title:
@@ -294,7 +294,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
                     db.update_item(dup["id"], **fill)
             continue
         done = t.get("status") == "done"
-        new_id = db.add_item(chat_id, "task", title=title, owner=owner, due=due,
+        new_id = db.add_item(chat_id, "task", review="proposed", title=title, owner=owner, due=due,
                              unit=match_unit(t.get("unit", ""), units), source_idx=src(t),
                              status="done" if done else "open")
         tasks.append(db.get_item(new_id))
@@ -307,22 +307,22 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
                 and (q["source_idx"] is None or src(a) > q["source_idx"])):
             db.update_item(q["id"], status="answered", resolved_idx=src(a))
 
-    questions = db.get_items(chat_id, "question")
+    questions = db.get_items(chat_id, "question", review=None)
     for q in r.get("new_questions", []):
         text = (q.get("text") or "").strip()
         if not text or any(similar(o["title"], text) > 0.7 for o in questions):
             continue
-        new_id = db.add_item(chat_id, "question", title=text,
+        new_id = db.add_item(chat_id, "question", review="proposed", title=text,
                              owner=match_member(q.get("asked_by", ""), members), source_idx=src(q))
         questions.append(db.get_item(new_id))
         note("question", text)
 
-    decisions = db.get_items(chat_id, "decision")
+    decisions = db.get_items(chat_id, "decision", review=None)
     for d in r.get("decisions", []):
         text = (d.get("text") or "").strip()
         if not text or any(similar(o["title"], text) > 0.7 for o in decisions):
             continue
-        new_id = db.add_item(chat_id, "decision", title=text, source_idx=src(d))
+        new_id = db.add_item(chat_id, "decision", review="proposed", title=text, source_idx=src(d))
         decisions.append(db.get_item(new_id))
         note("decision", text)
 
@@ -338,7 +338,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
             db.update_item(e["id"], **changes)
             note("update", e["title"])
 
-    events = db.get_items(chat_id, "event")
+    events = db.get_items(chat_id, "event", review=None)
     for ev in r.get("new_events", []):
         title = (ev.get("title") or "").strip()
         when = valid_date(ev.get("date", ""), around)
@@ -349,7 +349,7 @@ def _apply(chat_id: int, r: dict, window: list[dict], members: list[str], units:
             if not dup["user_edited"] and dup["due"] != when:
                 db.update_item(dup["id"], due=when, time=(ev.get("time") or "").strip() or dup["time"])
             continue
-        new_id = db.add_item(chat_id, "event", title=title, due=when,
+        new_id = db.add_item(chat_id, "event", review="proposed", title=title, due=when,
                              time=(ev.get("time") or "").strip() or None,
                              place=(ev.get("place") or "").strip() or None, source_idx=src(ev))
         events.append(db.get_item(new_id))

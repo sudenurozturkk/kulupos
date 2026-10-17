@@ -51,7 +51,7 @@ const I18N = {
     health_ok: "Yerel · Gemma 4 hazır",
     health_nomodel: "Model yok: ollama pull",
     health_down: "Ollama kapalı",
-    tab_board: "Pano", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", approve: "Onayla", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -137,7 +137,7 @@ const I18N = {
     health_ok: "Local · Gemma 4 ready",
     health_nomodel: "Model missing: ollama pull",
     health_down: "Ollama is not running",
-    tab_board: "Board", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", approve: "Approve", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -379,6 +379,7 @@ function shell(view) {
   <nav class="tabs">
     <a href="#/c/${c.id}/overview" class="${view === "overview" ? "active" : ""}">📊 ${t("tab_overview")}</a>
     <a href="#/c/${c.id}/board" class="${view === "board" ? "active" : ""}">📌 ${t("tab_board")}${missedCount ? `<span class="count">${missedCount}</span>` : ""}</a>
+    <a href="#/c/${c.id}/review" class="${view === "review" ? "active" : ""}">🔎 ${t("tab_review")}${b.review.length ? `<span class="count">${b.review.length}</span>` : ""}</a>
     <a href="#/c/${c.id}/plan" class="${view === "plan" ? "active" : ""}">🧭 ${t("tab_plan")}<span class="new">AI</span></a>
     <a href="#/c/${c.id}/summary" class="${view === "summary" ? "active" : ""}">🗞️ ${t("tab_summary")}</a>
     <a href="#/c/${c.id}/ask" class="${view === "ask" ? "active" : ""}">💬 ${t("tab_ask")}</a>
@@ -508,7 +509,7 @@ async function reloadBoard() {
   await loadBoard(chatId);
   $("#progress-slot").innerHTML = progressHtml(S.board.progress);
   bindShell();
-  if (view === "board" || view === "overview") VIEWS[view]();
+  if (view === "board" || view === "overview" || view === "review") VIEWS[view]();
 }
 
 // ---------------------------------------------------------------- modals
@@ -581,6 +582,25 @@ async function showSource(idx) {
 }
 
 // ---------------------------------------------------------------- summary view
+function renderReviewView() {
+  const b = S.board;
+  const row = i => `<li class="review-row" data-id="${i.id}">
+    <span class="grow"><b>${t("k_" + i.kind)}</b> · ${esc(i.title)}
+      <small>${i.owner ? esc(firstName(i.owner)) : ""}${i.due ? " · " + fmtDate(i.due) : ""}${i.unit ? " · " + esc(i.unit) : ""}</small></span>
+    ${i.source_idx != null ? `<button class="src" data-src="${i.source_idx}" title="${t("source")}">💬</button>` : ""}
+    <button class="small" data-edit="${i.id}">${t("edit")}</button>
+    <button class="small primary" data-ok="${i.id}">${t("approve")}</button>
+    <button class="small ghost danger" data-no="${i.id}">${t("reject")}</button></li>`;
+  $("#view").innerHTML = `<div class="narrow"><p class="muted">${t("review_intro")}</p>
+    ${b.review.length ? `<ul class="list">${b.review.map(row).join("")}</ul>` : `<p class="muted">${t("review_empty")}</p>`}</div>`;
+  const view = $("#view");
+  const decide = (id, review) => async () => { await patch(`/api/items/${id}`, { review }); await render(); };
+  view.querySelectorAll("[data-ok]").forEach(el => (el.onclick = decide(el.dataset.ok, "approved")));
+  view.querySelectorAll("[data-no]").forEach(el => (el.onclick = decide(el.dataset.no, "rejected")));
+  view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(b.review.find(x => x.id === Number(el.dataset.edit)))));
+  view.querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
+}
+
 function renderSummaryView() {
   const id = S.board.chat.id;
   const cached = S.summary && S.summary.chatId === id ? S.summary : null;
@@ -785,7 +805,7 @@ function bindPlan() {
   };
 }
 
-const VIEWS = { overview: renderOverview, board: renderBoardView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
+const VIEWS = { overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
 
 // ---------------------------------------------------------------- render & polling
 function startPolling(chatId) {

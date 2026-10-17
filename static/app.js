@@ -40,7 +40,7 @@ const I18N = {
     drop: "WhatsApp dışa aktarımını buraya bırakın",
     drop_hint: ".txt ya da .zip · tıklayıp dosya da seçebilirsiniz",
     units_label: "Kulübünüzün birimleri (virgülle ayırın)",
-    units_default: "Yönetim, Etkinlik, Sosyal Medya, Sponsorluk, Teknik",
+    units_default: "Yönetim, Etkinlik, İletişim, Sponsorluk",
     name_label: "Grup adı (isteğe bağlı)",
     try_demo: "Demo sohbetle dene",
     how_export: "WhatsApp'tan nasıl dışa aktarılır?",
@@ -51,7 +51,7 @@ const I18N = {
     health_ok: "Yerel · Gemma 4 hazır",
     health_nomodel: "Model yok: ollama pull",
     health_down: "Ollama kapalı",
-    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
+    tab_board: "Pano", tab_review: "AI incelemesi", review_intro: "Gemma bunları öneriyor. Onaylamadıkların panoya girmez.", review_empty: "İncelenecek öneri yok.", pv_title: "İçe aktarma ön izlemesi", pv_msgs: "mesaj", pv_senders: "gönderen", pv_skipped: n => `${n} satır ayrıştırılamadı ve atlanacak`, pv_dup: n => `Bu dosya daha önce içe aktarıldı (“${n}”). Yine de eklemek istiyor musun?`, pv_go: "İçe aktar", changes_title: "Değişiklik önerileri", f_status_l: "durum", f_owner_l: "sorumlu", f_due_l: "tarih", f_time_l: "saat", f_place_l: "yer", units_btn: "Komiteler", units_add: "Yeni komite adı", units_add_btn: "Ekle", units_note: "Silinen komitenin görevleri “Komitesiz” sütununa düşer.", approve: "Onayla", no_source: "kaynak bulunamadı", date_unclear: "tarih belirsiz", reject: "Reddet", edit: "Düzenle", k_task: "Görev", k_question: "Soru", k_decision: "Karar", k_event: "Etkinlik", tab_summary: "Haftalık özet", tab_ask: "Sohbete sor",
     analyzing: "Gemma sohbeti okuyor…", queued: "Sırada bekliyor…", part: "parça",
     analysis_error: "Analiz durdu",
     retry: "Tekrar dene",
@@ -126,7 +126,7 @@ const I18N = {
     drop: "Drop a WhatsApp export here",
     drop_hint: ".txt or .zip · or click to choose a file",
     units_label: "Your club's teams (comma separated)",
-    units_default: "Board, Events, Social Media, Sponsorship, Tech",
+    units_default: "Board, Events, Communications, Sponsorship",
     name_label: "Group name (optional)",
     try_demo: "Try a demo chat",
     how_export: "How do I export from WhatsApp?",
@@ -137,7 +137,7 @@ const I18N = {
     health_ok: "Local · Gemma 4 ready",
     health_nomodel: "Model missing: ollama pull",
     health_down: "Ollama is not running",
-    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
+    tab_board: "Board", tab_review: "AI review", review_intro: "Gemma suggests these. Anything you do not approve stays off the board.", review_empty: "Nothing to review.", pv_title: "Import preview", pv_msgs: "messages", pv_senders: "senders", pv_skipped: n => `${n} lines could not be parsed and will be skipped`, pv_dup: n => `This file was already imported (“${n}”). Add it anyway?`, pv_go: "Import", changes_title: "Change proposals", f_status_l: "status", f_owner_l: "owner", f_due_l: "date", f_time_l: "time", f_place_l: "place", units_btn: "Teams", units_add: "New team name", units_add_btn: "Add", units_note: "Tasks of a deleted team move to the “no team” column.", approve: "Approve", no_source: "source not found", date_unclear: "date unclear", reject: "Reject", edit: "Edit", k_task: "Task", k_question: "Question", k_decision: "Decision", k_event: "Event", tab_summary: "Weekly recap", tab_ask: "Ask the chat",
     analyzing: "Gemma is reading the chat…", queued: "Waiting in line…", part: "part",
     analysis_error: "Analysis stopped",
     retry: "Retry",
@@ -385,6 +385,7 @@ function shell(view) {
     <span class="meta">💬 ${c.message_count} ${t("messages")} · 📅 ${range} · 👥 ${b.members.length}</span></div>
     <div class="actions">
       <a class="btn ghost small" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">⤓ Markdown</a>
+      <button class="ghost small" id="btn-units">👥 ${t("units_btn")}</button>
       <button class="ghost small" id="btn-add-export">⤓ ${t("add_export")}</button>
       <button class="ghost small" id="btn-reanalyze">↻ ${t("reanalyze")}</button>
       <button class="ghost small danger" id="btn-delete">${t("delete_chat")}</button>
@@ -437,8 +438,33 @@ function bindShell() {
     await api(`/api/chats/${id}`, { method: "DELETE" });
     location.hash = "#/";
   };
+  $("#btn-units").onclick = manageUnits;
   const retry = $("#btn-retry");
   if (retry) retry.onclick = async () => { await post(`/api/chats/${id}/analyze`); startPolling(id); };
+}
+
+async function manageUnits() {
+  const c = S.board.chat;
+  const save = async body => {
+    try { await patch(`/api/chats/${c.id}`, body); await render(); manageUnits(); }
+    catch (e) { toast(e.message); }
+  };
+  modal(`<h3>👥 ${t("units_btn")}</h3>
+    <ul class="list">${c.units.map((u, n) => `<li><input type="text" value="${esc(u)}" data-unit="${n}" aria-label="${esc(u)}">
+      <button class="small ghost danger" data-del="${n}" aria-label="${t("del")}">✕</button></li>`).join("")}</ul>
+    <div class="row-actions"><input type="text" id="u-new" placeholder="${t("units_add")}">
+      <button class="small primary" id="u-add">${t("units_add_btn")}</button></div>
+    <p class="muted">${t("units_note")}</p>
+    <div class="modal-actions"><button data-close>${t("close")}</button></div>`, m => {
+    m.querySelectorAll("[data-unit]").forEach(el => (el.onchange = () => {
+      const old = c.units[Number(el.dataset.unit)], next = el.value.trim();
+      if (next && next !== old) save({ renames: { [old]: next } }); else el.value = old;
+    }));
+    m.querySelectorAll("[data-del]").forEach(el => (el.onclick = () => save({ units: c.units.filter((_, n) => n !== Number(el.dataset.del)) })));
+    const add = () => { const v = m.querySelector("#u-new").value.trim(); if (v) save({ units: [...c.units, v] }); };
+    m.querySelector("#u-add").onclick = add;
+    m.querySelector("#u-new").onkeydown = e => e.key === "Enter" && add();
+  });
 }
 
 // ---------------------------------------------------------------- board view

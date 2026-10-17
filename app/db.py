@@ -165,6 +165,21 @@ def update_chat(chat_id: int, **fields) -> None:
         c.execute(f"UPDATE chats SET {cols} WHERE id = ?", (*fields.values(), chat_id))
 
 
+def set_units(chat_id: int, units: list[str], renames: dict[str, str] | None = None) -> None:
+    """Change a chat's committees in one transaction.
+
+    Renames carry their items along; items of a committee that is gone fall back to "no unit".
+    """
+    renames = renames or {}
+    with _lock, conn() as c:
+        current = json.loads(c.execute("SELECT units FROM chats WHERE id = ?", (chat_id,)).fetchone()[0])
+        for old, new in renames.items():
+            c.execute("UPDATE items SET unit = ? WHERE chat_id = ? AND unit = ?", (new, chat_id, old))
+        for gone in {renames.get(u, u) for u in current} - set(units):
+            c.execute("UPDATE items SET unit = NULL WHERE chat_id = ? AND unit = ?", (chat_id, gone))
+        c.execute("UPDATE chats SET units = ? WHERE id = ?", (json.dumps(units, ensure_ascii=False), chat_id))
+
+
 def delete_chat(chat_id: int) -> None:
     with _lock, conn() as c:
         c.execute("DELETE FROM chats WHERE id = ?", (chat_id,))

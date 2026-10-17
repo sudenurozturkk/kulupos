@@ -144,15 +144,26 @@ async def reimport(chat_id: int, request: Request):
 
 class ChatPatch(BaseModel):
     name: str | None = None
-    units: list[str] | None = None
+    units: list[str] | None = None          # the full committee list after the change
+    renames: dict[str, str] | None = None   # {old name: new name}, applied before `units`
 
 
 @app.patch("/api/chats/{chat_id}")
 def patch_chat(chat_id: int, body: ChatPatch):
-    _chat_or_404(chat_id)
-    fields = body.model_dump(exclude_none=True)
-    if fields:
-        db.update_chat(chat_id, **fields)
+    chat = _chat_or_404(chat_id)
+    if body.name is not None:
+        if not body.name.strip():
+            raise HTTPException(400, "Ad boş olamaz / name cannot be empty")
+        db.update_chat(chat_id, name=body.name.strip())
+    if body.units is not None or body.renames:
+        renames = {o: n.strip() for o, n in (body.renames or {}).items()}
+        if any(o not in chat["units"] or not n for o, n in renames.items()):
+            raise HTTPException(400, "Komite bulunamadı veya ad boş / unknown committee or empty name")
+        after_renames = [renames.get(u, u) for u in chat["units"]]
+        final = [u.strip() for u in (body.units if body.units is not None else after_renames)]
+        if any(not u for u in final) or len({u.casefold() for u in final}) != len(final):
+            raise HTTPException(400, "Komite adları boş veya tekrar olamaz / names must be unique and non-empty")
+        db.set_units(chat_id, final, renames)
     return db.get_chat(chat_id)
 
 

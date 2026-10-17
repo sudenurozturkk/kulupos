@@ -330,6 +330,7 @@ const MEET_I18N = {
 const HUB_I18N = {
   tr: {
     nav_main: "Ana menü", nav_panel: "Panel", nav_list: "Etkinlik listesi", nav_tasks: "Görevler", tab_units: "Komiteler", nav_data: "İçe/Dışa aktar",
+    sec_work: "Çalışma", sec_people: "İnsanlar", sec_ai: "AI", sec_data: "Veri", more: "Diğer işlemler", menu: "Menü",
     un_intro: "Komiteler, üye listeleri ve onlara bağlı işler. Sayılar yalnızca girilmiş görev ve etkinlik kayıtlarından gelir.", un_members: "Üyeler (serbest metin)",
     un_loose: n => `${n} görev komitesiz.`,
     da_intro: "Sohbeti içeri al, verini dışarı ver. Veri bilgisayardan çıkmaz.", da_import: "İçe aktar", da_new: "Başka sohbet / yeni kulüp",
@@ -352,6 +353,7 @@ const HUB_I18N = {
   },
   en: {
     nav_main: "Main menu", nav_panel: "Dashboard", nav_list: "Event list", nav_tasks: "Tasks", tab_units: "Committees", nav_data: "Import / Export",
+    sec_work: "Work", sec_people: "People", sec_ai: "AI", sec_data: "Data", more: "More actions", menu: "Menu",
     un_intro: "Committees, their member lists and the work tied to them. Counts come only from entered task and event records.", un_members: "Members (free text)",
     un_loose: n => `${n} task(s) without a committee.`,
     da_intro: "Bring a chat in, take your data out. The data never leaves this computer.", da_import: "Import", da_new: "Another chat / new club",
@@ -459,10 +461,10 @@ async function refreshChats() {
   try { S.chats = await api("/api/chats"); } catch { S.chats = []; }
   const { chatId } = route();
   const box = $("#chat-switch");
-  if (!S.chats.length || !chatId) { box.innerHTML = ""; return; }
-  box.innerHTML = `<select id="chat-select">${S.chats.map(c =>
+  if (!S.chats.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<select id="chat-select" aria-label="${esc(t("recent"))}">${S.chats.map(c =>
     `<option value="${c.id}" ${c.id === chatId ? "selected" : ""}>${esc(c.name)}${c.is_sample ? " · " + t("sample_tag") : ""}</option>`).join("")}
-    <option value="new">＋</option></select>`;
+    <option value="new">${t("da_new")}</option></select>`;
   $("#chat-select").onchange = e => {
     location.hash = e.target.value === "new" ? "#/" : `#/c/${e.target.value}/overview`;
   };
@@ -581,48 +583,73 @@ async function loadBoard(chatId) {
   return S.board;
 }
 
-// Seven menu groups. Old pages keep their routes and live under a group as sub-tabs.
-const NAV = [
-  { key: "nav_panel", icon: "📊", views: ["overview", "summary", "ask"], subs: [["overview", "tab_overview"], ["summary", "tab_summary"], ["ask", "tab_ask"]] },
-  { key: "tab_events", icon: "🎪", views: ["events", "event", "analysis", "plan"], subs: [["events", "nav_list"], ["analysis", "tab_analysis"], ["plan", "tab_plan"]] },
-  { key: "tab_meetings", icon: "🗓️", views: ["meetings", "meeting"], subs: [] },
-  { key: "nav_tasks", icon: "📌", views: ["board", "review"], subs: [["board", "tab_board"], ["review", "tab_review"]] },
-  { key: "tab_people", icon: "👤", views: ["people", "person"], subs: [] },
-  { key: "tab_units", icon: "👥", views: ["units"], subs: [] },
-  { key: "nav_data", icon: "⇅", views: ["data"], subs: [] },
+// Sidebar groups. Routes stay #/c/:id/<view>. Event list / analysis / plan stay as an in-page segment.
+const SIDE = [
+  { label: "sec_work", items: [["overview", "tab_overview"], ["board", "nav_tasks"], ["events", "tab_events"], ["meetings", "tab_meetings"]] },
+  { label: "sec_people", items: [["people", "tab_people"], ["units", "tab_units"]] },
+  { label: "sec_ai", items: [["review", "tab_review"], ["plan", "tab_plan"], ["summary", "tab_summary"], ["ask", "tab_ask"]] },
+  { label: "sec_data", items: [["data", "nav_data"]] },
 ];
+const TITLE = {
+  overview: "tab_overview", summary: "tab_summary", ask: "tab_ask",
+  events: "tab_events", event: "tab_events", analysis: "tab_analysis", plan: "tab_plan",
+  meetings: "tab_meetings", meeting: "tab_meetings", board: "nav_tasks", review: "tab_review",
+  people: "tab_people", person: "tab_people", units: "tab_units", data: "nav_data",
+};
 
-function navHtml(view, c, missedCount, reviewCount) {
-  const href = v => `#/c/${c.id}/${v}`;
-  const count = n => n ? `<span class="count">${n}</span>` : "";
-  const cur = NAV.find(g => g.views.includes(view)) || NAV[0];
-  const first = g => (g.subs[0] || [g.views[0]])[0];
-  const top = NAV.map(g => `<a href="${href(first(g))}" class="${g === cur ? "active" : ""}">${g.icon} ${t(g.key)}${g.key === "nav_tasks" ? count(reviewCount) : ""}</a>`).join("");
-  const sub = cur.subs.length > 1 ? `<nav class="tabs sub" aria-label="${esc(t(cur.key))}">${cur.subs.map(([v, k]) => {
-    const on = v === view || (v === "events" && view === "event");
-    const badge = v === "board" ? count(missedCount) : v === "review" ? count(reviewCount) : v === "plan" ? `<span class="new">AI</span>` : "";
-    return `<a href="${href(v)}" class="${on ? "active" : ""}">${t(k)}${badge}</a>`;
-  }).join("")}</nav>` : "";
-  return `<nav class="tabs" aria-label="${esc(t("nav_main"))}">${top}</nav>${sub}`;
+function renderSideNav() {
+  const nav = $("#side-nav");
+  if (!nav) return;
+  const { chatId, view } = route();
+  const id = chatId || (S.chats[0] && S.chats[0].id);
+  nav.setAttribute("aria-label", t("nav_main"));
+  if (!id) { nav.innerHTML = ""; return; }
+  const here = S.board && S.board.chat.id === id ? S.board : null;
+  const reviewN = here ? here.review.length + here.changes.length : 0;
+  const missedN = here ? Object.values(here.missed).reduce((n, l) => n + l.length, 0) : 0;
+  const on = v => v === view || (v === "events" && view === "event") || (v === "people" && view === "person") || (v === "meetings" && view === "meeting");
+  nav.innerHTML = SIDE.map(g => `<div class="side-label">${t(g.label)}</div>` + g.items.map(([v, key]) => {
+    const n = v === "review" ? reviewN : v === "board" ? missedN : 0;
+    return `<a href="#/c/${id}/${v}" class="${on(v) ? "active" : ""}"><span>${t(key)}</span>${n ? `<span class="side-count">${n}</span>` : ""}</a>`;
+  }).join("")).join("");
+}
+
+function closeSidebar() { $("#sidebar")?.classList.remove("open"); }
+
+function segmentHtml(view) {
+  if (!["events", "event", "analysis", "plan"].includes(view)) return "";
+  const id = S.board.chat.id;
+  const cur = view === "event" ? "events" : view;
+  return `<div class="segment" role="tablist">${[["events", "nav_list"], ["analysis", "tab_analysis"], ["plan", "tab_plan"]].map(([v, k]) =>
+    `<a href="#/c/${id}/${v}" class="${v === cur ? "on" : ""}" role="tab">${t(k)}</a>`).join("")}</div>`;
+}
+
+function pageActionsHtml() {
+  return `<div class="page-actions"><div class="more">
+    <button type="button" class="ghost icon-btn" id="btn-more" aria-haspopup="menu" aria-expanded="false" aria-label="${esc(t("more"))}">⋯</button>
+    <div class="more-menu" id="more-menu" role="menu" hidden>
+      <button type="button" role="menuitem" id="menu-export">${t("exp_btn")}</button>
+      <button type="button" role="menuitem" id="menu-reanalyze">${t("reanalyze")}</button>
+      <button type="button" role="menuitem" class="danger" id="menu-delete">${t("delete_chat")}</button>
+    </div></div></div>`;
 }
 
 function shell(view) {
   const b = S.board, c = b.chat;
-  const missedCount = Object.values(b.missed).reduce((n, l) => n + l.length, 0);
   const range = c.first_ts ? `${fmtDate(c.first_ts, false)} – ${fmtDate(c.last_ts, false)}` : "";
-  const sample = c.is_sample ? `<div class="sample-banner"><span><b>🧪 ${t("sample_tag")}</b> · ${t("sample_banner")}</span>
+  const sample = c.is_sample ? `<div class="sample-banner"><span><b>${t("sample_tag")}</b> · ${t("sample_banner")}</span>
     <button class="small danger" id="btn-clear-sample">${t("sample_clear")}</button></div>` : "";
   return `
   ${sample}
-  <div class="page-head">
-    <div class="club-ic">${esc(c.name.trim()[0] || "P")}</div>
-    <div><h2>${esc(c.name)}</h2>
-    <span class="meta">💬 ${c.message_count} ${t("messages")} · 📅 ${range} · 👥 ${b.members.length}</span></div>
-    <div class="actions">
-      <button class="ghost small" id="btn-help">❔ ${t("help_btn")}</button>
+  <header class="page-head">
+    <div class="page-title">
+      <p class="crumb"><a href="#/c/${c.id}/overview">${esc(c.name)}</a></p>
+      <h2>${esc(t(TITLE[view] || "tab_overview"))}</h2>
+      <p class="meta">${c.message_count} ${t("messages")}${range ? " · " + range : ""} · ${b.members.length}</p>
     </div>
-  </div>
-  ${navHtml(view, c, missedCount, b.review.length + b.changes.length)}
+    ${pageActionsHtml()}
+  </header>
+  ${segmentHtml(view)}
   <div id="progress-slot">${progressHtml(b.progress)}</div>
   <div id="view"></div>`;
 }
@@ -645,7 +672,8 @@ function progressHtml(p) {
 
 function bindShell() {
   const id = S.board.chat.id;
-  $("#btn-help").onclick = showWelcome;
+  const help = $("#btn-help");
+  if (help) { help.textContent = t("help_btn"); help.onclick = showWelcome; }
   const clr = $("#btn-clear-sample");
   if (clr) clr.onclick = async () => {
     if (!confirm(t("sample_confirm"))) return;
@@ -653,7 +681,28 @@ function bindShell() {
     S.seedTried = true;
     location.hash = "#/";
   };
-  document.querySelectorAll(".tabs a").forEach(a => a.addEventListener("click", () => { S.taskFilter = null; }));
+  document.querySelectorAll(".side-nav a, .segment a").forEach(a => a.addEventListener("click", () => { S.taskFilter = null; closeSidebar(); }));
+  const more = $("#btn-more"), menu = $("#more-menu");
+  if (more && menu) more.onclick = e => {
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+    more.setAttribute("aria-expanded", menu.hidden ? "false" : "true");
+  };
+  const exp = $("#menu-export");
+  if (exp) exp.onclick = () => { if (menu) menu.hidden = true; showExport(); };
+  const re = $("#menu-reanalyze");
+  if (re) re.onclick = async () => {
+    if (menu) menu.hidden = true;
+    await post(`/api/chats/${id}/analyze?reset=true`);
+    startPolling(id);
+    render();
+  };
+  const del = $("#menu-delete");
+  if (del) del.onclick = async () => {
+    if (!confirm(t("confirm_delete"))) return;
+    await api(`/api/chats/${id}`, { method: "DELETE" });
+    location.hash = "#/";
+  };
   const retry = $("#btn-retry");
   if (retry) retry.onclick = async () => { await post(`/api/chats/${id}/analyze`); startPolling(id); };
 }
@@ -960,6 +1009,7 @@ async function reloadBoard() {
   await loadBoard(chatId);
   $("#progress-slot").innerHTML = progressHtml(S.board.progress);
   bindShell();
+  renderSideNav();
   if (["board", "overview", "review", "events", "event", "people", "person", "units", "data"].includes(view)) VIEWS[view]();
 }
 
@@ -1673,11 +1723,13 @@ async function render() {
       if (r.created) { location.hash = `#/c/${r.chat_id}/overview`; return; }
     } catch { /* fall through to the normal home page */ }
   }
-  if (!chatId) return renderHome();
+  if (!chatId) { renderSideNav(); return renderHome(); }
   try { await loadBoard(chatId); }
   catch { location.hash = "#/"; return; }
   $("#app").innerHTML = `<section class="page">${shell(view)}</section>`;
   bindShell();
+  renderSideNav();
+  closeSidebar();
   (VIEWS[view] || renderOverview)();
   let welcomed = true;
   try { welcomed = !!localStorage.getItem("pano.welcomed"); } catch { /* private mode: show it */ welcomed = false; }
@@ -1863,6 +1915,21 @@ $("#lang").onclick = () => {
 };
 $("#lang").textContent = lang === "tr" ? "EN" : "TR";
 document.documentElement.lang = lang;
+$("#btn-help").textContent = t("help_btn");
+$("#btn-help").onclick = showWelcome;
+$("#nav-toggle").onclick = () => $("#sidebar").classList.toggle("open");
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  const menu = $("#more-menu");
+  if (menu && !menu.hidden) { menu.hidden = true; $("#btn-more")?.setAttribute("aria-expanded", "false"); return; }
+  closeSidebar();
+});
+document.addEventListener("click", e => {
+  const menu = $("#more-menu");
+  if (menu && !menu.hidden && !e.target.closest(".more")) { menu.hidden = true; $("#btn-more")?.setAttribute("aria-expanded", "false"); }
+  const side = $("#sidebar");
+  if (side && side.classList.contains("open") && !e.target.closest("#sidebar") && !e.target.closest("#nav-toggle")) side.classList.remove("open");
+});
 window.addEventListener("hashchange", render);
 refreshHealth();
 setInterval(refreshHealth, 15000);

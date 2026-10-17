@@ -4,22 +4,34 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pano · Club Board</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📌</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='4' fill='%234f46e5'/></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="#/">
-      <span class="logo">📌</span>
-      <span>Pano <small>· local club AI</small></span>
-    </a>
-    <div id="chat-switch"></div>
-    <div class="topbar-right">
-      <span id="health" class="badge"></span>
-      <button id="lang" class="ghost small" type="button"></button>
+  <div class="frame">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#/">
+        <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></span>
+        <span>Pano</span>
+      </a>
+      <div id="chat-switch"></div>
+      <nav id="side-nav" class="side-nav"></nav>
+      <div class="side-foot">
+        <span id="health" class="badge"></span>
+        <div class="side-foot-row">
+          <button id="lang" class="ghost small" type="button"></button>
+          <button id="btn-help" class="ghost small" type="button"></button>
+        </div>
+      </div>
+    </aside>
+    <div class="workspace">
+      <div class="mobile-bar">
+        <button type="button" class="ghost icon-btn" id="nav-toggle" aria-label="Menu"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+        <a class="brand" href="#/">Pano</a>
+      </div>
+      <main id="app"></main>
     </div>
-  </header>
-  <main id="app"></main>
+  </div>
   <div id="modal" class="modal" hidden></div>
   <div id="toast" class="toast" hidden></div>
   <script src="app.js"></script>

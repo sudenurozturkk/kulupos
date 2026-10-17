@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import re
+import sqlite3
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -134,10 +135,24 @@ def clear_sample():
     return {"removed": seed.clear_sample()}
 
 
+SEED_TIMEOUT = float(os.environ.get("PANO_SEED_TIMEOUT", "5"))
+
+
 @app.post("/api/demo/{lang}")
-def demo(lang: str):
+async def demo(lang: str):
+    """tr: the filled sample club, opened instantly (no model, no analysis). en: the raw demo chat, analysed in the background."""
     if lang not in DEMOS:
         raise HTTPException(404)
+    if lang == "tr":
+        try:
+            chat_id = await asyncio.wait_for(asyncio.to_thread(seed.ensure_sample, today()), SEED_TIMEOUT)
+        except asyncio.TimeoutError:
+            raise HTTPException(504, f"Demo {SEED_TIMEOUT:g} saniyede açılamadı; veritabanı meşgul olabilir. Başka bir Pano "
+                                     "penceresi/süreci açıksa kapatıp tekrar deneyin / the demo did not open in time; "
+                                     "the database may be busy, close any other Pano process and retry")
+        except sqlite3.Error as e:
+            raise HTTPException(503, f"Veritabanı hatası / database error: {type(e).__name__}")
+        return db.get_chat(chat_id)
     name, path, units = DEMOS[lang]
     for c in db.list_chats():  # reuse an already analysed demo: instant on stage
         if c["name"] == name and c["status"] in ("ready", "analyzing"):

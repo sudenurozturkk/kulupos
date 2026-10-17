@@ -82,3 +82,44 @@ def test_no_data_is_not_reported_as_zero(client):
     k = board(client, cid)["overview"]["kpi"]
     # the UI shows "-" when these totals are 0 instead of a real-looking zero
     assert k["total"] == 0 and k["dated"] == 0 and k["questions_total"] == 0
+
+
+# ---- "Demo kulübü aç" button: instant, no model, guarded ----------------------
+
+def test_demo_button_opens_sample_instantly_without_the_model(client, monkeypatch):
+    import time
+    from app import llm
+
+    async def boom(*a, **k):
+        raise AssertionError("the demo must not call the model")
+    monkeypatch.setattr(llm, "chat", boom)
+    monkeypatch.setattr(llm, "chat_json", boom)
+    own = client.post("/api/chats", content=b"17.10.2026 19:33 - Ayse: selam\n").json()["id"]  # not an empty database
+    t0 = time.perf_counter()
+    r = client.post("/api/demo/tr").json()
+    assert time.perf_counter() - t0 < 5
+    assert r["status"] == "ready" and r["is_sample"] == 1 and r["id"] != own
+    assert client.post("/api/demo/tr").json()["id"] == r["id"]  # second click reuses it
+    assert len(client.get("/api/chats").json()) == 2
+    client.delete("/api/sample")  # cleared, then clicked again on purpose: it comes back
+    assert client.post("/api/demo/tr").json()["is_sample"] == 1
+
+
+def test_demo_button_times_out_with_a_message_instead_of_hanging(client, monkeypatch):
+    import time
+    from app import main, seed
+    monkeypatch.setattr(main, "SEED_TIMEOUT", 0.2)
+    monkeypatch.setattr(seed, "ensure_sample", lambda today: time.sleep(1))
+    r = client.post("/api/demo/tr")
+    assert r.status_code == 504 and "saniyede" in r.json()["detail"]
+
+
+def test_demo_button_database_error_is_a_readable_message(client, monkeypatch):
+    import sqlite3
+    from app import seed
+
+    def locked(today):
+        raise sqlite3.OperationalError("database is locked")
+    monkeypatch.setattr(seed, "ensure_sample", locked)
+    r = client.post("/api/demo/tr")
+    assert r.status_code == 503 and "OperationalError" in r.json()["detail"]

@@ -6,7 +6,7 @@ const I18N = {
     eyebrow: "🔒 Gemma 4 · tamamen yerel · açık kaynak",
     hero_h1: ["Kulübünüzün WhatsApp grubu,", "tek bakışta düzenli bir pano."],
     hero_lead: "Görevler mesajların arasında kayboluyor, etkinlik tarihi iki kez değişiyor, \"sponsor dosyası kimde?\" sorusu iki hafta cevapsız kalıyor. Pano sohbeti bu bilgisayarda okur ve kulübe neyin nerede olduğunu geri verir.",
-    cta_demo: "✨ Demo kulübü aç", cta_upload: "Kendi grubumu yükle",
+    cta_demo: "✨ Demo kulübü aç", demo_timeout: "Sunucu yanıt vermedi. Eski bir Pano süreci açık olabilir; kapatıp `python -m app` ile yeniden başlatın.", cta_upload: "Kendi grubumu yükle",
     trust: ["📴 İnternetsiz çalışır", "💸 API anahtarı yok", "🧾 Her kart kaynak mesajına bağlı"],
     mock_chat: [["Elif", "Salon dilekçesini kim verir?"], ["Deniz", "Ben perşembe veririm"], ["Mert", "Ahmet Bey 24'ünde yok, 31 Ekim olur diyor"], ["Elif", "Tamam karar: söyleşi 31 Ekim 14:00", true]],
     mock_cards: [["Salon dilekçesi", "Deniz", "Per 8 Eki"], ["Söyleşi → 31 Eki", "Etkinlik", "taşındı"], ["Projeksiyon dilekçesi", "sahibi yok", "⚠️"]],
@@ -135,7 +135,7 @@ const I18N = {
     eyebrow: "🔒 Gemma 4 · fully local · open source",
     hero_h1: ["Your club's WhatsApp group,", "as one clear board."],
     hero_lead: "Tasks get lost between messages, the event date changes twice, and \"who has the sponsor file?\" goes unanswered for two weeks. Pano reads the chat on this computer and gives your club back what's where.",
-    cta_demo: "✨ Open the demo club", cta_upload: "Upload my group",
+    cta_demo: "✨ Open the demo club", demo_timeout: "The server did not respond. An old Pano process may still be running; close it and restart with `python -m app`.", cta_upload: "Upload my group",
     trust: ["📴 Works offline", "💸 No API keys", "🧾 Every card links to its source message"],
     mock_chat: [["Maya", "Who can book the lab?"], ["Leo", "I'll book it today"], ["Noah", "They moved our booth to Oct 30"], ["Maya", "Decision: booth on Friday Oct 30", true]],
     mock_cards: [["Book the lab", "Leo", "Thu 8 Oct"], ["Fair → Oct 30", "Events", "moved"], ["Print the banner", "no owner", "⚠️"]],
@@ -423,8 +423,12 @@ function renderHome() {
   file.onchange = () => file.files[0] && upload(file.files[0]);
   app.querySelectorAll("[data-demo]").forEach(b => (b.onclick = async () => {
     b.disabled = true;
-    try { openChat(await post(`/api/demo/${b.dataset.demo}`)); }
-    catch (e) { toast(e.message); b.disabled = false; }
+    try {
+      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);  // the server answers within 5 s or with an error
+      const res = await fetch(`/api/demo/${b.dataset.demo}`, { method: "POST", signal: ctl.signal }).finally(() => clearTimeout(timer));
+      if (!res.ok) { let d = res.statusText; try { d = (await res.json()).detail || d; } catch {} throw new Error(d); }
+      openChat(await res.json());
+    } catch (e) { toast(e.name === "AbortError" ? t("demo_timeout") : e.message, 6000); b.disabled = false; }
   }));
 }
 

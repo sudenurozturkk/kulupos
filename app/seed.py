@@ -18,9 +18,10 @@ def _squash(s: str) -> str:
     return " ".join(norm(s).split())
 
 
-def seed_sample(today) -> int | None:
-    """Create the sample club unless the database already has chats or the user cleared it before."""
-    if db.list_chats() or db.get_meta("sample_dismissed"):
+def seed_sample(today, force: bool = False) -> int | None:
+    """Create the sample club unless the database already has chats or the user cleared it before.
+    force=True (the user clicked "demo") skips both checks."""
+    if not force and (db.list_chats() or db.get_meta("sample_dismissed")):
         return None
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
     c = spec["chat"]
@@ -59,6 +60,12 @@ def seed_sample(today) -> int | None:
     _seed_insight(chat_id)
     db.update_chat(chat_id, status="ready", analyzed_upto=len(messages) - 1)
     return chat_id
+
+
+def ensure_sample(today) -> int:
+    """The sample club for an explicit "open the demo" click: reuse the existing one, else create it. No model."""
+    rows = db._rows("SELECT id FROM chats WHERE is_sample = 1 ORDER BY id LIMIT 1")
+    return rows[0]["id"] if rows else seed_sample(today, force=True)
 
 
 def _seed_insight(chat_id: int) -> None:

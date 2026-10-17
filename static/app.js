@@ -1427,20 +1427,67 @@ function renderOverview() {
     ? `<ul class="list">${ai.map(i => `<li><span class="grow"><a href="#/c/${id}/review">${esc(i.title)}</a>
         <small>${esc(t("k_" + i.kind))}</small></span><span class="chip ai">${icon("spark")} AI</span></li>`).join("")}</ul>`
     : `<div class="empty-quiet">${icon("spark")}<p>${t("ov_empty_ai")}</p><a class="btn" href="#/c/${id}/review">${t("ov_see_review")}</a></div>`;
+  const TR = lang === "tr";
+  const open = b.tasks.filter(x => x.status !== "done"), done = b.tasks.filter(x => x.status === "done");
+  const pct = b.tasks.length ? Math.round(done.length / b.tasks.length * 100) : 0;
+  const L = TR ? { hi: "Merhaba 👋", sum: (o, e, l) => `${o} açık görev · ${e} yaklaşan etkinlik · ${l} geciken iş`, prog: "Görev ilerlemesi", of: "tamamlandı",
+    addT: "Görev ekle", addE: "Etkinlik ekle", prio: "Öncelikli işler", prioSub: "Önce bunlara bak", all: "Tüm görevler →", ev: "Yaklaşan etkinlikler", allE: "Tüm etkinlikler →",
+    com: "Komiteler", comSub: "açık / biten görev", ai: "Yapay zekâ önerileri", aiSub: "Onayını bekliyor", review: "İncele →", view: "Görüntüle →" }
+    : { hi: "Hello 👋", sum: (o, e, l) => `${o} open tasks · ${e} upcoming events · ${l} overdue`, prog: "Task progress", of: "done",
+    addT: "Add task", addE: "Add event", prio: "Priorities", prioSub: "Look at these first", all: "All tasks →", ev: "Upcoming events", allE: "All events →",
+    com: "Committees", comSub: "open / done tasks", ai: "AI suggestions", aiSub: "Waiting for your approval", review: "Review →", view: "View →" };
+  const tones = { overdue: ["bad", "alert"], orphans: ["warn", "person"], conflicts: ["info", "calendar"], decisions: ["accent", "check"] };
+  const rows = [];
+  const seen = new Set();
+  const addRow = (x, pill, tone, extra) => { if (x.kind && x.kind !== "task" || seen.has(x.id)) return; seen.add(x.id); rows.push({ x, pill, tone, extra }); };
+  fo.overdue.forEach(x => addRow(x, t("n_late"), "bad"));
+  fo.orphans.forEach(x => addRow(x, t("n_orphan"), "warn"));
+  fo.conflicts.filter(x => x.kind === "task").forEach(x => addRow(x, t("tag_conflict"), "info"));
+  const prioRows = rows.slice(0, 7).map(({ x, pill, tone }) => `<li class="prio-row">
+      <span class="pill ${tone}">${esc(pill)}</span>
+      <a class="prio-title" href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a>
+      <span class="prio-meta">${x.owner ? avatar(x.owner) + esc(firstName(x.owner)) : `<i class="muted">${t("no_owner")}</i>`}</span>
+      <span class="prio-due ${tone === "bad" ? "late" : ""}">${x.due ? fmtDate(x.due) : t("no_due")}</span></li>`).join("");
+  const decRows = fo.decisions.slice(0, 3).map(x => `<li class="prio-row"><span class="pill accent">${esc(t("tag_open"))}</span><span class="prio-title">${esc(x.title)}</span></li>`).join("");
+  const prioBody = allClear
+    ? `<div class="empty-quiet">${icon("check")}<p>${t("ov_clear")}</p><button type="button" class="primary" id="ov-add">${t("add_task")}</button></div>`
+    : `<ul class="prio-list">${prioRows}${decRows}</ul><a class="more-link" href="#/c/${id}/board">${L.all}</a>`;
+  const MON = TR ? ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"] : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const evHtml = o.events.length ? `<ul class="ev-list">${o.events.map(e => { const d = new Date(e.date + "T00:00"); return `<li>
+      <a class="ev-row" href="#/c/${id}/event/${e.id}"><span class="ev-date"><b>${d.getDate()}</b>${MON[d.getMonth()]}</span>
+      <span class="grow"><b>${esc(e.title)}</b><small>${e.place ? esc(e.place) : ""}${e.time ? " · " + esc(e.time) : ""}</small></span>
+      <span class="chip ${e.days <= 7 ? "soon" : ""}">${t("k_days")(e.days)}</span></a></li>`; }).join("")}</ul><a class="more-link" href="#/c/${id}/events">${L.allE}</a>`
+    : `<div class="empty-quiet">${icon("calendar")}<p>${t("none_yet")}</p><a class="btn" href="#/c/${id}/events">${t("ov_see_events")}</a></div>`;
+  const units = b.chat.units.map(u => ({ u, o: open.filter(x => x.unit === u).length, d: done.filter(x => x.unit === u).length })).filter(r => r.o + r.d);
+  const comHtml = units.length ? `<ul class="com-list">${units.map(r => `<li><span class="com-name">${esc(r.u)}</span>
+      <span class="com-bar"><i style="width:${Math.round(r.d / (r.o + r.d) * 100)}%"></i></span><span class="com-n">${r.o} / ${r.d}</span></li>`).join("")}</ul>` : "";
+  const ai2 = (b.review || []).slice(0, 3);
+  const aiHtml2 = ai2.length ? `<ul class="list">${ai2.map(i => `<li><span class="grow"><a href="#/c/${id}/review">${esc(i.title)}</a><small>${esc(t("k_" + i.kind))}</small></span><span class="chip ai">${icon("spark")} AI</span></li>`).join("")}</ul><a class="more-link" href="#/c/${id}/review">${L.review}</a>`
+    : `<p class="muted small" style="margin:0">${t("ov_empty_ai")}</p>`;
+  const totalHint = { overdue: TR ? "bugün öncelik" : "do first", orphans: TR ? "sorumlu ata" : "assign someone", conflicts: TR ? "tarihi kontrol et" : "check dates", decisions: TR ? "karara bağla" : "finalise" };
   $("#view").innerHTML = `
-    <p class="ov-hello">${t("ov_hello")(esc(b.chat.name))}</p>
+    <section class="ov-hero">
+      <div><p class="ov-kicker">${L.hi}</p><h3>${esc(b.chat.name)}</h3><p class="ov-sum">${L.sum(open.length, o.events.length, fo.overdue.length)}</p>
+        <div class="ov-actions"><button type="button" class="hero-btn" id="ov-add2">${icon("plus")} ${L.addT}</button><a class="hero-btn ghost" href="#/c/${id}/events">${icon("calendar")} ${L.addE}</a></div></div>
+      <div class="ov-prog"><div class="ov-ring" style="--p:${pct}"><b>${pct}%</b></div><span>${L.prog}<br><small>${done.length} / ${b.tasks.length} ${L.of}</small></span></div>
+    </section>
     <div class="stat-grid">${stats.map(([f, n, tone, key]) => `
-      <button type="button" class="stat" data-card="${f}">
+      <button type="button" class="stat tone-${tone}" data-card="${f}">
+        <span class="stat-ic">${icon(tones[f][1])}</span>
         <span class="num">${n}</span>
-        <span class="lbl"><i class="stat-dot ${tone}" aria-hidden="true"></i>${t(key)}</span>
+        <span class="lbl">${t(key)}</span>
+        <span class="hint">${totalHint[f]} →</span>
       </button>`).join("")}</div>
     <div class="split">
-      <section class="panel"><h3>${t("focus_title")}</h3>${priHtml}</section>
+      <section class="panel"><div class="panel-head"><div><h3>${L.prio}</h3><p class="muted small">${L.prioSub}</p></div></div>${prioBody}</section>
       <div class="stack">
-        <section class="panel"><h3>${t("up_events")}</h3>${eventsHtml}</section>
-        <section class="panel"><h3>${t("ov_ai")}</h3>${aiHtml}</section>
+        <section class="panel"><div class="panel-head"><h3>${L.ev}</h3></div>${evHtml}</section>
+        ${comHtml ? `<section class="panel"><div class="panel-head"><div><h3>${L.com}</h3><p class="muted small">${L.comSub}</p></div></div>${comHtml}</section>` : ""}
+        <section class="panel"><div class="panel-head"><div><h3>${L.ai}</h3><p class="muted small">${L.aiSub}</p></div></div>${aiHtml2}</section>
       </div>
     </div>`;
+  const add2 = $("#ov-add2");
+  if (add2) add2.onclick = () => editTask({});
   $("#view").querySelectorAll("[data-card]").forEach(el => {
     el.onclick = () => {
       const f = el.dataset.card;

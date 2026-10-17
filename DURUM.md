@@ -1,7 +1,7 @@
 # DURUM — KulüpRadar / Pano
 
 Güncelleme: 2026-10-17 · Kaynak: koddaki mevcut hal (`app/`, `static/`, `tests/`). Etiketler: YAPILDI · KISMEN · YOK · DOĞRULANMADI.
-Doğrulama: `python -m pytest tests -q` (98 test, sahte LLM, Ollama gerekmez) · `scripts/eval_demo.py` (TR demo, 127 mesaj: **10/14, ~230 sn**; önceki koşular 7/14 ve 11/14; EN demo hiç koşulmadı) · gerçek Gemma ile elle API denemesi (analiz → öneri kuyruğu → onay → yeniden başlatma sonrası kalıcılık).
+Doğrulama: `python -m pytest tests -q` (107 test, sahte LLM, Ollama gerekmez) · `scripts/eval_demo.py` (TR demo, 127 mesaj: **10/14, ~230 sn**; önceki koşular 7/14 ve 11/14; EN demo hiç koşulmadı) · gerçek Gemma ile elle API denemesi (analiz → öneri kuyruğu → onay → yeniden başlatma sonrası kalıcılık).
 Donanım notu: Gemma 4 e4b, RTX 3050 4 GB laptopta ~4 dk / 127 mesaj; bu yüzden örnek veri ve önceden hesaplanmış örnek rapor var.
 
 ## YAPILDI (testli)
@@ -28,6 +28,10 @@ Donanım notu: Gemma 4 e4b, RTX 3050 4 GB laptopta ~4 dk / 127 mesaj; bu yüzden
   - Kontroller: toplantı komitesinin üye listesinde olmayan sorumlu → bilgi amaçlı uyarı (engelleme yok); toplantıdaki sorumlusuz görev sayısı; panelde "Yaklaşan toplantılar" ve "Yapıldı ama sorumlusuz görev var" kartları (G20e).
   - Örnek kulüpte 2 toplantı (yapıldı: notlar, 3 görev/2 karar/1 soru, 1 bekleyen öneri, önceden hesaplanmış özet; planlandı: 4 gün sonra); özet gerçek Gemma ile `scripts/make_sample_meeting_summary.py` ile üretildi, elle düzenlenmedi; eski örnek kulüp demo düğmesinde toplantıları kazanır (G20f).
   - Landing ve README ana mesajı değişti (G20g). "Haftalık özet / WhatsApp'a geri dön" kartı landing'den çıktı, özellik duruyor.
+- Etkinlik sayfası (G21): `#/c/ID/event/EID` ve `GET /api/events/{id}/page` — bilgi, bağlı görev (gecikme işaretli), karar, açık soru, katılım (G18 verisi), geri bildirim ve rapor tek sayfada; bağlı toplantı = bu etkinliğe bağlı kayıtların geldiği toplantılar (doğrudan toplantı→etkinlik bağı yok). Geri bildirim elle girilir: puan ortalaması (1–5), katılımcı yorumları (satır başına bir yorum), iyi giden / aksayan (`feedback_*` sütunları, eski veritabanları göçle). Rapor girdisine geri bildirim eklendi (veri yoksa “Veri yok”); yorumlar güvenilmeyen veri bloğunda; rapordaki tırnak içi alıntı yorumlarda/notlarda yoksa → bir yeniden deneme → ret (422); kayıtlar değişince ESKİ. Etkinlik karşılaştırma tablosu (katılım oranı, geciken görev, puan; veri yoksa “—”) `board.event_compare` ile.
+- Örnek veri (G21e): “Python Atölyesi” sabit tarihli (2026-09-26) ve geri bildirimli; raporu gerçek Gemma ile `scripts/make_sample_event_report.py` üretti (`demo/seed-report-tr.json`), elle düzenlenmedi. Bu betikten önce oluşmuş örnek kulüplerde geri bildirim/rapor YOKTUR (demo düğmesi yeni kulüp açmaz; örneği silip yeniden aç).
+- Kişi sayfası (G22): `#/c/ID/people`, `person/<ad>`; `GET /api/chats/{id}/people` ve `/person?name=` — kişiler onaylı görev sahiplerinden türer (yeni tablo yok), ad büyük/küçük harf ve boşluk farkını yok sayar. Komiteler (üye listesi + görev komitesi), geciken / yaklaşan / tarihsiz açık / tamamlanan görevler, sorumlu olduğu veya görevi bağlı etkinlikler, katılımcı listesinde adı geçen toplantılar. Görev durumu/sorumlu/tarih mevcut `editTask` ve PATCH ile düzenlenir. Yalnızca sayı; “görev sayısı zorluğu yansıtmaz” notu; puan/sıralama yok.
+- Menü (G23): Panel · Etkinlikler · Toplantılar · Görevler · Kişiler · Komiteler · İçe/Dışa aktar. Eski sayfalar silinmedi: Haftalık özet ve Sohbete sor → Panel sekmeleri; Etkinlik analizi ve Etkinlik planla → Etkinlikler sekmeleri; Pano ve AI incelemesi → Görevler sekmeleri; eski rotalar (`#/c/ID/board` vb.) aynen çalışır. Sayfa başlığındaki dışa/içe aktar, komite, yeniden analiz, silme düğmeleri İçe/Dışa aktar ve Komiteler sayfalarına taşındı. Landing özellik kartları ve README bu yapıya uydu; README'de “Yol haritası” (hesap/roller, sistem içi mesajlaşma, toplantı ses kaydı, bütçe/sponsor takibi, dış entegrasyonlar: hiçbiri yok, planlı).
 - Yerel çalışma: sunucu `127.0.0.1`, harici CDN/font yok.
 
 - Açık soru durumu (G10): açık / cevaplandı / çözüldü / geçersiz; panoda “Çözüldü / Geçersiz / Yeniden aç” düğmeleri, isteğe bağlı not; her değişiklik `item_history`'ye yazılır (`GET /api/items/{id}/history`), “Geçmiş” penceresi. Kullanıcı kapatınca model yeniden açmaz.
@@ -57,8 +61,14 @@ Toplantı: tekrarlayan toplantı, toplantıdan etkinliğe bağlama, katılım yo
 
 - G10/G12 ekranları (düğmeler, Geçmiş penceresi, üstü çizili karar) gözle görülmedi; yalnızca `node --check`, API testleri ve HTTP duman testi. Yapay zekâ önerisi onaylanınca karar/soru başlığı değişirse (değişiklik önerisi) geçmişe yazılmaz.
 
+- G21–G23 ekranları (etkinlik sayfası, karşılaştırma tablosu, kişi sayfası, iki katmanlı menü, Komiteler ve İçe/Dışa aktar sayfaları) gözle görülmedi. Yapılan: `node --check`, API testleri (sahte LLM), ve her görünümü canlı sunucuya karşı sahte DOM ile çizip hata / “undefined” / “NaN” arayan bir betik (TR ve EN; yerleşim, taşma, dar ekran denenmedi).
+- Örnek etkinlik raporu (gerçek Gemma): alıntılar kod denetiminden geçti ama metin kusurlu: “Bağlı karar sayısı: Girilmedi” ve tek yorumlu bir konuyu da “ortak” diye anıyor. Elle düzeltilmedi. Geri bildirim özetinin doğruluğu tek örnekte denendi.
+- Rapordaki alıntı denetimi yalnızca tırnak içi (" “ «) parçalara bakar; tırnaksız yorum aktarımı denetlenmez. Konunun ‘en az iki yorumda geçtiği’ iddiası denetlenmez.
+- Kişi eşleşmesi tam ad eşitliğidir (“Ayşe” ≠ “Ayşe Yılmaz”); toplantı katılımı serbest metin listeden gelir, gerçek yoklama değildir.
+- Menü: sayfa başlığındaki eski düğmelerin yeni yerleri ve yeniden analiz / silme akışı tarayıcıda denenmedi.
+
 ## Değişmez kurallar (CLAUDE.md)
 1 kaynaksız → işaretli: UYUYOR · 2 otomatik onay yok: UYUYOR · 3 uydurma yok: UYUYOR (rapor sayı denetimi kaba) · 4 geçmiş ≠ güncel: UYUYOR (değişiklik önerisi) · 5 düzeltmeler ezilmez: UYUYOR (testli) · 6 yinelenen: KISMEN · 7 hata çökertmez: UYUYOR (testli) · 8 gizlilik: KISMEN (hata mesajı ≤200 karakter model çıktısı içerebilir, yalnızca yerel DB'de) · 9 çalışmayan düğme yok: KISMEN (tüm düğmeler tek tek denenmedi) · 10 test edilmeyen hazır değil: UYUYOR · 11 mevcut yapı: UYUYOR · 12 tutarlılık: UYUYOR (pano/panel yalnızca onaylı veriden).
 
 ## Sıradaki
-G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)
+Toplantıdan etkinliğe doğrudan bağlama · G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)

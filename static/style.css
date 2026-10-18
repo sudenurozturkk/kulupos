@@ -840,3 +840,13 @@ a.rec-chip:hover { background: #dfe3ff; }
 .coach-card .panel-head button { margin-left: 6px; }
 .coach-steps { margin: 0 0 10px; padding-left: 20px; display: grid; gap: 10px; }
 .coach-text { white-space: pre-wrap; font-size: 14px; line-height: 1.55; max-height: 360px; overflow: auto; margin-bottom: 10px; }
+.coach-steps li { display: block; }
+.coach-steps li > b { display: block; }
+.coach-why, .coach-agenda { max-width: none; width: 100%; margin: 3px 0 4px; font-size: 13.5px; color: var(--muted, #555); }
+.coach-steps .meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.coach-assess { font-size: 14px; line-height: 1.5; margin: 0 0 10px; }
+.coach-agenda { padding-left: 20px; margin-bottom: 10px; }
+.saved-row { border: 1px solid var(--line, #e5e7eb); border-radius: 10px; padding: 10px 12px; margin: 8px 0; }
+.saved-row .t { font-weight: 600; }
+.saved-row .why { display: block; font-size: 13.5px; color: var(--muted, #555); margin: 3px 0; }
+.saved-row .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }

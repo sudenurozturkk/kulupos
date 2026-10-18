@@ -1504,9 +1504,10 @@ async function renderCoach(id) {
   const latest = async k => (await api(`/api/chats/${id}/saved/${k}`).catch(() => ({ saved: [] }))).saved[0] || null;
   const [week, hand] = await Promise.all([latest("week"), latest("handover")]);
   const when = r => `<span class="chip">${C.at}: ${esc(r.created_at.slice(0, 16).replace("T", " "))} · ${esc(r.model || "")}</span>`;
-  const weekHtml = week ? `<ol class="coach-steps">${week.body.steps.map(x => `<li><b>${esc(x.action)}</b>
-      <div class="why">${esc(x.why)}</div><div class="meta">${x.when ? `<span class="chip">${icon("calendar")} ${fmtDate(x.when)}</span>` : ""}
-      ${x.unit ? `<span class="chip">${C.team}: ${esc(x.unit)}</span>` : ""}${x.owner ? `<span class="chip ai">${avatar(x.owner)}${esc(firstName(x.owner))}</span>` : ""}</div></li>`).join("")}</ol>${when(week)}`
+  const weekHtml = week ? `${week.body.assessment ? `<p class="coach-assess"><b>${lang === "tr" ? "Gemma'nın değerlendirmesi" : "Gemma's assessment"}:</b> ${esc(week.body.assessment)}</p>` : ""}<ol class="coach-steps">${week.body.steps.map(x => `<li><b>${esc(x.action)}</b>
+      <div class="coach-why">${esc(x.why)}</div><div class="meta">${x.when ? `<span class="chip">${icon("calendar")} ${fmtDate(x.when)}</span>` : ""}
+      ${x.unit ? `<span class="chip">${C.team}: ${esc(x.unit)}</span>` : ""}${x.owner ? `<span class="chip ai">${avatar(x.owner)}${esc(firstName(x.owner))}</span>` : ""}</div></li>`).join("")}</ol>
+    ${(week.body.agenda || []).length ? `<p class="coach-assess"><b>${lang === "tr" ? "Toplantı gündemi önerisi" : "Suggested meeting agenda"}:</b></p><ul class="coach-agenda">${week.body.agenda.map(a => `<li>${esc(a)}</li>`).join("")}</ul>` : ""}${when(week)}`
     : `<p class="muted small">${C.empty}</p>`;
   const handHtml = hand ? `<div class="coach-text">${md(hand.body.text)}</div>${when(hand)}` : `<p class="muted small">${C.empty} ${C.handHint}</p>`;
   const card = (key, title, row, html, btn) => `<div class="coach-card"><div class="panel-head"><h3>${title}</h3><div>
@@ -1555,7 +1556,7 @@ function renderPlanView() {
       const r = await post(`/api/chats/${id}/ideas`, {});
       $("#ideas-out").innerHTML = r.reason === "no_held_events" ? `<p class="muted">${t("ideas_none")}</p>`
         : !r.ideas.length ? `<p class="muted">${t("ideas_empty")}</p>`
-        : r.ideas.map((x, i) => `<div class="plan-item" style="margin:8px 0"><div><div class="t">${esc(x.title)}</div>
+        : r.ideas.map((x, i) => `<div class="saved-row"><div><div class="t">${esc(x.title)}</div>
             <div class="why">${esc(x.why)}</div><div class="meta"><span class="chip">${t("ideas_based")}: ${esc(x.based_on)}</span>${x.unit ? `<span class="chip">${esc(x.unit)}</span>` : ""}
             <button data-idea="${i}">${t("ideas_use")}</button></div></div></div>`).join("");
       loadSaved();
@@ -1583,7 +1584,7 @@ async function loadSaved() {
   const id = S.board.chat.id, box = $("#saved-out");
   if (!box) return;
   const [plans, ideas] = await Promise.all(["plan", "ideas"].map(k => api(`/api/chats/${id}/saved/${k}`).then(r => r.saved).catch(() => [])));
-  const row = r => `<div class="plan-item" style="margin:6px 0"><div><div class="t">${esc(r.title)}</div>
+  const row = r => `<div class="saved-row"><div><div class="t">${esc(r.title)}</div>
     <div class="meta"><span class="chip">${esc(r.created_at.slice(0, 16).replace("T", " "))}</span><span class="chip">${esc(r.model || "")}</span>
     ${r.kind === "plan" ? `<button data-open="${r.id}">${t("saved_open")}</button>` : ""}<button data-del="${r.id}">${t("saved_del")}</button></div>
     ${r.kind === "ideas" ? r.body.ideas.map(x => `<div class="why"><b>${esc(x.title)}</b> — ${esc(x.why)} <span class="muted">(${t("ideas_based")}: ${esc(x.based_on)})</span></div>`).join("") : ""}</div></div>`;

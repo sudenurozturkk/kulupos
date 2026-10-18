@@ -5,7 +5,7 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
-from . import analysis, coach, db, meetings, report
+from . import analysis, coach, db, meetings, report, units
 from .analyzer import norm
 from .parser import parse_chat, read_export
 
@@ -98,7 +98,26 @@ def ensure_sample(today) -> int:
         rows = []
     if not rows:
         return seed_sample(today, force=True)
+    fill_missing_ai(rows[0]["id"], today)
     return rows[0]["id"]
+
+
+def fill_missing_ai(chat_id: int, today) -> None:
+    """Top up an existing sample club with shipped model output it lacks. Nothing that exists (a report the user
+    generated, a saved result) is replaced or deleted."""
+    if not AI_SAMPLE.exists():
+        return
+    ai = json.loads(AI_SAMPLE.read_text(encoding="utf-8"))
+    if ai.get("recap") and not db.list_ai(chat_id, "recap"):
+        db.save_ai(chat_id, "recap", ai["recap"].get("date", "Örnek"), ai["recap"], ai["model"], "sample")
+    for ev in db.get_items(chat_id, "event"):
+        text = (ai.get("event_reports") or {}).get(ev["title"])
+        if text and not db.get_report(ev["id"]):
+            db.save_report(ev["id"], text, report.fingerprint(report.facts_text(ev, "tr")), "tr", ai["model"], "sample")
+    for u, text in (ai.get("unit_reports") or {}).items():
+        if not db.get_unit_report(chat_id, u):
+            fp = report.fingerprint(units.facts_text(chat_id, u, today.isoformat()))
+            db.save_unit_report(chat_id, u, text, fp, "tr", ai["model"])
 
 
 def _seed_insight(chat_id: int) -> None:
@@ -166,6 +185,17 @@ def _seed_meetings(chat_id: int, today) -> None:
             db.save_ai(chat_id, "week", ai["week"]["date"], coach.clean_week(ai["week"]), ai["model"], "sample")
         if ai.get("handover"):
             db.save_ai(chat_id, "handover", ai["handover"]["date"], ai["handover"], ai["model"], "sample")
+    if ai and ai.get("recap"):
+        db.save_ai(chat_id, "recap", ai["recap"].get("date", "Örnek"), ai["recap"], ai["model"], "sample")
+    if ai and ai.get("event_reports"):   # model-written reports of the other held sample events
+        for ev in db.get_items(chat_id, "event"):
+            if ev["title"] in ai["event_reports"]:
+                db.save_report(ev["id"], ai["event_reports"][ev["title"]], report.fingerprint(report.facts_text(ev, "tr")),
+                               "tr", ai["model"], "sample")
+    if ai and ai.get("unit_reports"):   # committee reports the model wrote for this sample club
+        for u, text in ai["unit_reports"].items():
+            fp = report.fingerprint(units.facts_text(chat_id, u, today.isoformat()))
+            db.save_unit_report(chat_id, u, text, fp, "tr", ai["model"])
     if MEETING_SUMMARY.exists():  # written once by scripts/make_sample_meeting_summary.py with the local model
         s = json.loads(MEETING_SUMMARY.read_text(encoding="utf-8"))
         meeting = db.get_meeting(made[s["key"]])

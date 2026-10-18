@@ -208,7 +208,7 @@ def test_unit_page_and_saved_ai_report(client, monkeypatch):
     from app import llm
     cid = client.post("/api/seed").json()["chat_id"]
     p = client.get(f"/api/chats/{cid}/unit", params={"name": "Sponsorluk"}).json()
-    assert p["unit"] == "Sponsorluk" and p["tasks"] and p["report"]["report"] is None
+    assert p["unit"] == "Sponsorluk" and p["tasks"] and p["report"]["report"]   # the sample ships a model-written committee report
     assert client.get(f"/api/chats/{cid}/unit", params={"name": "Yok"}).status_code == 404
 
     async def fake(messages, *a, **k):

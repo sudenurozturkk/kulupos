@@ -20,6 +20,9 @@ KulüpOS is one workspace for a club's tasks, decisions, open questions, events 
 - Approved records feed a per-committee task board, a "needs attention today" dashboard (overdue, unassigned, conflicting dates), upcoming events and meetings.
 - Meetings: notes are pasted or uploaded, suggestions go through the same review queue, and a meeting summary is written only from the notes and approved linked records.
 - Event page: linked tasks, decisions, attendance, hand-entered feedback and a report written only from those records.
+- **Gemma assistant on the status page:** a roadmap for the next 7 days (steps in order, each tied to a recorded task, event, meeting or committee, with a suggested owner and date), an assessment and a suggested board-meeting agenda, printable as a one-page weekly PDF report; plus a handover report for the incoming board. Results are saved and can be deleted; a step that does not point at a real record or committee is dropped, and a figure that is not in the records removes the assessment.
+- **Event planner and ideas:** Gemma turns a goal into an ordered preparation plan with owners and suggested preparation meetings (which committees should meet and when), and proposes new event ideas that each cite a real past event; selected items go to the board or meeting list in one click.
+- **Committee reports, event reports and weekly recap** are written by Gemma from the records only and saved with the model name; the sample club ships with real model output (`scripts/make_sample_ai.py`).
 - A People page lists task owners with counts only (no performance verdict), and data can be exported as CSV / JSON / Markdown.
 
 ### How we built it

@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 os.environ["PANO_DB"] = str(Path(tempfile.mkdtemp()) / "sample.db")
 
-from app import coach, db, insights, llm, meetings, seed  # noqa: E402
+from app import coach, db, insights, llm, meetings, seed, units  # noqa: E402
 
 PATH = ROOT / "demo" / "seed-ai-tr.json"
 HELD_MEETING = "yonetim"
@@ -55,6 +55,20 @@ async def main() -> None:
         out["week"] = await coach.week_plan(chat_id, today)
     if "handover" not in done:
         out["handover"] = await coach.handover(chat_id, today)
+    if "recap" not in done:
+        from app import assistant
+        out["recap"] = {**await assistant.weekly_summary(chat_id, 7), "date": today.isoformat()}
+    if "event_reports" not in done:
+        from app import report
+        out["event_reports"] = {}
+        for e in db.get_items(chat_id, "event"):
+            if e["phase"] == "held" and e.get("feedback_score") is not None and not db.get_report(e["id"]):
+                out["event_reports"][e["title"]] = (await report.generate(e, "tr"))["report"]
+    if "unit_reports" not in done:
+        out["unit_reports"] = {}
+        for u in db.get_chat(chat_id)["units"]:
+            r = await units.generate(chat_id, u, today.isoformat(), "tr")
+            out["unit_reports"][u] = r["report"]
     PATH.write_text(json.dumps(out, ensure_ascii=False, indent=2) + chr(10), encoding="utf-8")
     print("parts:", sorted(k for k in out if k not in ("model", "meeting")))
 

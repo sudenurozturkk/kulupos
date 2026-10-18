@@ -212,5 +212,75 @@
     "model": "gemma4:e4b",
     "date": "2026-10-18",
     "saved_id": 4
+  },
+  "unit_reports": {
+    "Yönetim": "Durum\nToplam 5 görevden 2'si tamamlandı, 3'ü açık ve 1'i gecikmeli.\n\nGüçlü yönler\nYeni Üye Oryantasyonu etkinliğinde tanışma bölümünün verimli geçtiği ve komite tanıtımlarının kısa ve net olduğu gözlemlendi.\n\nDikkat edilecekler\nİzin dilekçesini SKS'ye verme görevi (owner Selin Aydın) gecikmeli durumda. Ayrıca, Yeni Üye Oryantasyonu etkinliğinde yemek ikramının yetersiz kaldığı belirtildi.\n\nÖneriler\n1. Elif Kaya'nın \"Jüri üyelerini davet et\" görevini FUB3V Hackathon 24 Saat için önceliklendirmesi.\n2. Selin Aydın'ın geciken izin dilekçesini en kısa sürede tamamlaması.\n3. Dönem sonu faaliyet raporu taslağı (owner Elif Kaya) için bir başlangıç yapılması.\n4. Haftalık yönetim toplantısının 2026-10-22 tarihinde planlandığı göz önüne alınarak gündemin belirlenmesi.",
+    "Etkinlik": "Durum\nToplamda 12 görev bulunmaktadır. Bunlardan 5'i tamamlanmış, 7'si açık durumdadır ve 1 görevin son teslim tarihi geçmiş durumdadır. Bir görev ise sahibi belirtilmemiştir.\n\nGüçlü yönler\nGit ve GitHub Atölyesi'nde uygulamalı anlatım beğenilmiş ve canlı örnekler ile alıştırmalar olumlu karşılanmıştır. Bahar Dönemi Tanıtım Standı, ilgi görmüş ve yeni üye başvurusu yoğundur. Kariyer Günleri Paneli'nde konuk profili ilgi çekmiştir.\n\nDikkat edilecekler\nSiber Güvenlik Semineri'nde salon ses sisteminin zayıf olması ve arızalanması bir sorundur. Yapay Zeka ile Kariyer Söyleşisi için \"Projeksiyon ve ses sistemi için Teknik İşler'e dilekçe yaz\" görevi sahibi belirtilmemiştir.\n\nÖneriler\n1. Selin Aydın'ın \"Sertifikaları hazırla\" görevini 2026-10-25 tarihine kadar tamamlaması sağlanmalıdır.\n2. Mert Demir'in, FUB3V Hackathon 24 Saat için açık olan \"Salon ve internet altyapısını doğrula\" görevini önceliklendirmesi gerekmektedir.\n3. Deniz Çelik'in, Teknoloji Şirketi Gezisi için \"Katılımcı listesini şirkete gönder\" görevini 2026-10-24 tarihine kadar tamamlaması önemlidir.\n4. Mert Demir'in, Yapay Zeka ile Kariyer Söyleşisi için açık olan \"Konuşmacının yol ve konaklamasını ayarla\" görevi için bir atama yapılması gerekmektedir.",
+    "İletişim": "Durum\nToplam 11 görevden 5'i tamamlandı; 6 görev açık durumda olup bunlardan biri sahibsizdir. Yapay Zeka ile Kariyer Söyleşisi için bazı görevler devam etmektedir. FUB3V Hackathon 24 Saat planlanmaktadır.\n\nGüçlü yönler\nBahar Dönemi Tanıtım Standı'nda stant ilgi gördü ve yeni üye başvurusu yoğundu. Git ve GitHub Atölyesi'nde uygulamalı anlatım çok beğenildi. Yapay Zeka ile Kariyer Söyleşisi için Afişi hazırla ve paylaş görevi tamamlanmıştır (Zeynep Arslan).\n\nDikkat edilecekler\nBir görev sahibsizdir: Basın bülteni taslağını yaz. FUB3V Hackathon 24 Saat için Kayıt formunu yayınla (Zeynep Arslan) ve Hackathon afiş ve sosyal medya takvimi (Zeynep Arslan) gibi acil teslim tarihleri bulunmaktadır.\n\nÖneriler\nEce Şahin'in \"3 günlük geri sayım story serisi\" görevini 2026-10-29 tarihine kadar tamamlamasını takip edin. Zeynep Arslan'ın FUB3V Hackathon 24 Saat ile ilgili açık görevlerini önceliklendirin. Can Öztürk'ün \"Katılımcı listesini sertifikalar için aktar\" görevini 2026-11-07 tarihine kadar tamamlamasını sağlayın. Sahibsiz olan Basın bülteni taslağını yaz görevi için bir sorumlu atayın.",
+    "Sponsorluk": "Durum\nToplam 7 görev bulunmaktadır. Bu görevlerden 2'si tamamlanmış olup, 5 görevi açık durumdadır. Ayrıca 2 görev gecikmiştir ve 2 görev sahibi belirtilmemiştir.\n\nGüçlü yönler\nBurak Yıldız, Siber Güvenlik Semineri için konuşmacıyla sözleşme yapma ve Kariyer Günleri Paneli için panel sponsor ödemesini alma görevlerini başarıyla tamamlamıştır.\n\nDikkat edilecekler\nGeçen yılın sponsor dosyasını bulma görevi sahibi belirtilmemiştir ve gecikmiştir. Ödül bütçesini netleştirme görevi de sahibi belirtilmemektedir. Kahveciye teslimat saati bildirimi, Hackathon sponsor paketlerinin hazırlanması ve Sponsor kahveciyle sözleşmenin netleştirilmesi gibi açık görevler bulunmaktadır.\n\nÖneriler\nBurak Yıldız'ın üstlendiği Kahveciye teslimat saatini bildir görevi için öncelik verilmelidir. Sahibi belirtilmeyen \"Geçen yılın sponsor dosyasını bul\" ve \"Ödül bütçesini netleştir\" görevleri için bir sorumlu atanmalıdır. Burak Yıldız'a, Hackathon sponsor paketlerini hazırlaması konusunda destek sağlanabilir."
+  },
+  "recap": {
+    "text": "*📋 FUB3V Yönetim 2026 — Haftalık Özet*\n_11 Eki – 18 Eki_\n\nBu hafta Yapay Zeka ile Kariyer Söyleşisi için birçok görev tamamlandı ve kayıtlar iyi bir ivme yakaladı. Ancak, sponsor dosyasını bulma görevi hala açıkta olup sahibi belli değildir. FUB3V Hackathon'u planlama aşamasında devam ediyor ve bu etkinlik için jüri davetleri gibi bazı görevler bekliyor. Önümüzdeki dönemde Teknoloji Şirketi Gezisi için otobüs kiralama ve katılımcı listesini gönderme gibi adımlar atılacak. Haftaya, Yapay Zeka ile Kariyer Söyleşisi için teknik hazırlıklar (projeksiyon/ses dilekçesi) hızlandırılabilir. Ayrıca, genel kulüp kimliği güncellemesi ve dönem sonu rapor taslağı üzerinde çalışmaya başlanabilir.\n\n*📌 Açık görevler*\n• Sertifikaları hazırla — Selin — 📅 25 Eki [#60]\n• 3 günlük geri sayım story serisi — Ece — 📅 29 Eki [#85]\n• Kahveciye teslimat saatini bildir — Burak — 📅 16 Eki [#116]\n• HDMI bağlantısı ve yaka mikrofonunu hazırla — Mert — 📅 30 Eki [#103]\n• Katılımcı listesini sertifikalar için aktar — Can — 📅 7 Kas [#106]\n• Hackathon sponsor paketlerini hazırla — Burak — 📅 25 Eki\n• Jüri üyelerini davet et — Elif — 📅 30 Eki\n• Kayıt formunu yayınla — Zeynep — 📅 21 Eki\n• Salon ve internet altyapısını doğrula — Mert — 📅 16 Eki\n• Hackathon afiş ve sosyal medya takvimi — Zeynep — 📅 23 Eki\n• Gezi için otobüs kirala — Deniz — 📅 22 Eki\n• Katılımcı listesini şirkete gönder — Deniz — 📅 24 Eki\n• İzin dilekçesini SKS'ye ver — Selin — 📅 17 Eki\n• Dönem sonu faaliyet raporu taslağı — Elif — 📅 2 Kas\n• Kulüp kimliği ve logo güncellemesi — Zeynep — 📅 7 Kas\n• Konuşmacının yol ve konaklamasını ayarla — Mert\n• Sponsor kahveciyle sözleşmeyi netleştir — Burak\n\n*🙋 Sahibi olmayan görevler*\n• Projeksiyon ve ses sistemi için Teknik İşler'e dilekçe yaz [#94]\n• Geçen yılın sponsor dosyasını bul — 📅 15 Eki [#28]\n• Ödül bütçesini netleştir\n• Basın bülteni taslağını yaz\n\n*❓ Cevap bekleyen sorular*\n• Geçen yılın sponsor dosyası kimde? — Selin [#28]\n• Kulübün yaka mikrofonu hâlâ dolapta mı? — Mert [#104]\n• Kahveciler 31 Ekim'de kaçta gelsin? — Burak [#116]\n• Hackathon ödül bütçesi kimden istenecek? — Burak\n• Gezi dönüşü yemek için ek ödenek var mı?\n• B-201 projeksiyonu için teknik destek kimden istenecek?\n\n*📅 Yaklaşan*\n• Online hazırlık toplantısı — 24 Eki 18:00 [#117]\n• Teknoloji Şirketi Gezisi — 28 Eki 09:30\n• Yapay Zeka ile Kariyer Söyleşisi — 1 Kas 14:00 [#43]\n• FUB3V Hackathon 24 Saat — 15 Kas 10:00\n\n_KulüpOS ile bu bilgisayarda hazırlandı · Gemma 4 · veri dışarı çıkmadı_",
+    "lang": "tr",
+    "sources": [
+      {
+        "idx": 60,
+        "sender": "Selin Aydın",
+        "ts": "2026-10-08T16:12"
+      },
+      {
+        "idx": 85,
+        "sender": "Ece Şahin",
+        "ts": "2026-10-12T09:27"
+      },
+      {
+        "idx": 116,
+        "sender": "Burak Yıldız",
+        "ts": "2026-10-16T14:10"
+      },
+      {
+        "idx": 103,
+        "sender": "Mert Demir",
+        "ts": "2026-10-14T10:15"
+      },
+      {
+        "idx": 106,
+        "sender": "Can Öztürk",
+        "ts": "2026-10-14T14:45"
+      },
+      {
+        "idx": 94,
+        "sender": "Deniz Çelik",
+        "ts": "2026-10-13T11:42"
+      },
+      {
+        "idx": 28,
+        "sender": "Selin Aydın",
+        "ts": "2026-10-06T10:30"
+      },
+      {
+        "idx": 104,
+        "sender": "Mert Demir",
+        "ts": "2026-10-14T10:17"
+      },
+      {
+        "idx": 117,
+        "sender": "Elif Kaya",
+        "ts": "2026-10-16T17:00"
+      },
+      {
+        "idx": 43,
+        "sender": "Elif Kaya",
+        "ts": "2026-10-07T11:22"
+      }
+    ],
+    "date": "2026-10-18"
+  },
+  "event_reports": {
+    "Bahar Dönemi Tanıtım Standı": "Özet\nBahar Dönemi Tanıtım Standı etkinliği 2026-09-03 tarihinde Kampüs Meydanı'nda gerçekleşti. Beklenen katılımcı sayısı 200 iken, gerçekleşen katılımcı sayısı 230 oldu ve bütçe tahmini 800.0 iken fiili bütçe 720.0 olarak gerçekleşti.\n\nGörevler\nZeynep Arslan tarafından Stant sonuç raporunu yaz görevi 2026-09-01 tarihinde tamamlandı. Selin Aydın tarafından Yeni üye formlarını sisteme gir görevi 2026-09-02 tarihinde tamamlandı.\n\nGeri bildirim\nKulüp tarafından verilen ortalama puan 4.5'tir. Not olarak \"Stant ilgi gördü, yeni üye başvurusu yoğundu\" belirtilmiştir. İyi gidenler arasında Kampüs meydanındaki konum ve hediye çekilişi yer alırken, eksik kalanlar arasında Öğle saatinde stant kalabalık kaldı bulunmaktadır. Gelecek benzer etkinliklerde kampüs meydanı konumu korunmalı ve öğle saatleri için ek bir düzenleme yapılmalıdır.",
+    "Git ve GitHub Atölyesi": "Özet\nGit ve GitHub Atölyesi etkinliği 2026-08-04 tarihinde Bilgisayar Lab'da gerçekleşti. Beklenen katılımcı sayısı 50 iken, gerçekleşen katılım 41 oldu. Bütçe tahmini 900.0 iken, gerçekleşen bütçe 860.0 olarak kaydedildi.\n\nGörevler\nMert Demir, Atölye bilgisayar kurulumlarını kontrol et görevini 2026-07-30 tarihinde tamamladı.\n\nGeri bildirim\nKulüp tarafından girilen ortalama puan 4.4'tür. Not kısmında \"Uygulamalı anlatım çok beğenildi\" bilgisi yer almaktadır. İyi giden yönler arasında canlı örnekler ve alıştırmalar bulunmaktaydı. Eksik kalan yön olarak ise kurulum sorunları ilk 20 dakikayı aldığı belirtilmiştir. Gelecek benzer etkinliklerde kurulum süreçlerinin daha hızlı tamamlanması ve uygulamalı anlatımların devam ettirilmesi önerilebilir.",
+    "Siber Güvenlik Semineri": "Özet\nSiber Güvenlik Semineri 2026-08-17 tarihinde Konferans Salonu'nda gerçekleşti. Beklenen katılımcı sayısı 150 iken gerçekleşen katılım 96 oldu ve bütçe tahmini 3500.0 iken fiili harcama 3900.0 olarak kaydedildi.\n\nGörevler\nSeminer konuşmacısıyla sözleşme yap görevi Burak Yıldız tarafından 2026-08-09 tarihinde tamamlandı. Salon ses sistemini önceden test et görevi Elif Kaya tarafından 2026-08-15 tarihinde tamamlandı. Seminer afişini yayınla görevi Zeynep Arslan tarafından 2026-08-11 tarihinde tamamlandı.\n\nKararlar\nSes sistemi kiralık olacak, salon sistemine güvenilmeyecek kararı alındı.\n\nGeri bildirim\nOrtalama puan 3.9 olarak belirlendi. Not kısmında \"İçerik güçlü, salon ses sistemi zayıftı\" belirtildi. İyi gidenler arasında konuşmacının deneyimi ve canlı demo yer aldı. Ses sistemi arızalandı ve arka sıralar duymadı konularında eksiklikler yaşandı.",
+    "Yeni Üye Oryantasyonu": "Özet\nYeni Üye Oryantasyonu toplantısı 2026-08-24 tarihinde B-201'de gerçekleşti. Beklenen katılımcı sayısı 40 iken, gerçekleşen katılım 37 oldu.\n\nGörevler\nOryantasyon sunumunu hazırlama görevi Selin Aydın tarafından 2026-08-21 tarihine kadar tamamlandı.\n\nGeri bildirim\nKulüp tarafından girilen ortalama puan 4.7'dir. Not olarak \"Tanışma bölümü verimliydi\" belirtilmiştir. İyi gidenler arasında Komite tanıtımları kısa ve net oldu yer alırken, yetersiz kalanlar arasında Yemek ikramı yetersiz kaldı bulunmaktadır.",
+    "Kariyer Günleri Paneli": "Özet\nKariyer Günleri Paneli etkinliği 2026-09-10 tarihinde Amfi 2'de gerçekleşti. Beklenen katılımcı sayısı 200 iken gerçekleşen katılım 172 oldu. Bütçe tahmini 6000.0 iken fiili bütçe 5400.0 olarak gerçekleşti. Gelecek benzer etkinliklerde soru-cevap süresinin artırılması ve giriş kuyruğu yönetimine odaklanılması önerilir.\n\nGörevler\nPanel konuklarını davet et görevi Deniz Çelik tarafından 2026-08-29 tarihinde tamamlandı. Panel sponsor ödemesini al görevi Burak Yıldız tarafından 2026-09-06 tarihinde tamamlandı. Panel fotoğraf ve video paylaşımı görevi Zeynep Arslan tarafından 2026-09-09 tarihinde tamamlandı.\n\nKararlar\nEtkinliklerde soru-cevap süresi en az 20 dakika olacak kararı alındı.\n\nGeri bildirim\nOrtalama puan 4.2 olarak kaydedildi. Not kısmında \"Konuk profili ilgi çekti, soru-cevap kısa kaldı\" bilgisi yer almaktadır. İyi gidenler arasında sektörden konuklar ve ağ kurma molası belirtilmiştir. Eksik kalanlar arasında soru-cevap süresinin yetersiz olması ve giriş kuyruğunun uzun olması bulunmaktadır."
   }
 }

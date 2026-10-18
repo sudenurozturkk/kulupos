@@ -359,7 +359,7 @@ async def event_ideas(chat_id: int):
 def saved_ai(chat_id: int, kind: str):
     """Event ideas / plans the model produced earlier; they stay until deleted."""
     _chat_or_404(chat_id)
-    if kind not in ("ideas", "plan", "week", "handover"):
+    if kind not in ("ideas", "plan", "week", "handover", "recap"):
         raise HTTPException(404, "unknown kind")
     return {"saved": db.list_ai(chat_id, kind)}
 
@@ -956,7 +956,9 @@ class SummaryReq(BaseModel):
 async def summary(chat_id: int, body: SummaryReq):
     _chat_or_404(chat_id)
     try:
-        return await assistant.weekly_summary(chat_id, body.days)
+        r = await assistant.weekly_summary(chat_id, body.days)
+        db.save_ai(chat_id, "recap", f"{today():%Y-%m-%d}", r, llm.MODEL)   # kept until deleted, shown on the next visit
+        return r
     except llm.LLMError as e:
         raise HTTPException(503, str(e))
 

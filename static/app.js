@@ -1313,8 +1313,12 @@ function renderReviewView() {
   view.querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
 }
 
-function renderSummaryView() {
+async function renderSummaryView() {
   const id = S.board.chat.id;
+  if (!(S.summary && S.summary.chatId === id)) {   // the last saved recap survives reloads
+    const last = (await api(`/api/chats/${id}/saved/recap`).catch(() => ({ saved: [] }))).saved[0];
+    if (last) S.summary = { chatId: id, text: last.body.text };
+  }
   const cached = S.summary && S.summary.chatId === id ? S.summary : null;
   $("#view").innerHTML = `<div class="narrow">
     <div class="panel ai-panel"><p class="muted" style="margin:0 0 12px">${t("summary_intro")}</p>

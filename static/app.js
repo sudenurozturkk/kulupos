@@ -281,6 +281,7 @@ const MEET_I18N = {
   tr: {
     tab_meetings: "Toplantılar",
     mt_intro: "Toplantı notlarını yapıştır veya .txt/.md olarak yükle. Notlardan çıkan görev, karar ve sorular önce AI incelemesine düşer; sen onaylamadan panoya girmez.",
+    mt_title: "Toplantı adı (zorunlu)", mt_title_need: "Önce toplantı adını yazın.",
     mt_add: "Toplantı ekle", mt_edit: "Toplantıyı düzenle", mt_empty: "Henüz toplantı yok.",
     mt_nodate: "tarih belirsiz", mt_status: "Durum", mt_st: { planned: "Planlandı", held: "Yapıldı", cancelled: "İptal" },
     mt_date_hint: "Tarih boş bırakılabilir; bu durumda “tarih belirsiz” işaretlenir ve notlardaki göreli tarihler (“haftaya”) çözülmez.",
@@ -307,6 +308,7 @@ const MEET_I18N = {
   en: {
     tab_meetings: "Meetings",
     mt_intro: "Paste meeting notes or upload them as .txt/.md. Tasks, decisions and questions found in them go to AI review first; nothing reaches the board until you approve.",
+    mt_title: "Meeting title (required)", mt_title_need: "Type the meeting title first.",
     mt_add: "Add meeting", mt_edit: "Edit meeting", mt_empty: "No meetings yet.",
     mt_nodate: "date unclear", mt_status: "Status", mt_st: { planned: "Planned", held: "Held", cancelled: "Cancelled" },
     mt_date_hint: "The date may be left empty; it is then marked “date unclear” and relative dates in the notes (“next week”) are not resolved.",
@@ -1289,8 +1291,14 @@ function renderReviewView() {
     <p class="muted">${t("review_intro")}</p>
     ${empty ? `<div class="empty review-empty"><b>${t("review_empty_t")}</b>${t("review_empty_d")}</div>` : ""}
     ${b.changes.length ? `<h3>${t("changes_title")} <span class="n">${b.changes.length}</span></h3><div class="rgrid">${b.changes.map(ccard).join("")}</div>` : ""}
-    ${b.review.length ? `<h3>${t("new_proposals")} <span class="n">${b.review.length}</span></h3><div class="rgrid">${b.review.map(card).join("")}</div>` : ""}</div>`;
+    ${b.review.length ? `<h3>${t("new_proposals")} <span class="n">${b.review.length}</span>
+      ${b.review.some(i => !i.needs_review) ? `<button class="small primary" id="ok-all" style="margin-left:12px">${lang === "tr" ? "Kaynaklı olanların hepsini onayla" : "Approve all with a source"} (${b.review.filter(i => !i.needs_review).length})</button>` : ""}</h3><div class="rgrid">${b.review.map(card).join("")}</div>` : ""}</div>`;
   const view = $("#view");
+  const okAll = $("#ok-all");
+  if (okAll) okAll.onclick = async () => {   // one click, but only proposals that have a source and no open question
+    okAll.disabled = true;
+    try { for (const i of b.review.filter(x => !x.needs_review)) await patch(`/api/items/${i.id}`, { review: "approved" }); await render(); } catch (e) { toast(e.message); okAll.disabled = false; }
+  };
   const decide = (id, review) => async () => {
     try { await patch(`/api/items/${id}`, { review }); await render(); } catch (e) { toast(e.message); }
   };
@@ -1395,45 +1403,13 @@ function bindAnswer() {
 // ---------------------------------------------------------------- overview (club status)
 function renderOverview() {
   const b = S.board, o = b.overview, fo = o.focus, id = b.chat.id;
-  const whyTxt = c => c.why === "after_event" ? t("why_after_event")(esc(c.event)) : t("why_" + c.why);
   const stats = [
     ["overdue", fo.overdue.length, "bad", "f_overdue"],
     ["orphans", fo.orphans.length, "warn", "f_orphans"],
     ["conflicts", fo.conflicts.length, "info", "f_conflicts"],
     ["decisions", fo.decisions.length, "accent", "f_decisions"],
   ];
-  const pri = [];
-  fo.overdue.slice(0, 3).forEach(x => pri.push({
-    html: `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${x.owner ? esc(firstName(x.owner)) : t("no_owner")} · ${fmtDate(x.due)}</small>`,
-    label: t("n_late"),
-  }));
-  fo.orphans.filter(x => !fo.overdue.some(o => o.id === x.id)).slice(0, 3).forEach(x => pri.push({
-    html: `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${x.due ? fmtDate(x.due) : t("no_due")}</small>`,
-    label: t("n_orphan"),
-  }));
-  fo.conflicts.slice(0, 3).forEach(x => pri.push({
-    html: x.kind === "task"
-      ? `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a><small>${whyTxt(x)}</small>`
-      : `<a href="#/c/${id}/event/${x.id}">${esc(x.title)}</a><small>${whyTxt(x)}</small>`,
-    label: t("tag_conflict"),
-  }));
-  fo.decisions.slice(0, 3).forEach(x => pri.push({ html: esc(x.title), label: t("tag_open") }));
   const allClear = ![fo.overdue, fo.orphans, fo.conflicts, fo.decisions].some(list => list.length);
-  const priHtml = allClear
-    ? `<div class="empty-quiet">${icon("check")}<p>${t("ov_clear")}</p><button type="button" class="primary" id="ov-add">${t("add_task")}</button></div>`
-    : `<ul class="list">${pri.map(item => `<li><span class="grow">${item.html}<span class="chip">${esc(item.label)}</span></span></li>`).join("")}</ul>
-       ${fo.decisions.length ? `<p class="muted small">${t("f_decisions_hint")}</p>` : ""}
-       <p class="muted"><a href="#/c/${id}/board">${t("ov_see_board")}</a></p>`;
-  const eventsHtml = o.events.length
-    ? `<ul class="list">${o.events.map(e => `<li><span class="grow"><a href="#/c/${id}/event/${e.id}"><b>${esc(e.title)}</b></a>
-        <small>${fmtDate(e.date)}${e.place ? " · " + esc(e.place) : ""}${e.time ? " · " + esc(e.time) : ""}</small></span>
-        <span class="chip">${t("k_days")(e.days)}</span></li>`).join("")}</ul>`
-    : `<div class="empty-quiet">${icon("calendar")}<p>${t("none_yet")}</p><a class="btn" href="#/c/${id}/events">${t("ov_see_events")}</a></div>`;
-  const ai = (b.review || []).slice(0, 4);
-  const aiHtml = ai.length
-    ? `<ul class="list">${ai.map(i => `<li><span class="grow"><a href="#/c/${id}/review">${esc(i.title)}</a>
-        <small>${esc(t("k_" + i.kind))}</small></span><span class="chip ai">${icon("spark")} AI</span></li>`).join("")}</ul>`
-    : `<div class="empty-quiet">${icon("spark")}<p>${t("ov_empty_ai")}</p><a class="btn" href="#/c/${id}/review">${t("ov_see_review")}</a></div>`;
   const TR = lang === "tr";
   const open = b.tasks.filter(x => x.status !== "done"), done = b.tasks.filter(x => x.status === "done");
   const pct = b.tasks.length ? Math.round(done.length / b.tasks.length * 100) : 0;
@@ -1478,6 +1454,7 @@ function renderOverview() {
         <div class="ov-actions"><button type="button" class="hero-btn" id="ov-add2">${icon("plus")} ${L.addT}</button><a class="hero-btn ghost" href="#/c/${id}/events">${icon("calendar")} ${L.addE}</a></div></div>
       <div class="ov-prog"><div class="ov-ring" style="--p:${pct}"><b>${pct}%</b></div><span>${L.prog}<br><small>${done.length} / ${b.tasks.length} ${L.of}</small></span></div>
     </section>
+    <section class="panel" id="coach" style="margin-bottom:16px;border-top:3px solid var(--accent, #4f46e5)"></section>
     <div class="stat-grid">${stats.map(([f, n, tone, key]) => `
       <button type="button" class="stat tone-${tone}" data-card="${f}">
         <span class="stat-ic">${icon(tones[f][1])}</span>
@@ -1493,6 +1470,7 @@ function renderOverview() {
         <section class="panel"><div class="panel-head"><div><h3>${L.ai}</h3><p class="muted small">${L.aiSub}</p></div></div>${aiHtml2}</section>
       </div>
     </div>`;
+  renderCoach(id);
   const add2 = $("#ov-add2");
   if (add2) add2.onclick = () => editTask({});
   $("#view").querySelectorAll("[data-card]").forEach(el => {
@@ -1505,6 +1483,52 @@ function renderOverview() {
   $("#view").querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(b.tasks.find(x => x.id === Number(el.dataset.edit)))));
   const add = $("#ov-add");
   if (add) add.onclick = () => editTask({});
+}
+
+// ---------------------------------------------------------------- Gemma coach: week plan + handover report
+const COACH = {
+  tr: { title: "Gemma asistanı", sub: "Yalnızca kulübün kayıtlarından; sonuçlar kaydedilir, istediğin zaman silebilirsin.",
+    week: "Bu haftanın yol haritası", weekBtn: "Yol haritası çıkar", weekWait: "Gemma haftayı planlıyor…", weekNone: "Açık iş yok; plan çıkarılamadı.",
+    hand: "Devir raporu", handBtn: "Devir raporu yaz", handWait: "Gemma devir raporunu yazıyor…", handHint: "Yönetim değişirken yeni ekibe verilecek rapor.",
+    redo: "Yeniden üret", del: "Sil", copy: "Kopyala", copied: "Kopyalandı", empty: "Henüz üretilmedi.", at: "Üretildi", team: "Komite" },
+  en: { title: "Gemma assistant", sub: "Written only from the club's records; results are saved and can be deleted.",
+    week: "This week's roadmap", weekBtn: "Build roadmap", weekWait: "Gemma is planning the week…", weekNone: "Nothing open; no plan produced.",
+    hand: "Handover report", handBtn: "Write handover report", handWait: "Gemma is writing the handover report…", handHint: "For the incoming board when leadership changes.",
+    redo: "Regenerate", del: "Delete", copy: "Copy", copied: "Copied", empty: "Not generated yet.", at: "Generated", team: "Team" },
+};
+
+async function renderCoach(id) {
+  const box = $("#coach");
+  if (!box) return;
+  const C = COACH[lang === "tr" ? "tr" : "en"];
+  const latest = async k => (await api(`/api/chats/${id}/saved/${k}`).catch(() => ({ saved: [] }))).saved[0] || null;
+  const [week, hand] = await Promise.all([latest("week"), latest("handover")]);
+  const when = r => `<span class="chip">${C.at}: ${esc(r.created_at.slice(0, 16).replace("T", " "))} · ${esc(r.model || "")}</span>`;
+  const weekHtml = week ? `<ol class="coach-steps">${week.body.steps.map(x => `<li><b>${esc(x.action)}</b>
+      <div class="why">${esc(x.why)}</div><div class="meta">${x.when ? `<span class="chip">${icon("calendar")} ${fmtDate(x.when)}</span>` : ""}
+      ${x.unit ? `<span class="chip">${C.team}: ${esc(x.unit)}</span>` : ""}${x.owner ? `<span class="chip ai">${avatar(x.owner)}${esc(firstName(x.owner))}</span>` : ""}</div></li>`).join("")}</ol>${when(week)}`
+    : `<p class="muted small">${C.empty}</p>`;
+  const handHtml = hand ? `<div class="coach-text">${md(hand.body.text)}</div>${when(hand)}` : `<p class="muted small">${C.empty} ${C.handHint}</p>`;
+  const card = (key, title, row, html, btn) => `<div class="coach-card"><div class="panel-head"><h3>${title}</h3><div>
+      <button data-run="${key}" class="${row ? "" : "primary"}">${row ? C.redo : btn}</button>
+      ${key === "week" && row ? `<a class="btn" target="_blank" href="/api/chats/${id}/weekly-report">${lang === "tr" ? "PDF rapor" : "PDF report"}</a>` : ""}
+      ${key === "handover" && row ? `<button data-copy="1">${C.copy}</button>` : ""}${row ? `<button data-del="${row.id}">${C.del}</button>` : ""}</div></div>
+      <div id="coach-${key}">${html}</div></div>`;
+  box.innerHTML = `<div class="panel-head"><div><h3>${icon("spark")} ${C.title}</h3><p class="muted small">${C.sub}</p></div></div>
+    <div class="coach-grid">${card("week", C.week, week, weekHtml, C.weekBtn)}${card("handover", C.hand, hand, handHtml, C.handBtn)}</div>`;
+  box.querySelectorAll("[data-run]").forEach(b => (b.onclick = async () => {
+    const k = b.dataset.run;
+    b.disabled = true;
+    $(`#coach-${k}`).innerHTML = `<div class="thinking"><span class="spinner"></span> ${k === "week" ? C.weekWait : C.handWait}</div>`;
+    try {
+      const r = await post(`/api/chats/${id}/${k === "week" ? "week" : "handover"}`, {});
+      if (k === "week" && !r.steps.length) { $(`#coach-${k}`).innerHTML = `<p class="muted small">${C.weekNone}</p>`; b.disabled = false; return; }
+      renderCoach(id);
+    } catch (err) { $(`#coach-${k}`).innerHTML = `<p class="muted small">${esc(err.message)}</p>`; b.disabled = false; }
+  }));
+  box.querySelectorAll("[data-del]").forEach(b => (b.onclick = async () => { await api(`/api/saved/${b.dataset.del}`, { method: "DELETE" }); renderCoach(id); }));
+  const cp = box.querySelector("[data-copy]");
+  if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(hand.body.text); toast(C.copied); } catch {} };
 }
 
 // ---------------------------------------------------------------- AI event planner
@@ -2021,7 +2045,7 @@ function editMeeting(m) {
   let notesSource = m.notes_source || null;
   const opt = (v, label, sel) => `<option value="${esc(v)}" ${v === sel ? "selected" : ""}>${esc(label)}</option>`;
   modal(`<h3>${isNew ? t("mt_add") : t("mt_edit")}</h3>
-    <label for="m-title">${t("f_title")}</label><input type="text" id="m-title" maxlength="200" value="${esc(m.title || "")}">
+    <label for="m-title">${t("mt_title")}</label><input type="text" id="m-title" maxlength="200" value="${esc(m.title || "")}">
     <div class="grid2">
       <div><label for="m-date">${t("ev_date")}</label><input type="date" id="m-date" value="${esc(m.date || "")}"></div>
       <div><label for="m-time">${t("ev_time")}</label><input type="time" id="m-time" value="${esc(m.time || "")}"></div>
@@ -2067,7 +2091,7 @@ function editMeeting(m) {
         units: checked(), attendees: q("#m-att").value, agenda: q("#m-agenda").value, notes: q("#m-notes").value,
         notes_source: q("#m-notes").value.trim() ? notesSource : null,
       };
-      if (!body.title) { q("#m-title").focus(); return; }
+      if (!body.title) { q("#m-title").focus(); q("#m-title").style.borderColor = "#dc2626"; toast(t("mt_title_need")); return; }
       try {
         const saved = isNew ? await post(`/api/chats/${b.chat.id}/meetings`, body) : await patch(`/api/meetings/${m.id}`, body);
         close();

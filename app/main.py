@@ -12,11 +12,11 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, PlainTextResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analysis, analyzer, assistant, auth, db, units as unitmod, export, insights, llm, meetings, people, report, seed
+from . import analysis, analyzer, assistant, auth, coach, db, units as unitmod, export, insights, llm, meetings, people, report, seed
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -359,9 +359,40 @@ async def event_ideas(chat_id: int):
 def saved_ai(chat_id: int, kind: str):
     """Event ideas / plans the model produced earlier; they stay until deleted."""
     _chat_or_404(chat_id)
-    if kind not in ("ideas", "plan"):
+    if kind not in ("ideas", "plan", "week", "handover"):
         raise HTTPException(404, "unknown kind")
     return {"saved": db.list_ai(chat_id, kind)}
+
+
+@app.post("/api/chats/{chat_id}/week")
+async def week_plan(chat_id: int):
+    """Slow (local model): the next 7 days in order, each step tied to a recorded item or team."""
+    _chat_or_404(chat_id)
+    try:
+        return await coach.week_plan(chat_id, today())
+    except llm.LLMError as e:
+        raise HTTPException(503, str(e))
+
+
+@app.get("/api/chats/{chat_id}/weekly-report", response_class=HTMLResponse)
+def weekly_report(chat_id: int):
+    """Printable one-page weekly report (browser: save as PDF): figures from the records + the saved Gemma roadmap."""
+    _chat_or_404(chat_id)
+    return coach.weekly_html(chat_id, today())
+
+
+@app.post("/api/chats/{chat_id}/handover")
+async def handover(chat_id: int):
+    """Slow (local model): handover report for the next board, written from the records only."""
+    _chat_or_404(chat_id)
+    try:
+        return await coach.handover(chat_id, today())
+    except llm.LLMError as e:
+        raise HTTPException(503, str(e))
+    except report.ReportRejected as e:
+        raise HTTPException(422, {"message": "Rapor, kayıtlı veride olmayan sayı veya isim içerdiği için reddedildi / "
+                                             "rejected: it contained figures or names that are not in the data",
+                                  "unsupported": e.unsupported})
 
 
 @app.delete("/api/saved/{saved_id}")

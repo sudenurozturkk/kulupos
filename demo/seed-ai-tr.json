@@ -143,5 +143,74 @@
     "model": "gemma4:e4b",
     "saved_id": 2,
     "goal": "Kasım ayında 150 kişilik bir siber güvenlik çalıştayı düzenlemek istiyoruz"
+  },
+  "handover": {
+    "text": "Genel görünüm\nKulüp, Yönetim, Etkinlik, İletişim ve Sponsorluk olmak üzere dört takıma sahiptir. Toplam 35 görev bulunmaktadır; bunlardan 14'ü tamamlanmış olup 21 görevi açık durumdadır. Takım bazında tamamlanan/açık görev sayıları: Yönetim (2/3), Etkinlik (5/7), İletişim (5/6) ve Sponsorluk (2/5).\n\nYapılan etkinlikler\nGerçekleştirilen etkinlikler şunlardır: Python Atölyesi, Bahar Dönemi Tanıtım Standı, Git ve GitHub Atölyesi, Siber Güvenlik Semineri, Yeni Üye Oryantasyonu ve Kariyer Günleri Paneli. Bu etkinliklerden bazıları iyi gittiği belirtilmişken (örneğin, Uygulamalı bölüm ve anlatımın netliği; Kampüs meydanındaki konum ve hediye çekilişi), bazı alanlarda eksiklikler yaşanmıştır (örneğin, Süre kısa kaldı; Ses sistemi arızalandı).\n\nAlınan kararlar\nAlınan önemli kararlar şunlardır: Söyleşinin 31 Ekim Cumartesi saat 14:00'te yapılması, kayıtların Google Forms ile alınması, tişörtlerin lacivert ve beyaz logo olması, katılımcılara sertifika verilmesi, Hackathon'un 24 saat süreceği ve 150 kişiyle sınırlı olacağı, gezi katılımının yalnızca kayıtlı üyelere açık olması, aylık yönetim toplantısının her ayın ilk Salı günü yapılması, ses sisteminin kiralık olması, etkinliklerde soru-cevap süresinin en az 20 dakika olması, duyuru görsellerinin lacivert tonlarda olması ve katılımcılara e-sertifika gönderilmesi.\n\nDevredilen açık işler\nDevredilen açık görevler arasında Sertifikaları hazırla (Selin Aydın), 3 günlük geri sayım story serisi (Ece Şahin), Projeksiyon ve ses sistemi için Teknik İşler'e dilekçe yaz, Kahveciye teslimat saatini bildir (Burak Yıldız), Geçen yılın sponsor dosyasını bul, HDMI bağlantısı ve yaka mikrofonunu hazırla (Mert Demir), Katılımcı listesini sertifikalar için aktar (Can Öztürk), Hackathon sponsor paketlerini hazırla (Burak Yıldız), Jüri üyelerini davet et (Elif Kaya), Kayıt formunu yayınla (Zeynep Arslan), Salon ve internet altyapısını doğrula (Mert Demir), Hackathon afiş ve sosyal medya takvimi (Zeynep Arslan), Ödül bütçesini netleştir, Gezi için otobüs kirala (Deniz Çelik), Katılımcı listesini şirkete gönder (Deniz Çelik), İzin dilekçesini SKS'ye ver (Selin Aydın), Dönem sonu faaliyet raporu taslağı (Elif Kaya), Kulüp kimliği ve logo güncellemesi (Zeynep Arslan) bulunmaktadır. Ayrıca Konuşmacının yol ve konaklamasını ayarla, Sponsor kahveciyle sözleşmeyi netleştir ve Basın bülteni taslağını yaz gibi tamamlanmamış işler de mevcuttur.\n\nGeri bildirimlerden öğrenilenler\nEtkinlik geri bildirimlerinden öğrenilen dersler arasında, sürelerin kısa kalması (Python Atölyesi), bazı teknik aksaklıklar yaşanması (labdaki bilgisayarların yavaşlığı; kurulum sorunları), ses sistemindeki arızalar nedeniyle arka sıraların duyamaması ve yemek ikramının yetersiz kalması gibi noktalar öne çıkmaktadır. Ayrıca, soru-cevap sürelerinin yetersiz olması ve giriş kuyruklarının uzaması da gözlemlenmiştir.\n\nYeni yönetime öneriler\n1. Ses sistemi arızaları nedeniyle, gelecekteki etkinliklerde ses sisteminin kiralık olarak kullanılması kararı alınmıştır; bu durumun sürekli takip edilmesi önemlidir.\n2. Kariyer Günleri Paneli'nde soru-cevap süresinin yetersiz kalması göz önüne alındığında, tüm etkinliklerde soru-cevap süresinin en az 20 dakika olacak şekilde planlanması önerilir.\n3. Python Atölyesi ve Git/GitHub Atölyesi gibi teknik atölyelerde yaşanan kurulum sorunları nedeniyle, salon ve internet altyapısının doğrulanması (Mert Demir'in açık görevi) önceliklendirilmelidir.\n4. Yeni Üye Oryantasyonu'nda yemek ikramının yetersiz kalması sebebiyle, gelecekteki etkinliklerde ikramların yeterli düzeyde olması için bütçe planlaması yapılmalıdır.",
+    "model": "gemma4:e4b",
+    "date": "2026-10-18",
+    "saved_id": 3
+  },
+  "week": {
+    "steps": [
+      {
+        "action": "Geçen yılın sponsor dosyasını bulun",
+        "why": "“Geçen yılın sponsor dosyasını bul” görevi 2026-10-15 tarihinde sona ermiştir ve henüz sahibi belirlenmemiştir.",
+        "ref": "T19",
+        "unit": "Sponsorluk",
+        "owner": "Can Öztürk",
+        "when": "2026-10-19"
+      },
+      {
+        "action": "Kahveciye teslimat saatini bildirin",
+        "why": "“Kahveciye teslimat saatini bildir” görevi 2026-10-16 tarihinde sona ermiştir ve Burak Yıldız'a aittir.",
+        "ref": "T18",
+        "unit": "Sponsorluk",
+        "owner": "Burak Yıldız",
+        "when": "2026-10-19"
+      },
+      {
+        "action": "Salon ve internet altyapısını doğrulayın",
+        "why": "“Salon ve internet altyapısını doğrula” görevi 2026-10-16 tarihinde sona ermiştir ve Mert Demir'e aittir.",
+        "ref": "T25",
+        "unit": "Etkinlik",
+        "owner": "Mert Demir",
+        "when": "2026-10-19"
+      },
+      {
+        "action": "İzin dilekçesini SKS'ye verin",
+        "why": "“İzin dilekçesini SKS'ye ver” görevi 2026-10-17 tarihinde sona ermiştir ve Selin Aydın'a aittir.",
+        "ref": "T30",
+        "unit": "Yönetim",
+        "owner": "Selin Aydın",
+        "when": "2026-10-19"
+      },
+      {
+        "action": "Haftalık yönetim toplantısını yapın",
+        "why": "Planlanmış bir toplantı olan “Haftalık yönetim toplantısı” 2026-10-22 tarihinde gerçekleşecektir.",
+        "ref": "M2",
+        "unit": "Yönetim",
+        "owner": null,
+        "when": "2026-10-22"
+      },
+      {
+        "action": "Online hazırlık toplantısını gerçekleştirin",
+        "why": "Yaklaşan etkinlik “Online hazırlık toplantısı” 2026-10-24 tarihinde yapılacaktır.",
+        "ref": "E2",
+        "unit": null,
+        "owner": "Elif Kaya",
+        "when": "2026-10-24"
+      }
+    ],
+    "assessment": "Kulübün en büyük riski, Sponsorluk ekibindeki “Kahveciye teslimat saatini bildir” ve “Geçen yılın sponsor dosyasını bul” gibi iki adet gecikmiş görevdir. Etkinlik ekibi de “Salon ve internet altyapısını doğrula” ile ilgili bir görevi tamamlamalıdır. Yönetim toplantısı “Haftalık yönetim toplantısı” 2026-10-22 tarihinde yapılacaktır, bu da öncelikli olarak ele alınması gereken bir durumdur. Genel olarak, açık görev sayısı (Yönetim: 3, Etkinlik: 7, İletişim: 6, Sponsorluk: 5) dikkat gerektirmektedir.",
+    "agenda": [
+      "Gecikmiş Sponsorluk Görevlerinin Tamamlanması (“Kahveciye teslimat saatini bildir”, “Geçen yılın sponsor dosyasını bul”)",
+      "Etkinlik Altyapı Kontrolü Durumu (“Salon ve internet altyapısını doğrula”)",
+      "Yönetim Toplantısı Gündemi (“Haftalık yönetim toplantısı”)",
+      "Yaklaşan Etkinlikler İçin Hazırlıklar (“Online hazırlık toplantısı”, “Teknoloji Şirketi Gezisi”)",
+      "Sahip Belirlenmemiş Görevlerin Önceliklendirilmesi"
+    ],
+    "model": "gemma4:e4b",
+    "date": "2026-10-18",
+    "saved_id": 4
   }
 }

@@ -213,7 +213,13 @@ def _prompt(event: dict, lang: str, facts: str, extra: str = "") -> list[dict]:
         f"Never guess, estimate, round, or invent names, numbers, dates, places or outcomes. Do not "
         f"compute percentages or differences. Do not add numbers that are not in the data, and do not add units or "
         f"currency that are not written in the data. Write every label in {language} (do not copy the English field names). "
-        f"Plain text, headings written in {language}.{open_points} No emojis."
+        f"Plain text, headings written in {language}.{open_points} No emojis. "
+        f"Do NOT list the recorded fields one per line. Write short readable paragraphs that interpret the data: where "
+        f"both an expected and an actual value are recorded for the same thing, put the two recorded values side by side "
+        f"in one sentence (no new figures, no percentages); connect what went well and what fell short to the recorded "
+        f"feedback; give the date and place in one sentence, only if recorded. End the summary with one or two concrete "
+        f"suggestions for the next similar event that follow from the recorded data. Never state a cause that is not in "
+        f"the data."
         f"{meetings_note}{feedback}"
     )
     return [{"role": "system", "content": system},

@@ -832,3 +832,11 @@ a.rec-chip:hover { background: #dfe3ff; }
 .uc-who { min-height: 28px; display: flex; align-items: center; }
 .report-text { white-space: pre-wrap; line-height: 1.65; background: #fff; border: 1px solid #e3e5f2; border-radius: 12px; padding: 16px 18px; margin: 10px 0 14px; }
 .stale-note { background: var(--warn-soft); color: #92400e; border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+
+/* Gemma coach panel */
+.coach-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.coach-card { border: 1px solid var(--line, #e5e7eb); border-radius: 12px; padding: 14px; }
+.coach-card .panel-head { align-items: center; margin-bottom: 8px; }
+.coach-card .panel-head button { margin-left: 6px; }
+.coach-steps { margin: 0 0 10px; padding-left: 20px; display: grid; gap: 10px; }
+.coach-text { white-space: pre-wrap; font-size: 14px; line-height: 1.55; max-height: 360px; overflow: auto; margin-bottom: 10px; }

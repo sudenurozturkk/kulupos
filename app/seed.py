@@ -5,7 +5,7 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
-from . import analysis, db, meetings, report
+from . import analysis, coach, db, meetings, report
 from .analyzer import norm
 from .parser import parse_chat, read_export
 
@@ -70,7 +70,7 @@ def seed_sample(today, force: bool = False) -> int | None:
     return chat_id
 
 
-SAMPLE_VERSION = "4"   # bump when the sample data or its precomputed texts change: older sample clubs are rebuilt
+SAMPLE_VERSION = "6"   # bump when the sample data or its precomputed texts change: older sample clubs are rebuilt
 
 
 def _outdated(chat_id: int) -> bool:
@@ -162,6 +162,10 @@ def _seed_meetings(chat_id: int, today) -> None:
     if ai:
         db.save_ai(chat_id, "ideas", "Örnek · geçmiş etkinliklere göre", ai["ideas"], ai["model"], "sample")
         db.save_ai(chat_id, "plan", ai["plan"]["title"], ai["plan"], ai["model"], "sample")
+        if ai.get("week"):
+            db.save_ai(chat_id, "week", ai["week"]["date"], coach.clean_week(ai["week"]), ai["model"], "sample")
+        if ai.get("handover"):
+            db.save_ai(chat_id, "handover", ai["handover"]["date"], ai["handover"], ai["model"], "sample")
     if MEETING_SUMMARY.exists():  # written once by scripts/make_sample_meeting_summary.py with the local model
         s = json.loads(MEETING_SUMMARY.read_text(encoding="utf-8"))
         meeting = db.get_meeting(made[s["key"]])

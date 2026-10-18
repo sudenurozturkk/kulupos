@@ -19,3 +19,6 @@ static/pitch.html
 
 # private presentation notes
 SUNUM.md
+
+# local demo-video build files
+static/_video/

@@ -86,3 +86,4 @@ Toplantı: tekrarlayan toplantı, toplantıdan etkinliğe bağlama, katılım yo
 
 ## Sıradaki
 Toplantıdan etkinliğe doğrudan bağlama · G13 yinelenen/çelişki önerisi · G15 EN demo analizi + eval · G16 README ekran görüntüleri · G17 sunum. (Ayrıntı: yerel `PLAN.md`, repoda yok.)
+- 18 Ekim (8): Kayıtlı AI sonuçları (`ai_saved` tablosu: etkinlik fikirleri ve planlar, silinebilir, "Etkinlik planla" altında). Geçmiş etkinliklerden fikir önerisi (`insights.suggest_events`, dayanak etkinlik kayıtlı değilse öneri atılır). Plan sıralı görev + "neden" + önerilen hazırlık toplantıları (komiteler); seçilenler panoya/toplantılara eklenir. Etkinlik raporu bağlı toplantı notlarını da kullanır (sahte modelle test; canlı denenmedi). Örnek veri `scripts/make_sample_ai.py` ile gerçek Gemma çıktısıyla dolduruldu (`demo/seed-ai-tr.json`), `SAMPLE_VERSION` 4. 119 test geçti. Tarayıcıda bakılmadı: fikir/plan/kayıtlı öneriler arayüzü.

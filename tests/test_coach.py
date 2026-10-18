@@ -80,3 +80,20 @@ def test_weekly_report_page_shows_records_and_saved_roadmap(env, monkeypatch):
     c.post(f"/api/chats/{cid}/week")
     page = c.get(f"/api/chats/{cid}/weekly-report").text
     assert "Afişi bitir" in page and "Bir görev gecikti." in page and "Afişi konuş" in page and "gemma" in page.lower()
+
+
+def test_overlooked_finds_undated_ownerless_event_work_and_overload(env):
+    c, cid, tid, coach = env
+    from datetime import date, timedelta
+    soon = (date.today() + timedelta(days=5)).isoformat()
+    ev = c.post(f"/api/chats/{cid}/items", json={"kind": "event", "title": "Zirve", "due": soon, "phase": "planning"}).json()
+    c.post(f"/api/chats/{cid}/items", json={"title": "Salon", "event_id": ev["id"]})            # no owner, no date
+    for i in range(3):
+        c.post(f"/api/chats/{cid}/items", json={"title": f"İş {i}", "owner": "Mert", "due": soon})
+    from app import db
+    o = coach.overlooked(cid, date.today())
+    assert any(x["title"] == "Salon" for x in o["undated"])
+    assert [x["title"] for x in o["events_bare"]] == ["Zirve"] and "sorumlusu yok" in o["events_bare"][0]["note"]
+    assert [x["title"] for x in o["overloaded"]] == ["Mert"]
+    assert c.get(f"/api/chats/{cid}/board").json()["missed"]["events_bare"]   # reaches the board's "Gözden kaçanlar"
+    assert "Gözden kaçanlar" in coach.weekly_html(cid, date.today())

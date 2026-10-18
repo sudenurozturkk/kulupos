@@ -110,6 +110,8 @@ const I18N = {
     member_msg_head: n => `Selam ${n}, Panoda senin üzerinde görünen işler:`,
     member_msg_empty: "Şu an açık bir işin yok ",
     missed: "Gözden kaçanlar",
+    m_undated: "Tarihi girilmemiş açık görevler", m_events_bare: "Yaklaşan etkinlik: görev veya sorumlu eksik", m_no_feedback: "Gerçekleşti ama geri bildirim girilmemiş", m_overloaded: "Üçten fazla açık işi olanlar", m_meetings_empty: "Yapıldı ama kayıt çıkarılmamış toplantılar", m_pending_ai: "Onay bekleyen yapay zekâ önerisi",
+    m_open_n: "açık iş",
     m_questions: "Cevapsız sorular", m_orphans: "Kimsenin üstlenmediği işler", m_overdue: "Tarihi geçenler", m_soon: "3 gün içinde",
     nothing_missed: "Şimdilik gözden kaçan bir şey yok ",
     decisions: "Kararlar", events: "Takvim",
@@ -247,6 +249,8 @@ const I18N = {
     member_msg_head: n => `Hi ${n}, here's what's on you on the board:`,
     member_msg_empty: "Nothing open right now ",
     missed: "Slipping through",
+    m_undated: "Open tasks without a date", m_events_bare: "Upcoming event: tasks or owners missing", m_no_feedback: "Held but no feedback entered", m_overloaded: "People with 3+ open tasks", m_meetings_empty: "Held but no records extracted", m_pending_ai: "AI proposals waiting for approval",
+    m_open_n: "open tasks",
     m_questions: "Unanswered questions", m_orphans: "Nobody took these", m_overdue: "Overdue", m_soon: "Due within 3 days",
     nothing_missed: "Nothing is slipping through right now ",
     decisions: "Decisions", events: "Calendar",
@@ -920,9 +924,12 @@ function renderBoardView() {
     <small>${i.owner ? esc(firstName(i.owner)) : t("no_owner")}${i.due ? " · " + fmtDate(i.due) : ""}</small></span>${srcBtn(i)}</li>`;
   const missedHtml = miss(t("m_questions"), m.questions, q => `<li><span class="grow">${esc(q.title)}
       <small>${t("asked_by")} ${esc(firstName(q.owner)) || "?"}</small></span>${srcBtn(q)}${qBtns(q)}</li>`)
-    + miss(t("m_orphans"), m.orphans, taskLi) + miss(t("m_overdue"), m.overdue, taskLi) + miss(t("m_soon"), m.soon, taskLi);
+    + miss(t("m_orphans"), m.orphans, taskLi) + miss(t("m_overdue"), m.overdue, taskLi) + miss(t("m_soon"), m.soon, taskLi)
+    + ["undated", "events_bare", "no_feedback", "overloaded", "meetings_empty", "pending_ai"].map(k => miss(t("m_" + k), m[k] || [], x => `<li><span class="grow">${
+        k === "events_bare" || k === "no_feedback" ? `<a href="#/c/${b.chat.id}/event/${x.id}">${esc(x.title)}</a>` : k === "meetings_empty" ? `<a href="#/c/${b.chat.id}/meeting/${x.id}">${esc(x.title)}</a>`
+        : k === "undated" ? `<a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a>` : k === "pending_ai" ? `<a href="#/c/${b.chat.id}/review">${esc(x.title)}</a>` : esc(x.title)}${x.note ? `<small>${esc(x.note)}${k === "overloaded" ? " " + t("m_open_n") : ""}</small>` : ""}</span></li>`)).join("");
 
-  const missedN = m.questions.length + m.orphans.length + m.overdue.length + m.soon.length;
+  const missedN = Object.values(m).reduce((n, l) => n + l.length, 0);
   const drawerOpen = !!($("#missed-drawer") && !$("#missed-drawer").hidden);
   const openQs = b.questions.filter(q => q.status === "open");
   const qList = items => items.map(q => `<li><span class="grow">${esc(q.title)}

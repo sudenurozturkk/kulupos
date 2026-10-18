@@ -186,6 +186,49 @@ async def handover(chat_id: int, today: date) -> dict:
     return out
 
 
+# ---- overlooked: deterministic checks over the records (no model) ------------------------------------------
+
+OVERLOAD = 3
+
+
+def overlooked(chat_id: int, today: date) -> dict[str, list[dict]]:
+    """Things that slip through, found by plain rules over the records. Each entry: {id, title, note}."""
+    items = db.get_items(chat_id)
+    t, soon = today.isoformat(), (today + timedelta(days=HORIZON)).isoformat()
+    open_tasks = [i for i in items if i["kind"] == "task" and i["status"] != "done"]
+    out: dict[str, list[dict]] = {"undated": [], "events_bare": [], "no_feedback": [], "overloaded": [], "meetings_empty": [],
+                                  "pending_ai": []}
+    for x in open_tasks:
+        if not x["due"]:
+            out["undated"].append({"id": x["id"], "title": x["title"], "note": x["owner"] or ""})
+    for e in items:
+        if e["kind"] != "event":
+            continue
+        linked = [x for x in open_tasks if x["event_id"] == e["id"]]
+        has_any = any(x["event_id"] == e["id"] for x in items if x["kind"] == "task")
+        if e["phase"] in ("idea", "planning", "confirmed") and e["due"] and t <= e["due"] <= soon:
+            if not has_any:
+                out["events_bare"].append({"id": e["id"], "title": e["title"], "note": f"{e['due']} · bağlı görev yok"})
+            elif any(not x["owner"] for x in linked):
+                n = sum(1 for x in linked if not x["owner"])
+                out["events_bare"].append({"id": e["id"], "title": e["title"], "note": f"{e['due']} · {n} görevin sorumlusu yok"})
+        if e["phase"] == "held" and e.get("feedback_score") is None and not (e.get("feedback_note") or e.get("feedback_good")
+                                                                              or e.get("feedback_bad") or e.get("feedback_comments")):
+            out["no_feedback"].append({"id": e["id"], "title": e["title"], "note": e["due"] or ""})
+    load: dict[str, int] = {}
+    for x in open_tasks:
+        if x["owner"]:
+            load[x["owner"]] = load.get(x["owner"], 0) + 1
+    out["overloaded"] = [{"id": None, "title": n, "note": f"{c}"} for n, c in sorted(load.items(), key=lambda r: -r[1]) if c >= OVERLOAD]
+    for m in db.get_meetings(chat_id):
+        if m["status"] == "held" and not any(i["meeting_id"] == m["id"] for i in items):
+            out["meetings_empty"].append({"id": m["id"], "title": m["title"], "note": m["date"] or ""})
+    pend = len(db.get_items(chat_id, review="proposed"))
+    if pend:
+        out["pending_ai"].append({"id": None, "title": str(pend), "note": ""})
+    return out
+
+
 # ---- printable weekly report (open in the browser, "save as PDF") ------------------------------------
 
 def weekly_html(chat_id: int, today: date) -> str:
@@ -215,6 +258,13 @@ def weekly_html(chat_id: int, today: date) -> str:
             if steps else "<p><i>Henüz haftalık yol haritası üretilmedi: Kulüp durumu → Gemma asistanı.</i></p>")
     foot = (f"Gemma ({e(week['model'])}) tarafından, yalnızca kulübün kayıtlarından yazıldı · yol haritası tarihi {e(week['date'])}"
             if week else "")
+    ov = overlooked(chat_id, today)
+    lab = {"undated": "Tarihi girilmemiş açık görevler", "events_bare": "Yaklaşan etkinlik: görev veya sorumlu eksik",
+           "no_feedback": "Gerçekleşti ama geri bildirim girilmemiş", "overloaded": "3 veya daha çok açık işi olanlar (sayı)",
+           "meetings_empty": "Yapıldı ama kayıt çıkarılmamış toplantılar", "pending_ai": "Onay bekleyen yapay zekâ önerisi sayısı"}
+    miss = "".join(f"<h3>{e(lab[k])}</h3><ul>" + "".join(f"<li>{e(v['title'])}" + (f" <small>({e(v['note'])})</small>" if v["note"] else "") + "</li>"
+                                                         for v in vs[:6]) + "</ul>" for k, vs in ov.items() if vs)
+    miss = f"<h2>Gözden kaçanlar</h2>{miss}" if miss else ""
     return f"""<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>{e(chat['name'])} · Haftalık rapor</title><style>
 body{{font:14px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#111;max-width:820px;margin:24px auto;padding:0 20px}}
 h1{{font-size:24px;margin:0}} h2{{font-size:16px;margin:22px 0 6px;border-bottom:2px solid #4f46e5;padding-bottom:3px;color:#312e81}}
@@ -225,7 +275,7 @@ small{{color:#555}} footer{{margin-top:26px;font-size:12px;color:#666}} .bar{{ma
 <h1>{e(chat['name'])}</h1><div style="color:#555">Haftalık yönetim raporu · {t}</div>
 <div class="kpi"><div><b>{len(open_)}</b>açık görev</div><div><b>{len(tasks) - len(open_)}</b>biten görev</div>
 <div><b>{len(overdue)}</b>geciken</div><div><b>{len(orphans)}</b>sorumlusuz</div></div>
-{ai}{plan}{agenda}
+{ai}{plan}{agenda}{miss}
 <h2>Geciken işler</h2>{('<table>' + rows(overdue[:8], (lambda x: x['title'], lambda x: x['owner'], lambda x: x['due'])) + '</table>') if overdue else '<p>Yok.</p>'}
 <h2>Sorumlusuz işler</h2>{('<table>' + rows(orphans[:8], (lambda x: x['title'], lambda x: x['unit'], lambda x: x['due'])) + '</table>') if orphans else '<p>Yok.</p>'}
 <h2>Yaklaşan etkinlikler ve planlı toplantılar</h2>

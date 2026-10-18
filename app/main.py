@@ -312,6 +312,7 @@ def board(chat_id: int):
         "orphans": [i for i in open_tasks if not i["owner"]],
         "overdue": [i for i in open_tasks if i["due"] and i["due"] < t.isoformat()],
         "soon": [i for i in open_tasks if i["due"] and t.isoformat() <= i["due"] <= soon],
+        **coach.overlooked(chat_id, t),
     }
     return {
         "chat": chat,

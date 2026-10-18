@@ -721,8 +721,7 @@ function shell(view) {
   let sampleHidden = false;
   try { sampleHidden = sessionStorage.getItem("pano.sample.hide." + c.id) === "1"; } catch { /* keep it visible */ }
   const sample = c.is_sample && !sampleHidden ? `<div class="sample-banner" id="sample-banner"><span>${icon("info")} <b>${t("sample_tag")}</b> · ${t("sample_banner")}</span>
-    <span class="sample-actions"><button type="button" class="ghost small" id="btn-dismiss-sample">${t("sample_hide")}</button>
-    <button type="button" class="small danger" id="btn-clear-sample">${t("sample_clear")}</button></span></div>` : "";
+    <span class="sample-actions"><button type="button" class="ghost small" id="btn-dismiss-sample">${t("sample_hide")}</button></span></div>` : "";   // no "clear sample data" button here: one stray click would delete the whole demo club
   return `
   ${sample}
   <header class="page-head">

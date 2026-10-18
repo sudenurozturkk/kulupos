@@ -578,7 +578,7 @@ button.stat .lbl { display: flex; align-items: center; gap: 8px; margin-top: 4px
 .drawer-back { position: fixed; inset: 0; background: rgba(24, 24, 27, .28); z-index: 45; }
 .drawer-back[hidden], .drawer[hidden] { display: none; }
 .drawer {
-  position: fixed; top: 0; right: 0; z-index: 46; width: min(400px, 100%); height: 100vh;
+  position: fixed; top: 0; right: 0; z-index: 46; width: min(560px, 100%); height: 100vh;
   display: flex; flex-direction: column; background: var(--surface);
   border-left: 1px solid var(--border); box-shadow: var(--shadow-lg);
 }
@@ -850,3 +850,10 @@ a.rec-chip:hover { background: #dfe3ff; }
 .saved-row .t { font-weight: 600; }
 .saved-row .why { display: block; font-size: 13.5px; color: var(--muted, #555); margin: 3px 0; }
 .saved-row .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+
+/* "Gözden kaçanlar" drawer: text gets the full row, actions sit below it */
+.drawer-body .list li { flex-wrap: wrap; padding: 10px 0; }
+.drawer-body .list li .grow { flex: 1 1 100%; font-size: 15px; line-height: 1.35; }
+.drawer-body .list li button.small { padding: 4px 10px; min-height: 30px; font-size: 13px; }
+.drawer-body .list li .src { order: 2; }
+.drawer-body h4 { margin: 20px 0 2px; padding: 6px 10px; border-radius: 8px; background: var(--bg, #f4f4fb); font-size: 13px; letter-spacing: .02em; }

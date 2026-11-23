@@ -65,3 +65,20 @@ def detail(items: list[dict], chat: dict, meetings: list[dict], name: str, today
         "meetings": [{"id": m["id"], "title": m["title"], "date": m["date"], "status": m["status"]}
                      for m in meetings if _listed(m["attendees"], name)],
     }
+
+
+def workload(items: list[dict], chat: dict, today: str) -> dict:
+    """Open / late task counts per person and per committee. Numbers only: no score, no ranking (alphabetical order).
+    Open tasks nobody owns / no committee holds are counted on their own line instead of being hidden."""
+    tasks = [i for i in items if i["kind"] == "task"]
+
+    def counts(ts: list[dict]) -> dict:
+        op = [t for t in ts if t["status"] == "open"]
+        return {"open": len(op), "late": sum(1 for t in op if t["due"] and t["due"] < today)}
+    units = list(chat["units"])
+    units += sorted({t["unit"] for t in tasks if t["unit"] and t["unit"] not in units}, key=str.casefold)
+    return {"today": today,
+            "people": [{"name": n, **counts(_mine(items, n))} for n in names(items)],
+            "units": [{"unit": u, **counts([t for t in tasks if t["unit"] == u])} for u in units],
+            "no_unit": counts([t for t in tasks if not t["unit"]]),
+            "no_owner": counts([t for t in tasks if not t["owner"]])}

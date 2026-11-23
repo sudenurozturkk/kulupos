@@ -725,6 +725,13 @@ def people_list(chat_id: int):
     return {"people": people.summary(db.get_items(chat_id), chat, today().isoformat())}
 
 
+@app.get("/api/chats/{chat_id}/workload")
+def workload(chat_id: int):
+    """Open and late task counts per person and committee. Counts only; no ranking, no judgement."""
+    chat = _chat_or_404(chat_id)
+    return people.workload(db.get_items(chat_id), chat, today().isoformat())
+
+
 @app.get("/api/chats/{chat_id}/person")
 def person(chat_id: int, name: str):
     chat = _chat_or_404(chat_id)

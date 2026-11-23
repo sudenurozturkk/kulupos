@@ -352,7 +352,8 @@ const HUB_I18N = {
     da_intro: "Sohbeti içeri al, verini dışarı ver. Veri bilgisayardan çıkmaz.", da_import: "İçe aktar", da_new: "Başka sohbet / yeni kulüp",
     da_import_note: "Aynı sohbetin daha yeni bir dışa aktarımı eklenirse yalnızca yeni mesajlar alınır. “Baştan analiz et” modelin tüm sohbeti yeniden okumasını ister (yavaştır); kendi düzeltmelerin ezilmez.",
     da_export: "Dışa aktar", da_export_note: "Yalnızca onaylı kayıtlar. CSV/JSON penceresinde filtre ve tarih aralığı seçilir.", da_danger: "Tehlikeli bölge",
-    tab_people: "Kişiler", pp_intro: "Görev sahiplerinden otomatik türeyen isimler. Bir kişiye tıklayınca görevleri, etkinlikleri ve toplantıları açılır.",
+    tab_people: "Kişiler", tab_workload: "İş yükü", wl_note: "Yalnızca sayılar: açık ve geciken görev sayısı. Görev sayısı zorluğu veya emeği yansıtmaz; bu sayfa bir performans değerlendirmesi değildir.",
+    wl_people: "Kişiye göre", wl_units: "Komiteye göre", wl_no_owner: "Sorumlusu olmayan görevler", wl_late_note: "Geciken = açık ve son tarihi geçmiş.", wl_empty: "Henüz görev yok.", pp_intro: "Görev sahiplerinden otomatik türeyen isimler. Bir kişiye tıklayınca görevleri, etkinlikleri ve toplantıları açılır.",
     pp_note: "Yalnızca sayılar: görev sayısı zorluğu yansıtmaz; bu sayfa bir performans değerlendirmesi değildir.",
     pp_name: "Kişi", pp_committees: "Komiteler", pp_open: "Açık", pp_late: "Geciken görevler", pp_done: "Tamamlanan", pp_done_l: "Tamamladıkları",
     pp_upcoming: "Yaklaşan teslimler", pp_undated: "Tarihsiz açık görevler", pp_events: "Etkinlikler", pp_meetings: "Toplantılar (katılımcı listesinde adı geçen)",
@@ -381,7 +382,8 @@ const HUB_I18N = {
     da_intro: "Bring a chat in, take your data out. The data never leaves this computer.", da_import: "Import", da_new: "Another chat / new club",
     da_import_note: "Adding a newer export of the same chat only takes the new messages. “Re-analyse from scratch” makes the model read the whole chat again (slow); your own corrections are not overwritten.",
     da_export: "Export", da_export_note: "Approved records only. The CSV/JSON dialog lets you pick a filter and a date range.", da_danger: "Danger zone",
-    tab_people: "People", pp_intro: "Names derived from task owners. Click a person to see their tasks, events and meetings.",
+    tab_people: "People", tab_workload: "Workload", wl_note: "Numbers only: open and late task counts. A task count does not reflect difficulty or effort; this page is not a performance review.",
+    wl_people: "By person", wl_units: "By committee", wl_no_owner: "Tasks without an owner", wl_late_note: "Late = open and past its due date.", wl_empty: "No tasks yet.", pp_intro: "Names derived from task owners. Click a person to see their tasks, events and meetings.",
     pp_note: "Numbers only: a task count does not reflect difficulty; this page is not a performance review.",
     pp_name: "Person", pp_committees: "Committees", pp_open: "Open", pp_late: "Late tasks", pp_done: "Completed", pp_done_l: "Completed",
     pp_upcoming: "Upcoming deadlines", pp_undated: "Open tasks without a date", pp_events: "Events", pp_meetings: "Meetings (named in the attendee list)",
@@ -663,7 +665,7 @@ async function loadBoard(chatId) {
 // Sidebar groups. Routes stay #/c/:id/<view>. Event list / analysis / plan stay as an in-page segment.
 const SIDE = [
   { label: "sec_work", items: [["overview", "tab_overview"], ["board", "nav_tasks"], ["events", "tab_events"], ["meetings", "tab_meetings"]] },
-  { label: "sec_people", items: [["people", "tab_people"], ["units", "tab_units"]] },
+  { label: "sec_people", items: [["people", "tab_people"], ["units", "tab_units"], ["workload", "tab_workload"]] },
   { label: "sec_ai", items: [["review", "tab_review"], ["plan", "tab_plan"], ["summary", "tab_summary"], ["ask", "tab_ask"]] },
   { label: "sec_data", items: [["data", "nav_data"]] },
 ];
@@ -671,7 +673,7 @@ const TITLE = {
   overview: "tab_overview", summary: "tab_summary", ask: "tab_ask",
   events: "tab_events", event: "tab_events", analysis: "tab_analysis", plan: "tab_plan",
   meetings: "tab_meetings", meeting: "tab_meetings", board: "nav_tasks", review: "tab_review",
-  people: "tab_people", person: "tab_people", units: "tab_units", unit: "tab_units", data: "nav_data",
+  people: "tab_people", person: "tab_people", workload: "tab_workload", units: "tab_units", unit: "tab_units", data: "nav_data",
 };
 
 function renderSideNav() {
@@ -1884,6 +1886,24 @@ function drawEventReport(eid, r, extra = "") {
 }
 
 // ---------------------------------------------------------------- people (derived from task owners; counts only)
+async function renderWorkloadView() {
+  const id = S.board.chat.id, view = $("#view");
+  view.innerHTML = `<div class="narrow"><p class="muted"><span class="spinner"></span></p></div>`;
+  let d;
+  try { d = await api(`/api/chats/${id}/workload`); }
+  catch (e) { view.innerHTML = `<div class="narrow"><p class="muted"> ${esc(e.message)}</p></div>`; return; }
+  if (route().view !== "workload" || S.board.chat.id !== id) return;
+  const table = (title, rows) => `<div class="panel"><h3>${title}</h3><table class="atable"><thead><tr><th></th><th>${t("pp_open")}</th><th>${t("pp_late")}</th></tr></thead><tbody>${
+    rows.map(r => `<tr><td>${r.href ? `<a href="${r.href}">${esc(r.label)}</a>` : esc(r.label)}</td><td>${r.open}</td><td class="${r.late ? "late" : ""}">${r.late ? `<b>${r.late}</b>` : 0}</td></tr>`).join("")}</tbody></table></div>`;
+  const ppl = d.people.map(p => ({ label: p.name, open: p.open, late: p.late, href: `#/c/${id}/person/${encodeURIComponent(p.name)}` }));
+  const uns = d.units.map(u => ({ label: u.unit, open: u.open, late: u.late, href: `#/c/${id}/unit/${encodeURIComponent(u.unit)}` }));
+  if (d.no_unit.open || d.no_unit.late) uns.push({ label: t("no_unit"), open: d.no_unit.open, late: d.no_unit.late });
+  if (d.no_owner.open) ppl.push({ label: t("wl_no_owner"), open: d.no_owner.open, late: d.no_owner.late });
+  view.innerHTML = `<p class="muted small">${t("wl_note")} ${t("wl_late_note")}</p>
+    ${ppl.length || uns.length ? `<div class="evp-grid"><div class="stack">${table(t("wl_people"), ppl)}</div><div class="stack">${table(t("wl_units"), uns)}</div></div>`
+      : `<div class="empty-quiet">${icon("person")}<p>${t("wl_empty")}</p></div>`}`;
+}
+
 async function renderPeopleView() {
   const id = S.board.chat.id, view = $("#view");
   view.innerHTML = `<div class="narrow"><p class="muted"><span class="spinner"></span></p></div>`;
@@ -2035,7 +2055,7 @@ function renderDataView() {
   bindDataActions();
 }
 
-const VIEWS = { units: renderUnitsView, unit: renderUnitView, data: renderDataView, people: renderPeopleView, person: renderPersonView, events: renderEventsView, event: renderEventView, meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
+const VIEWS = { workload: renderWorkloadView, units: renderUnitsView, unit: renderUnitView, data: renderDataView, people: renderPeopleView, person: renderPersonView, events: renderEventsView, event: renderEventView, meetings: renderMeetingsView, meeting: renderMeetingView, analysis: renderAnalysisView, overview: renderOverview, board: renderBoardView, review: renderReviewView, plan: renderPlanView, summary: renderSummaryView, ask: renderAskView };
 
 // ---------------------------------------------------------------- render & polling
 function startPolling(chatId) {

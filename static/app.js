@@ -116,7 +116,7 @@ const I18N = {
     nothing_missed: "Şimdilik gözden kaçan bir şey yok ",
     decisions: "Kararlar", events: "Takvim",
     none_yet: "Henüz yok",
-    q_resolve: "Çözüldü", q_invalid: "Geçersiz", q_reopen: "Yeniden aç", q_closed: "Kapatılan sorular", q_hist: "Geçmiş", q_hist_none: "Henüz değişiklik yok.",
+    q_resolve: "Çözüldü", q_invalid: "Geçersiz", q_reopen: "Yeniden aç", q_closed: "Kapatılan sorular", q_hist: "Geçmiş", srch_ph: "Ara…", srch_aria: "Kulüpte ara", srch_none: "Sonuç yok", srch_short: "En az 2 karakter yaz.", srch_items: "Kayıtlar", srch_meet: "Toplantılar", srch_msgs: "Mesajlar", cal_btn: "Takvim (.ics)", cal_note: "Etkinlik, toplantı ve açık görevlerin tarihleri; Google Takvim / Outlook'a aktarılır.", hist_btn: "Geçmiş ve yorumlar", cmt_ph: "Yorum yaz (en çok 500 karakter)", cmt_add: "Yorum ekle", cmt_lbl: "Yorum", q_hist_none: "Henüz değişiklik yok.",
     st_name: { open: "Açık", answered: "Cevaplandı", resolved: "Çözüldü", invalid: "Geçersiz", done: "Kesinleşti" },
     val_name: { valid: "Geçerli", changed: "Değişti", cancelled: "İptal" }, val_changed: "Değişti", val_cancelled: "İptal", val_valid_btn: "Yine geçerli",
     q_note: "Not (isteğe bağlı)", q_save: "Kaydet", q_close_title: s => `“${s}” olarak işaretle`,
@@ -255,7 +255,7 @@ const I18N = {
     nothing_missed: "Nothing is slipping through right now ",
     decisions: "Decisions", events: "Calendar",
     none_yet: "Nothing yet",
-    q_resolve: "Resolved", q_invalid: "Not valid", q_reopen: "Reopen", q_closed: "Closed questions", q_hist: "History", q_hist_none: "No changes yet.",
+    q_resolve: "Resolved", q_invalid: "Not valid", q_reopen: "Reopen", q_closed: "Closed questions", q_hist: "History", srch_ph: "Search…", srch_aria: "Search the club", srch_none: "No results", srch_short: "Type at least 2 characters.", srch_items: "Records", srch_meet: "Meetings", srch_msgs: "Messages", cal_btn: "Calendar (.ics)", cal_note: "Dates of events, meetings and open tasks; import into Google Calendar / Outlook.", hist_btn: "History & comments", cmt_ph: "Write a comment (max 500 characters)", cmt_add: "Add comment", cmt_lbl: "Comment", q_hist_none: "No changes yet.",
     st_name: { open: "Open", answered: "Answered", resolved: "Resolved", invalid: "Not valid", done: "Final" },
     val_name: { valid: "Valid", changed: "Changed", cancelled: "Cancelled" }, val_changed: "Changed", val_cancelled: "Cancel", val_valid_btn: "Valid again",
     q_note: "Note (optional)", q_save: "Save", q_close_title: s => `Mark the question as “${s}”`,
@@ -685,10 +685,41 @@ function renderSideNav() {
   const reviewN = here ? here.review.length + here.changes.length : 0;
   const missedN = here ? Object.values(here.missed).reduce((n, l) => n + l.length, 0) : 0;
   const on = v => v === view || (v === "events" && view === "event") || (v === "people" && view === "person") || (v === "units" && view === "unit") || (v === "meetings" && view === "meeting");
-  nav.innerHTML = SIDE.map(g => `<div class="side-label">${t(g.label)}</div>` + g.items.map(([v, key]) => {
+  nav.innerHTML = searchHtml() + SIDE.map(g => `<div class="side-label">${t(g.label)}</div>` + g.items.map(([v, key]) => {
     const n = v === "review" ? reviewN : v === "board" ? missedN : 0;
     return `<a href="#/c/${id}/${v}" class="${on(v) ? "active" : ""}"><span>${t(key)}</span>${n ? `<span class="side-count">${n}</span>` : ""}</a>`;
   }).join("")).join("");
+  bindSearch(id);
+}
+
+// ---------------------------------------------------------------- search
+function searchHtml() {
+  return `<form class="side-search" id="side-search" role="search"><input type="search" id="side-q" maxlength="100" placeholder="${esc(t("srch_ph"))}" aria-label="${esc(t("srch_aria"))}" autocomplete="off"></form>`;
+}
+
+function bindSearch(chatId) {
+  const f = $("#side-search");
+  if (!f) return;
+  f.onsubmit = e => { e.preventDefault(); showSearch(chatId, $("#side-q").value.trim()); };
+}
+
+async function showSearch(chatId, q) {
+  if (q.length < 2) return toast(t("srch_short"));
+  let r;
+  try { r = await api(`/api/chats/${chatId}/search?q=${encodeURIComponent(q)}`); } catch (e) { return toast(e.message); }
+  const itemLink = x => x.kind === "event" ? `#/c/${chatId}/event/${x.id}` : `#/c/${chatId}/board`;
+  const kinds = { task: lang === "tr" ? "Görev" : "Task", decision: lang === "tr" ? "Karar" : "Decision", question: lang === "tr" ? "Soru" : "Question", event: lang === "tr" ? "Etkinlik" : "Event" };
+  const group = (title, rows) => rows.length ? `<h4>${t(title)} (${rows.length})</h4><ul class="list">${rows.join("")}</ul>` : "";
+  const body = [
+    group("srch_items", r.items.map(x => `<li><span class="grow"><a href="${itemLink(x)}" data-close><b>${esc(x.title)}</b></a>
+      <small>${esc(kinds[x.kind] || x.kind)}${x.owner ? " · " + esc(x.owner) : ""}${x.due ? " · " + fmtDate(x.due) : ""}</small></span></li>`)),
+    group("srch_meet", r.meetings.map(x => `<li><span class="grow"><a href="#/c/${chatId}/meeting/${x.id}" data-close><b>${esc(x.title)}</b></a>
+      <small>${x.date ? fmtDate(x.date) : "—"} · ${esc(x.snippet)}</small></span></li>`)),
+    group("srch_msgs", r.messages.map(x => `<li><span class="grow"><button class="linklike" data-msg="${x.idx}"><b>${esc(x.sender || "—")}</b></button>
+      <small>${esc(fmtTs(x.ts))} · ${esc(x.snippet)}</small></span></li>`)),
+  ].join("");
+  modal(`<h3>${esc(q)}</h3>${body || `<p class="muted">${t("srch_none")}</p>`}<div class="row"><button class="primary" data-close>OK</button></div>`,
+    m => m.querySelectorAll("[data-msg]").forEach(b => (b.onclick = () => showSource(Number(b.dataset.msg)))));
 }
 
 function closeSidebar() { $("#sidebar")?.classList.remove("open"); }
@@ -1015,8 +1046,18 @@ async function showHistory(id) {
   try { h = await api(`/api/items/${id}/history`); } catch (e) { return toast(e.message); }
   const name = v => esc(t("st_name")[v] || t("val_name")[v] || v || "—");
   modal(`<h3>${t("q_hist")}</h3>${h.length ? `<ul class="list">${h.map(x => `<li><span class="grow">${esc(x.created_at.replace("T", " "))}
-    <small>${x.field === "title" ? esc(x.old || "—") + " → " + esc(x.new || "—") : name(x.old) + " → " + name(x.new)}${x.note ? " · " + esc(x.note) : ""}</small></span></li>`).join("")}</ul>` : `<p class="muted">${t("q_hist_none")}</p>`}
-    <div class="row"><button class="primary" data-close>OK</button></div>`);
+    <small>${x.field === "comment" ? `<b>${t("cmt_lbl")}</b>` : x.field === "title" ? esc(x.old || "—") + " → " + esc(x.new || "—") : name(x.old) + " → " + name(x.new)}${x.note ? " · " + esc(x.note) : ""}</small></span></li>`).join("")}</ul>` : `<p class="muted">${t("q_hist_none")}</p>`}
+    <form id="cmt-form" class="cmt-form"><textarea id="cmt-text" rows="2" maxlength="500" placeholder="${esc(t("cmt_ph"))}" aria-label="${esc(t("cmt_lbl"))}"></textarea>
+      <button type="submit" class="small">${t("cmt_add")}</button></form>
+    <div class="row"><button class="primary" data-close>OK</button></div>`, m => {
+    m.querySelector("#cmt-form").onsubmit = async e => {
+      e.preventDefault();
+      const text = m.querySelector("#cmt-text").value.trim();
+      if (!text) return;
+      try { await post(`/api/items/${id}/comments`, { text }); } catch (err) { return toast(err.message); }
+      showHistory(id);
+    };
+  });
 }
 
 // Event report. Generation is slow on a local model, so the modal shows the real elapsed time.
@@ -1212,13 +1253,15 @@ function editTask(task) {
     </div>
     ${task.source_idx != null ? `<p><button class="ghost small" id="e-src">${t("source")}</button></p>` : ""}
     <div class="modal-actions">
-      ${isNew ? "" : `<button class="danger ghost left" id="e-del">${t("del")}</button>`}
+      ${isNew ? "" : `<button class="danger ghost left" id="e-del">${t("del")}</button><button class="ghost left" id="e-hist">${t("hist_btn")}</button>`}
       <button data-close>${t("cancel")}</button>
       <button class="primary" id="e-save">${t("save")}</button>
     </div>`, (m, close) => {
     m.querySelector("#e-title").focus();
     const src = m.querySelector("#e-src");
     if (src) src.onclick = () => showSource(task.source_idx);
+    const hist = m.querySelector("#e-hist");
+    if (hist) hist.onclick = () => showHistory(task.id);
     const del = m.querySelector("#e-del");
     if (del) del.onclick = async () => { await api(`/api/items/${task.id}`, { method: "DELETE" }); close(); reloadBoard(); };
     m.querySelector("#e-save").onclick = async () => {
@@ -1986,7 +2029,8 @@ function renderDataView() {
       <input type="file" id="file2" accept=".txt,.zip" hidden></div>
     <div class="panel"><h3>${t("da_export")}</h3><p class="muted small">${t("da_export_note")}</p>
       <div class="row-actions"><a class="btn ghost" href="/api/chats/${c.id}/export.md" download="${esc(c.name)}.md">Markdown</a>
-      <button class="ghost" id="btn-export">${t("exp_btn")}</button></div></div>
+      <button class="ghost" id="btn-export">${t("exp_btn")}</button>
+      <a class="btn ghost" href="/api/chats/${c.id}/calendar.ics" download="kulupos.ics" title="${esc(t("cal_note"))}">${t("cal_btn")}</a></div></div>
     <div class="panel"><h3>${t("da_danger")}</h3><div class="row-actions"><button class="ghost danger" id="btn-delete">${t("delete_chat")}</button></div></div></div>`;
   bindDataActions();
 }

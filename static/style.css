@@ -472,6 +472,11 @@ pre.report { overflow-wrap: anywhere; background: var(--surface-2); padding: var
 .sidebar .logo { width: 28px; height: 28px; border-radius: 8px; }
 .workspace { flex: 1; min-width: 0; }
 .mobile-bar { display: none; }
+.side-search { padding: 4px 6px 2px; }
+.side-search input { width: 100%; }
+.cmt-form { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; }
+.cmt-form textarea { flex: 1; resize: vertical; }
+button.linklike { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; text-align: left; }
 .side-nav { display: flex; flex-direction: column; gap: 2px; }
 .side-label { font-size: 12px; font-weight: 500; color: var(--muted); padding: 14px 10px 4px; letter-spacing: 0; text-transform: none; }
 .side-nav a {

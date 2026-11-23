@@ -16,7 +16,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Res
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analysis, analyzer, assistant, auth, coach, db, units as unitmod, export, insights, llm, meetings, people, report, seed
+from . import analysis, analyzer, assistant, auth, coach, db, extras, units as unitmod, export, insights, llm, meetings, people, report, seed
 from .parser import MAX_BYTES, parse_report, read_export
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -35,6 +35,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="KulüpOS", docs_url="/api/docs", lifespan=lifespan)
 _tasks: set[asyncio.Task] = set()
+app.include_router(extras.router)
 
 
 @app.middleware("http")

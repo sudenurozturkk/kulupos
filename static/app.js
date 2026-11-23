@@ -286,6 +286,8 @@ const MEET_I18N = {
     tab_meetings: "Toplantılar",
     mt_intro: "Toplantı notlarını yapıştır veya .txt/.md olarak yükle. Notlardan çıkan görev, karar ve sorular önce AI incelemesine düşer; sen onaylamadan panoya girmez.",
     mt_title: "Toplantı adı (zorunlu)", mt_title_need: "Önce toplantı adını yazın.",
+    mt_list: "Liste", mt_month: "Ay takvimi", mt_prev: "Önceki ay", mt_next: "Sonraki ay", mt_this_month: "Bu ay", mt_undated: "Tarihi belirsiz toplantılar (takvimde gösterilemez)",
+    mt_month_names: ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"], mt_wk: ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"],
     mt_add: "Toplantı ekle", mt_edit: "Toplantıyı düzenle", mt_empty: "Henüz toplantı yok.",
     mt_nodate: "tarih belirsiz", mt_status: "Durum", mt_st: { planned: "Planlandı", held: "Yapıldı", cancelled: "İptal" },
     mt_date_hint: "Tarih boş bırakılabilir; bu durumda “tarih belirsiz” işaretlenir ve notlardaki göreli tarihler (“haftaya”) çözülmez.",
@@ -313,6 +315,8 @@ const MEET_I18N = {
     tab_meetings: "Meetings",
     mt_intro: "Paste meeting notes or upload them as .txt/.md. Tasks, decisions and questions found in them go to AI review first; nothing reaches the board until you approve.",
     mt_title: "Meeting title (required)", mt_title_need: "Type the meeting title first.",
+    mt_list: "List", mt_month: "Month calendar", mt_prev: "Previous month", mt_next: "Next month", mt_this_month: "This month", mt_undated: "Meetings without a date (cannot be shown on the calendar)",
+    mt_month_names: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], mt_wk: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     mt_add: "Add meeting", mt_edit: "Edit meeting", mt_empty: "No meetings yet.",
     mt_nodate: "date unclear", mt_status: "Status", mt_st: { planned: "Planned", held: "Held", cancelled: "Cancelled" },
     mt_date_hint: "The date may be left empty; it is then marked “date unclear” and relative dates in the notes (“next week”) are not resolved.",
@@ -513,6 +517,22 @@ function fmtDate(iso, withDay = true) {
   if (!iso) return "";
   const d = new Date(iso.slice(0, 10) + "T12:00:00");
   return `${withDay ? DAYS[lang][d.getDay()] + " " : ""}${d.getDate()} ${MONTHS[lang][d.getMonth()]}`;
+}
+// Month grid, Monday first. Cells hold the meetings whose date falls on that day (undated ones never appear).
+function monthCells(year, month0, list) {
+  const pad = n => String(n).padStart(2, "0");
+  const first = new Date(Date.UTC(year, month0, 1)), lead = (first.getUTCDay() + 6) % 7;
+  const days = new Date(Date.UTC(year, month0 + 1, 0)).getUTCDate();
+  const weeks = [];
+  for (let i = 0; i < Math.ceil((lead + days) / 7) * 7; i++) {
+    const d = new Date(Date.UTC(year, month0, 1 - lead + i));
+    const iso = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+    const cell = { iso, day: d.getUTCDate(), inMonth: d.getUTCMonth() === month0,
+      meetings: list.filter(m => m.date === iso).sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99") || a.id - b.id) };
+    if (i % 7 === 0) weeks.push([]);
+    weeks[weeks.length - 1].push(cell);
+  }
+  return weeks;
 }
 function fmtTs(ts) {
   const d = new Date(ts);
@@ -2111,8 +2131,34 @@ async function renderMeetingsView() {
       <span class="mt-when">${m.date ? `${fmtDate(m.date)}${m.time ? " · " + esc(m.time) : ""}` : t("mt_nodate")}</span>
       <span class="mt-units">${m.units.map(u => `<span class="meta-chip uchip">${esc(u)}</span>`).join("")}</span>
       <span class="mt-foot">${avatarStack(m.attendees)}<small>${t("mt_counts")(m)}</small></span></a>`;
-  $("#mt-list").innerHTML = list.length ? `<div class="mt-grid">${list.map(mc).join("")}</div>`
-    : `<div class="empty-quiet">${icon("people")}<p>${t("mt_empty")}</p></div>`;
+  const empty = `<div class="empty-quiet">${icon("people")}<p>${t("mt_empty")}</p></div>`;
+  const draw = () => {
+    const mode = S.mtMode === "month" ? "month" : "list";
+    const tabs = `<div class="segment" role="tablist">${["list", "month"].map(v => `<a href="javascript:void 0" data-mode="${v}" class="${v === mode ? "on" : ""}" role="tab">${t("mt_" + v)}</a>`).join("")}</div>`;
+    let body;
+    if (mode === "list") body = list.length ? `<div class="mt-grid">${list.map(mc).join("")}</div>` : empty;
+    else {
+      const [ty, tm] = (S.board.today || new Date().toISOString()).slice(0, 7).split("-").map(Number);
+      if (!S.mtMonth) S.mtMonth = { y: ty, m: tm - 1 };
+      const { y, m } = S.mtMonth;
+      const chip = x => `<a class="cal-ev ${x.status}" href="#/c/${id}/meeting/${x.id}" title="${esc(x.title)}${x.time ? " · " + esc(x.time) : ""} · ${esc(t("mt_st")[x.status] || x.status)}">${x.time ? `<b>${esc(x.time)}</b> ` : ""}${esc(x.title)}</a>`;
+      const weeks = monthCells(y, m, list), todayIso = S.board.today;
+      const undated = list.filter(x => !x.date);
+      body = `<div class="cal-head"><button type="button" class="ghost small" data-step="-1">‹ ${t("mt_prev")}</button><h3>${t("mt_month_names")[m]} ${y}</h3>
+        <button type="button" class="ghost small" data-step="1">${t("mt_next")} ›</button><button type="button" class="ghost small" data-step="0">${t("mt_this_month")}</button></div>
+        <div class="cal-grid">${t("mt_wk").map(w => `<div class="cal-dow">${w}</div>`).join("")}${weeks.flat().map(c =>
+          `<div class="cal-cell ${c.inMonth ? "" : "out"} ${c.iso === todayIso ? "today" : ""}"><span class="cal-day">${c.day}</span>${c.meetings.map(chip).join("")}</div>`).join("")}</div>
+        ${undated.length ? `<h4>${t("mt_undated")}</h4><div class="mt-grid">${undated.map(mc).join("")}</div>` : ""}`;
+    }
+    $("#mt-list").innerHTML = tabs + body;
+    $("#mt-list").querySelectorAll("[data-mode]").forEach(el => (el.onclick = () => { S.mtMode = el.dataset.mode; draw(); }));
+    $("#mt-list").querySelectorAll("[data-step]").forEach(el => (el.onclick = () => {
+      const s = Number(el.dataset.step), cur = S.mtMonth;
+      if (!s) S.mtMonth = null; else { const d = new Date(Date.UTC(cur.y, cur.m + s, 1)); S.mtMonth = { y: d.getUTCFullYear(), m: d.getUTCMonth() }; }
+      draw();
+    }));
+  };
+  draw();
 }
 
 function editMeeting(m) {

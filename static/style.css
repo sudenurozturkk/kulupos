@@ -869,5 +869,6 @@ a.rec-chip:hover { background: #dfe3ff; }
 .drawer-body .list li { flex-wrap: wrap; padding: 10px 0; }
 .drawer-body .list li .grow { flex: 1 1 100%; font-size: 15px; line-height: 1.35; }
 .drawer-body .list li button.small { padding: 4px 10px; min-height: 30px; font-size: 13px; }
+.drawer-body .list li select.dec-ev { padding: 3px 8px; min-height: 30px; font-size: 13px; max-width: 180px; }
 .drawer-body .list li .src { order: 2; }
 .drawer-body h4 { margin: 20px 0 2px; padding: 6px 10px; border-radius: 8px; background: var(--bg, #f4f4fb); font-size: 13px; letter-spacing: .02em; }

@@ -154,3 +154,21 @@ def test_report_that_mentions_missing_data_is_rejected(env, monkeypatch):
     assert report.unsupported_claims("Decisions: none entered, no data", ev)
     assert report.unsupported_claims("Açık noktalar\nYok", ev)
     assert report.unsupported_claims("Özet\nEtkinlik yapıldı.", ev) == []
+
+
+def test_decision_can_be_linked_moved_and_unlinked(env):
+    c, cid, _ = env
+    e1, e2 = make_event(c, cid, title="Bir"), make_event(c, cid, title="Iki")
+    dec = c.post(f"/api/chats/{cid}/items", json={"kind": "decision", "title": "Amfi B"}).json()["id"]
+    page = lambda e: c.get(f"/api/events/{e}/page").json()["decisions"]
+    assert page(e1) == [] and page(e2) == []
+    assert c.patch(f"/api/items/{dec}", json={"event_id": e1}).json()["event_id"] == e1
+    assert [d["id"] for d in page(e1)] == [dec]
+    assert c.patch(f"/api/items/{dec}", json={"event_id": e2}).status_code == 200   # moving to another event
+    assert page(e1) == [] and [d["id"] for d in page(e2)] == [dec]
+    assert c.patch(f"/api/items/{dec}", json={"event_id": None}).json()["event_id"] is None   # unlink
+    assert page(e2) == []
+    assert c.patch(f"/api/items/{dec}", json={"event_id": 99999}).status_code == 400          # not an event
+    assert c.patch(f"/api/items/{dec}", json={"event_id": dec}).status_code == 400
+    assert c.patch(f"/api/items/{dec}", json={"title": "Amfi B2"}).status_code == 200
+    assert c.get(f"/api/items/{dec}/history").status_code == 200

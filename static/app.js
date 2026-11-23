@@ -364,6 +364,7 @@ const HUB_I18N = {
     pp_role_owner: "etkinlik sorumlusu", pp_role_task: "görevi bu etkinliğe bağlı", pp_empty: "Henüz sorumlusu olan görev yok.",
     tab_events: "Etkinlikler", evs_intro: "Bir etkinliğe tıkla: bilgi, bağlı görevler, kararlar, sorular, toplantılar, katılım, geri bildirim ve rapor tek sayfada açılır.",
     evp_open: "Aç", evp_info: "Bilgi", evp_attend: "Katılım", evp_applied: "Kayıt / başvuru (ilgi)", evp_tasks: "Bağlı görevler", evp_decisions: "Bağlı kararlar",
+    dl_pick: "Karar seç…", dl_btn: "Etkinliğe bağla", dl_unlink: "Bağlantıyı kaldır", dl_other: "başka etkinliğe bağlı: bağlarsan buraya taşınır", dl_none: "Bağlanabilecek onaylı karar yok.", dl_done: "Karar bağlandı", dl_undone: "Bağlantı kaldırıldı",
     evp_questions: "Bağlı açık sorular", evp_meetings: "Bağlı toplantılar", evp_none: "Bağlı kayıt yok.",
     evp_meet_note: "Bu etkinliğe bağlı kayıtların geldiği toplantılar (toplantıdan etkinliğe doğrudan bağ yok).",
     evp_feedback: "Geri bildirim", fb_score: "Puan ortalaması (1–5, isteğe bağlı)", fb_good: "İyi giden", fb_bad: "Aksayan",
@@ -394,6 +395,7 @@ const HUB_I18N = {
     pp_role_owner: "event owner", pp_role_task: "task linked to this event", pp_empty: "No task has an owner yet.",
     tab_events: "Events", evs_intro: "Click an event: info, linked tasks, decisions, questions, meetings, attendance, feedback and report open on one page.",
     evp_open: "Open", evp_info: "Info", evp_attend: "Attendance", evp_applied: "Registered / applied (interest)", evp_tasks: "Linked tasks", evp_decisions: "Linked decisions",
+    dl_pick: "Pick a decision…", dl_btn: "Link to event", dl_unlink: "Remove link", dl_other: "linked to another event: linking moves it here", dl_none: "No approved decision to link.", dl_done: "Decision linked", dl_undone: "Link removed",
     evp_questions: "Linked open questions", evp_meetings: "Linked meetings", evp_none: "No linked records.",
     evp_meet_note: "Meetings that produced records linked to this event (there is no direct meeting-to-event link).",
     evp_feedback: "Feedback", fb_score: "Average score (1–5, optional)", fb_good: "What went well", fb_bad: "What fell short",
@@ -990,8 +992,12 @@ function renderBoardView() {
     ? `<div class="column questions"><div class="column-head"><span>${t("flt_questions")} <span class="n">${openQs.length}</span></span></div>
         <ul class="list">${qList(openQs) || `<li class="muted">${t("none_yet")}</li>`}</ul></div>`
     : cols;
+  const decEv = d => b.events.length
+    ? `<select class="dec-ev" data-dec-ev="${d.id}" aria-label="${esc(t("ev_link"))}"><option value="">${t("ev_link")}: —</option>${b.events.map(e =>
+        `<option value="${e.id}" ${d.event_id === e.id ? "selected" : ""}>${esc(e.title)}</option>`).join("")}</select>`
+    : "";
   const decisionsHtml = b.decisions.length ? `<ul class="list">${b.decisions.map(d =>
-        `<li class="${d.validity !== "valid" ? "muted" : ""}"><input type="checkbox" data-final="${d.id}" ${d.status === "done" ? "checked" : ""} title="${t("dec_final")}" aria-label="${t("dec_final")}"><span class="grow">${d.validity !== "valid" ? `<s>${esc(d.title)}</s> <span class="chip">${esc(t("val_name")[d.validity])}</span>` : esc(d.title)}</span>${srcBtn(d)}${decBtns(d)}</li>`).join("")}</ul>`
+        `<li class="${d.validity !== "valid" ? "muted" : ""}"><input type="checkbox" data-final="${d.id}" ${d.status === "done" ? "checked" : ""} title="${t("dec_final")}" aria-label="${t("dec_final")}"><span class="grow">${d.validity !== "valid" ? `<s>${esc(d.title)}</s> <span class="chip">${esc(t("val_name")[d.validity])}</span>` : esc(d.title)}</span>${srcBtn(d)}${decEv(d)}${decBtns(d)}</li>`).join("")}</ul>`
     : `<p class="muted">${t("none_yet")}</p>`;
 
   $("#view").innerHTML = `
@@ -1039,6 +1045,10 @@ function renderBoardView() {
   view.querySelectorAll("[data-final]").forEach(el => (el.onchange = async () => {
     await patch(`/api/items/${el.dataset.final}`, { status: el.checked ? "done" : "open" });
     await reloadBoard();
+  }));
+  view.querySelectorAll("[data-dec-ev]").forEach(el => (el.onchange = async () => {
+    try { await patch(`/api/items/${el.dataset.decEv}`, { event_id: el.value ? Number(el.value) : null }); toast(el.value ? t("dl_done") : t("dl_undone")); await reloadBoard(); }
+    catch (e) { toast(e.message); await reloadBoard(); }
   }));
   view.querySelectorAll("[data-qset]").forEach(el => (el.onclick = () => setQuestionStatus(Number(el.dataset.qset), el.dataset.st, el.dataset.field || "status")));
   view.querySelectorAll("[data-qhist]").forEach(el => (el.onclick = () => showHistory(Number(el.dataset.qhist))));
@@ -1189,7 +1199,7 @@ async function reloadBoard() {
   $("#progress-slot").innerHTML = progressHtml(S.board.progress);
   bindShell();
   renderSideNav();
-  if (["board", "overview", "review", "events", "event", "people", "person", "units", "data"].includes(view)) VIEWS[view]();
+  if (["board", "overview", "review", "events", "event", "people", "person", "workload", "units", "data"].includes(view)) VIEWS[view]();
 }
 
 // ---------------------------------------------------------------- modals
@@ -1834,7 +1844,12 @@ async function renderEventView() {
   const taskLi = x => `<li><input type="checkbox" data-toggle="${x.id}" ${x.status === "done" ? "checked" : ""} aria-label="${t("st_done")}">
     <span class="grow ${x.status === "done" ? "muted" : ""}"><a href="javascript:void 0" data-edit="${x.id}">${esc(x.title)}</a>
     <small>${x.owner ? esc(firstName(x.owner)) : t("no_owner")}</small></span>${dueChip(x, p.today)}${srcBtn(x)}</li>`;
-  const decLi = d => `<li class="${d.validity !== "valid" ? "muted" : ""}"><span class="grow">${d.validity !== "valid" ? `<s>${esc(d.title)}</s> <small>${esc(t("val_name")[d.validity] || d.validity)}</small>` : esc(d.title)}</span>${srcBtn(d)}</li>`;
+  const decLi = d => `<li class="${d.validity !== "valid" ? "muted" : ""}"><span class="grow">${d.validity !== "valid" ? `<s>${esc(d.title)}</s> <small>${esc(t("val_name")[d.validity] || d.validity)}</small>` : esc(d.title)}</span>${srcBtn(d)}<button type="button" class="ghost small" data-unlink-dec="${d.id}">${t("dl_unlink")}</button></li>`;
+  const linkable = (S.board.decisions || []).filter(d => d.validity === "valid" && d.event_id !== ev.id);
+  const evTitle = Object.fromEntries((S.board.events || []).map(e => [e.id, e.title]));
+  const decLink = linkable.length ? `<div class="row-actions"><select id="dec-link" aria-label="${t("dl_btn")}"><option value="">${t("dl_pick")}</option>${linkable.map(d =>
+    `<option value="${d.id}">${esc(d.title)}${d.event_id ? ` (${t("dl_other")}${evTitle[d.event_id] ? ": " + esc(evTitle[d.event_id]) : ""})` : ""}</option>`).join("")}</select>
+    <button type="button" class="small" id="dec-link-btn">${t("dl_btn")}</button></div>` : `<p class="muted small">${t("dl_none")}</p>`;
   const qLi = q => `<li><span class="grow">${esc(q.title)} <small>${esc(t("st_name")[q.status] || q.status)}</small></span>${srcBtn(q)}</li>`;
   const meetLi = m => `<li><span class="grow"><a href="#/c/${chatId}/meeting/${m.id}">${esc(m.title)}</a>
     <small>${m.date ? fmtDate(m.date) : t("mt_nodate")} · ${esc(t("mt_st")[m.status] || m.status)} · ${t("mt_counts")(m)}</small></span></li>`;
@@ -1864,7 +1879,7 @@ async function renderEventView() {
     <div class="evp-grid">
       <div class="stack">
         ${sect(t("evp_tasks"), (p.tasks.length ? `<div class="com-bar thick"><i style="width:${Math.round(doneN / p.tasks.length * 100)}%"></i></div>` : "") + ul(p.tasks, taskLi), `${doneN}/${p.tasks.length}`)}
-        ${sect(t("evp_decisions"), ul(p.decisions, decLi), p.decisions.length)}
+        ${sect(t("evp_decisions"), ul(p.decisions, decLi) + decLink, p.decisions.length)}
         ${sect(t("evp_questions"), ul(p.questions, qLi), p.questions.length)}
       </div>
       <div class="stack">
@@ -1880,6 +1895,13 @@ async function renderEventView() {
   }));
   view.querySelectorAll("[data-edit]").forEach(el => (el.onclick = () => editTask(p.tasks.find(x => x.id === Number(el.dataset.edit)))));
   view.querySelectorAll("[data-src]").forEach(el => (el.onclick = () => showSource(Number(el.dataset.src))));
+  const linkDecision = async (decId, eventId, msg) => {
+    try { await patch(`/api/items/${decId}`, { event_id: eventId }); toast(msg); await reloadBoard(); }
+    catch (e) { toast(e.message); }
+  };
+  view.querySelectorAll("[data-unlink-dec]").forEach(el => (el.onclick = () => linkDecision(Number(el.dataset.unlinkDec), null, t("dl_undone"))));
+  const pick = view.querySelector("#dec-link");
+  if (pick) view.querySelector("#dec-link-btn").onclick = () => pick.value && linkDecision(Number(pick.value), Number(eid), t("dl_done"));
   drawEventReport(eid, p);
 }
 

@@ -113,3 +113,21 @@ def test_dashboard_cards_upcoming_and_held_with_orphans(env, monkeypatch):
     cards = c.get(f"/api/chats/{cid}/board").json()["meetings"]
     assert [m["title"] for m in cards["upcoming"]] == ["Yakın"] and cards["upcoming"][0]["days"] == 3
     assert cards["held_orphans"] == [{"id": held, "title": "Yapıldı", "date": "2026-10-10", "orphans": 2}]
+
+
+@pytest.mark.parametrize("bad", ["9:30", "24:00", "12:60", "7pm", "19:00:00", "19.00", "-1:00", "ab:cd"])
+def test_meeting_time_must_be_hh_mm(env, bad):
+    c, cid = env
+    assert c.post(f"/api/chats/{cid}/meetings", json={"title": "x", "time": bad}).status_code == 400
+    mid = c.post(f"/api/chats/{cid}/meetings", json={"title": "x", "time": "10:15"}).json()["id"]
+    assert c.patch(f"/api/meetings/{mid}", json={"time": bad}).status_code == 400
+    assert c.get(f"/api/meetings/{mid}").json()["meeting"]["time"] == "10:15"   # a rejected edit changes nothing
+
+
+def test_meeting_time_valid_and_blank(env):
+    c, cid = env
+    for good in ("00:00", "09:05", "23:59"):
+        assert c.post(f"/api/chats/{cid}/meetings", json={"title": "x", "time": good}).json()["time"] == good
+    mid = c.post(f"/api/chats/{cid}/meetings", json={"title": "x", "time": " 18:30 "}).json()["id"]
+    assert c.get(f"/api/meetings/{mid}").json()["meeting"]["time"] == "18:30"     # trimmed
+    assert c.patch(f"/api/meetings/{mid}", json={"time": ""}).json()["time"] is None   # blank = unknown

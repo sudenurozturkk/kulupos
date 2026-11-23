@@ -91,3 +91,20 @@ def test_comments_are_logged_in_history_and_validated(env):
     assert client.post(f"/api/items/{t}/comments", json={"text": "   "}).status_code == 400
     assert client.post(f"/api/items/{t}/comments", json={"text": "x" * 501}).status_code == 400
     assert client.post("/api/items/9999/comments", json={"text": "a"}).status_code == 404
+
+
+def test_items_reject_bad_dates_times_and_titles(env):
+    db, client, cid = env
+    url = f"/api/chats/{cid}/items"
+    assert client.post(url, json={"kind": "task", "title": "x", "due": "abc"}).status_code == 400
+    assert client.post(url, json={"kind": "task", "title": "x", "due": "2026-02-31"}).status_code == 400
+    assert client.post(url, json={"kind": "event", "title": "e", "due": "2026-11-01", "time": "99:99"}).status_code == 400
+    assert client.post(url, json={"kind": "task", "title": "   "}).status_code == 400
+    assert client.post(url, json={"kind": "task", "title": "x" * 301}).status_code == 413
+    ok = client.post(url, json={"kind": "event", "title": "e", "due": "2026-11-01", "time": "9:05"})
+    assert ok.status_code == 200
+    t = ok.json()["id"]
+    assert client.patch(f"/api/items/{t}", json={"due": "garbage"}).status_code == 400
+    assert client.patch(f"/api/items/{t}", json={"time": "25:00"}).status_code == 400
+    assert client.patch(f"/api/items/{t}", json={"due": ""}).status_code == 200   # blank still clears
+    assert client.get(f"/api/items/{t}/history").status_code == 200

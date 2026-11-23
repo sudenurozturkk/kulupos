@@ -508,11 +508,28 @@ class EventFields(BaseModel):
     event_id: int | None = None  # link a task/decision to an event
 
 
+def _check_basic(fields: dict) -> None:
+    """Dates must be real YYYY-MM-DD days, times HH:MM, titles at most MAX_TITLE characters."""
+    if fields.get("due"):
+        try:
+            date.fromisoformat(fields["due"])
+        except ValueError:
+            raise HTTPException(400, "Geçersiz tarih (YYYY-AA-GG) / invalid date (YYYY-MM-DD)")
+    if fields.get("time") and not re.fullmatch(r"([01]?\d|2[0-3]):[0-5]\d", fields["time"]):
+        raise HTTPException(400, "Geçersiz saat (SS:DD) / invalid time (HH:MM)")
+    if fields.get("title") and len(fields["title"]) > MAX_TITLE:
+        raise HTTPException(413, f"Başlık en çok {MAX_TITLE} karakter / title is limited to {MAX_TITLE} characters")
+
+
+MAX_TITLE = 300
+
+
 def _clean_event_fields(chat_id: int, fields: dict) -> dict:
     """Blank strings clear a field; numbers must be >= 0; links must point at an event of this chat."""
     for k, v in list(fields.items()):
         if isinstance(v, str):
             fields[k] = v.strip() or None
+    _check_basic(fields)
     if fields.get("phase") not in (None, *PHASES):
         raise HTTPException(400, "bad phase")
     for k in NUMERIC:
@@ -628,7 +645,11 @@ def create_item(chat_id: int, body: ItemCreate):
         raise HTTPException(400, "event fields only apply to events")
     if body.kind == "event" and not extra.get("phase"):
         extra["phase"] = "idea"
-    item_id = db.add_item(chat_id, body.kind, title=body.title.strip() or "?", owner=body.owner or None,
+    title = body.title.strip()
+    if not title:
+        raise HTTPException(400, "Başlık boş olamaz / the title is empty")
+    _check_basic({"due": body.due, "title": title})
+    item_id = db.add_item(chat_id, body.kind, title=title, owner=body.owner or None,
                           due=body.due or None, unit=body.unit or None, **extra)
     db.update_item(item_id, user=True)
     return db.get_item(item_id)

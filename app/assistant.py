@@ -4,8 +4,16 @@ from __future__ import annotations
 import re
 from datetime import date, datetime, timedelta
 
+import os
+
 from . import db, llm
 from .analyzer import detect_lang, norm, render_messages
+
+def _now() -> datetime:
+    """Current time; PANO_TODAY (YYYY-MM-DD) overrides the date, like the rest of the app."""
+    o = os.environ.get("PANO_TODAY")
+    return datetime.combine(date.fromisoformat(o), datetime.now().time()) if o else datetime.now()
+
 
 LABELS = {
     "tr": {"title": "Haftalık Özet", "done": "✅ Tamamlananlar", "open": "📌 Açık görevler",
@@ -33,7 +41,7 @@ async def weekly_summary(chat_id: int, days: int = 7) -> dict:
     msgs = db.get_messages(chat_id)
     lang = detect_lang(msgs) if msgs else "tr"
     L = LABELS[lang]
-    end = datetime.now()
+    end = _now()
     since = end - timedelta(days=days)
     recent = [m for m in msgs if datetime.fromisoformat(m["ts"]) >= since]
     recent_idx = {m["idx"] for m in recent}
@@ -70,7 +78,7 @@ async def weekly_summary(chat_id: int, days: int = 7) -> dict:
     tasks = [i for i in items if i["kind"] == "task"]
     # done = resolved by a message in the window, or marked done by the user within the window (wall clock);
     # a done task with no resolution info is not "this week's" and stays out
-    now_since = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
+    now_since = (_now() - timedelta(days=days)).isoformat(timespec="seconds")
     done = [t for t in tasks if t["status"] == "done" and (
         t["resolved_idx"] in recent_idx
         or (t["resolved_idx"] is None and t["user_edited"] and t["updated_at"] >= now_since))]
@@ -164,7 +172,7 @@ async def ask(chat_id: int, question: str) -> dict:
     chat_part = "\n\nIMPORTED CHAT EXCERPTS:\n" + render_messages(context) if context else ""
     prompt = (
         "CLUB RECORDS (entered or approved by the club; '-' means not entered):\n" + data + chat_part + "\n\n"
-        f"Today is {date.today().isoformat()}. Answer the question using ONLY the records and excerpts above; do not "
+        f"Today is {_now().date().isoformat()}. Answer the question using ONLY the records and excerpts above; do not "
         "use outside knowledge and never invent names, numbers or dates. Be concrete and brief (2-5 sentences, or a short "
         "list). Cite the records you used like [T12], [E3], [D5], [M2] and chat messages like [#12]. If the data does not "
         "contain the answer, say what is missing. "

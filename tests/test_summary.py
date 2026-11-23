@@ -12,6 +12,7 @@ CHAT = ("01.09.2026 10:00 - Ayşe: Afişi ben yaparım\n"
 
 def load(tmp_path, monkeypatch):
     monkeypatch.setenv("PANO_DB", str(tmp_path / "s.db"))
+    monkeypatch.setenv("PANO_TODAY", "2026-10-18")   # chat dates are fixed; do not depend on the real clock
     from app import db
     db._conn = None
     importlib.reload(db)
